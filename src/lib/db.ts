@@ -865,11 +865,93 @@ class CoachingStore {
     return this.getProgramById(newProg.id)!;
   }
 
+  updateProgram(id: string, updates: Partial<TrainingProgram>): TrainingProgram {
+    this.loadFromStorage();
+    const idx = this.programs.findIndex(p => p.id === id);
+    if (idx === -1) throw new Error("Program not found");
+    this.programs[idx] = { ...this.programs[idx], ...updates };
+    this.saveToStorage();
+    return this.getProgramById(id)!;
+  }
+
   deleteProgram(id: string): boolean {
     this.loadFromStorage();
     this.programs = this.programs.filter(p => p.id !== id);
     this.saveToStorage();
     return true;
+  }
+
+  applyProgramToClient(programId: string, clientId: string, startDateStr: string, coachId: string): number {
+    this.loadFromStorage();
+    const program = this.getProgramById(programId);
+    if (!program) throw new Error("Program not found");
+
+    const client = this.clients.find(c => c.id === clientId);
+    if (!client) throw new Error("Client not found");
+
+    const startDate = new Date(startDateStr);
+    let createdCount = 0;
+
+    (program.weeks || []).forEach((week, weekIdx) => {
+      (week.days || []).forEach((day, dayIdx) => {
+        if (!day.isRestDay && day.workouts && day.workouts.length > 0) {
+          const sessionDate = new Date(startDate);
+          sessionDate.setDate(startDate.getDate() + (weekIdx * 7) + (day.dayNumber ? day.dayNumber - 1 : dayIdx));
+          const dateString = sessionDate.toISOString().split("T")[0];
+
+          day.workouts.forEach((pw) => {
+            const newAssign: ClientWorkoutAssignment = {
+              id: `assign-wo-${Date.now()}-${createdCount}`,
+              clientId,
+              coachId: coachId || "user-admin",
+              templateId: pw.templateId,
+              programId: program.id,
+              scheduledDate: dateString,
+              status: "SCHEDULED"
+            };
+            this.assignments.unshift(newAssign);
+
+            // Also register in client calendar
+            this.calendars.push({
+              id: `cal-${Date.now()}-${createdCount}`,
+              coachId: coachId || "user-admin",
+              sportId: program.sportId || "sport-1",
+              title: `${program.titleAr} - ${day.titleAr || "حصة تدريبية"}`,
+              sessionType: "INDIVIDUAL",
+              startTime: `${dateString}T10:00:00.000Z`,
+              endTime: `${dateString}T11:00:00.000Z`,
+              location: "Gym Floor",
+              maxParticipants: 1,
+              attendances: [
+                {
+                  id: `att-${Date.now()}-${createdCount}`,
+                  sessionId: `cal-${Date.now()}-${createdCount}`,
+                  clientId,
+                  status: "PRESENT",
+                  notes: "حصة مجدولة ضمن البرنامج التدريبي"
+                }
+              ]
+            });
+
+            createdCount++;
+          });
+        }
+      });
+    });
+
+    this.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      userId: client.userId,
+      title: "تم تعيين برنامج تدريبي شامل لك! 🏆",
+      message: `تم جدولة برنامج "${program.titleAr}" لمدة ${program.durationWeeks} أسابيع بنجاح في تقويمك.`,
+      type: "WORKOUT",
+      read: false,
+      link: "/assignments",
+      createdAt: new Date().toISOString()
+    });
+
+    this.saveToStorage();
+    return createdCount;
   }
 
   // --- Workout Assignments & Execution Logger CRUD ---
