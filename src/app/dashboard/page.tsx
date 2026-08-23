@@ -41,9 +41,13 @@ export default function DashboardPage() {
   const { t, language, dir } = useLanguage();
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     setMounted(true);
+    const handleDbChange = () => setTick(t => t + 1);
+    window.addEventListener("gazzar_db_change", handleDbChange);
+    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
   }, []);
 
   if (!mounted) return null;

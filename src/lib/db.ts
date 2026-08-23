@@ -53,7 +53,7 @@ import {
 } from "./mockData";
 import { logAuditEvent, getAuditLogs } from "./audit";
 
-const STORAGE_KEY = "gazzar_master_db_v2";
+const STORAGE_KEY = "gazzar_clean_db_v3";
 
 // In-Memory live reactive & localStorage persistent store
 class CoachingStore {

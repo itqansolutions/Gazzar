@@ -22,7 +22,8 @@ import {
   Settings,
   Layers,
   Sparkles,
-  ClipboardList
+  ClipboardList,
+  LogOut
 } from "lucide-react";
 
 interface SidebarProps {
@@ -33,7 +34,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { t, language } = useLanguage();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const isClient = user?.role === "CLIENT";
 
@@ -146,6 +147,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </Link>
           </div>
         )}
+
+        {/* Logout button */}
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 mt-auto">
+          <button
+            onClick={() => {
+              onClose();
+              logout();
+            }}
+            className="w-full flex items-center space-x-2.5 rtl:space-x-reverse px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+          >
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <span>{t("navLogout")}</span>
+          </button>
+        </div>
       </aside>
     </>
   );

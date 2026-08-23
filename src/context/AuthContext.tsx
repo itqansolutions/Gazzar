@@ -28,16 +28,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("gazzar_session_user");
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem("gazzar_session_user");
+      if (saved) {
         setUser(JSON.parse(saved));
-      } catch {
-        setUser(defaultAdminUser);
+      } else {
+        setUser(null);
       }
-    } else {
-      setUser(defaultAdminUser);
-      localStorage.setItem("gazzar_session_user", JSON.stringify(defaultAdminUser));
+    } catch {
+      setUser(null);
     }
     setLoading(false);
   }, []);
@@ -86,8 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: matching.role,
       avatar: matching.avatar,
       phone: matching.phone,
-      coachId: role === "HEAD_COACH" ? "coach-head" : role === "COACH" ? "coach-1" : undefined,
-      clientId: role === "CLIENT" ? "client-1" : undefined
+      coachId: role === "HEAD_COACH" ? `coach-${matching.id}` : role === "COACH" ? `coach-${matching.id}` : undefined,
+      clientId: role === "CLIENT" ? `client-${matching.id}` : undefined
     };
 
     setUser(sessionUser);
@@ -97,6 +96,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("gazzar_session_user");
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   };
 
   return (
