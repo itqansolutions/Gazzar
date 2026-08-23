@@ -31,11 +31,11 @@ export default function NutritionPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
           <Apple className="w-6 h-6 text-emerald-400" />
           <span>{t("navNutrition")}</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar"
             ? "الأنظمة الغذائية، حساب السعرات والماكروز (بروتين، كارب، دهون) وتتبع شرب الماء"
             : "Meal plans, macronutrient breakdowns (Protein, Carbs, Fats) & hydration tracker"}
@@ -48,7 +48,7 @@ export default function NutritionPage() {
           <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-white">{plan.title}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{plan.title}</h3>
                 <p className="text-xs text-slate-400">إشراف: كابتن سارة كمال (أخصائية التغذية الرياضية)</p>
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 self-start sm:self-auto">
@@ -92,7 +92,7 @@ export default function NutritionPage() {
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <button
                   onClick={() => setWaterGlasses(Math.max(0, waterGlasses - 1))}
-                  className="w-8 h-8 rounded-xl bg-slate-800 text-slate-300 font-bold hover:bg-slate-700"
+                  className="w-8 h-8 rounded-xl bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-700"
                 >
                   -
                 </button>
@@ -110,7 +110,7 @@ export default function NutritionPage() {
           {/* Meals Breakdown Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Breakfast */}
-            <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-2">
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-2">
               <div className="flex items-center space-x-2 rtl:space-x-reverse text-amber-400 font-bold text-xs">
                 <Coffee className="w-4 h-4" />
                 <span>وجبة الإفطار (Breakfast)</span>
@@ -121,7 +121,7 @@ export default function NutritionPage() {
             </div>
 
             {/* Lunch */}
-            <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-2">
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-2">
               <div className="flex items-center space-x-2 rtl:space-x-reverse text-emerald-400 font-bold text-xs">
                 <Sun className="w-4 h-4" />
                 <span>وجبة الغداء الأساسية (Lunch)</span>
@@ -132,7 +132,7 @@ export default function NutritionPage() {
             </div>
 
             {/* Dinner */}
-            <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-2">
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-2">
               <div className="flex items-center space-x-2 rtl:space-x-reverse text-indigo-400 font-bold text-xs">
                 <Moon className="w-4 h-4" />
                 <span>وجبة العشاء (Dinner)</span>
@@ -143,7 +143,7 @@ export default function NutritionPage() {
             </div>
 
             {/* Snacks & Pre-workout */}
-            <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-2">
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-2">
               <div className="flex items-center space-x-2 rtl:space-x-reverse text-teal-400 font-bold text-xs">
                 <Cookie className="w-4 h-4" />
                 <span>السناكس وقبل التمرين (Snacks)</span>

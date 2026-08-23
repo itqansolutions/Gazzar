@@ -74,11 +74,11 @@ export default function AssignmentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
           <ClipboardList className="w-6 h-6 text-emerald-400" />
           <span>{t("navAssignments")}</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar"
             ? "تعيين قوالب التمارين والبرامج للمشتركين مع فحص وتنبيهات المحاذير الطبية الفورية ⚠"
             : "Assign workouts to clients with live medical restriction screening & alerts"}
@@ -88,8 +88,8 @@ export default function AssignmentsPage() {
       {/* Assignment Builder & Medical Screening Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form */}
-        <div className="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center space-x-2 rtl:space-x-reverse border-b border-slate-800 pb-3">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm dark:shadow-xl space-y-4">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse border-b border-slate-800 pb-3">
             <PlusCircle className="w-4 h-4 text-emerald-400" />
             <span>تعيين تمرين جديد لمشترك</span>
           </h3>
@@ -104,7 +104,7 @@ export default function AssignmentsPage() {
           <form onSubmit={handleAssign} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">اختر المشترك *</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">اختر المشترك *</label>
                 <select
                   value={selectedClientId}
                   onChange={e => setSelectedClientId(e.target.value)}
@@ -117,7 +117,7 @@ export default function AssignmentsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">قالب التمرين المطلوب *</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">قالب التمرين المطلوب *</label>
                 <select
                   value={selectedTemplateId}
                   onChange={e => setSelectedTemplateId(e.target.value)}
@@ -132,7 +132,7 @@ export default function AssignmentsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">تاريخ التمرين المقرر *</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">تاريخ التمرين المقرر *</label>
                 <input
                   type="date"
                   required
@@ -143,7 +143,7 @@ export default function AssignmentsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">الكابتن المشرف</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">الكابتن المشرف</label>
                 <select
                   value={selectedCoachId}
                   onChange={e => setSelectedCoachId(e.target.value)}
@@ -157,7 +157,7 @@ export default function AssignmentsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">تعليمات وتوجيهات الكابتن للمتدرب</label>
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">تعليمات وتوجيهات الكابتن للمتدرب</label>
               <textarea
                 rows={2}
                 value={coachNotes}
@@ -178,7 +178,7 @@ export default function AssignmentsPage() {
 
         {/* Live Medical Screening Side Card ⚠ */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-2 rtl:space-x-reverse">
+          <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-2 rtl:space-x-reverse">
             <ShieldAlert className="w-4 h-4 text-amber-400" />
             <span>الفحص الطبي التلقائي للمتدرب ⚠</span>
           </h3>
@@ -210,9 +210,9 @@ export default function AssignmentsPage() {
             </div>
           )}
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1 text-xs">
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-1 text-xs">
             <p className="font-bold text-white">المتدرب المختار:</p>
-            <p className="text-slate-300">{selectedClient?.user?.name || "متدرب"}</p>
+            <p className="text-slate-700 dark:text-slate-300">{selectedClient?.user?.name || "متدرب"}</p>
             <p className="text-[11px] text-slate-400">الوزن الحالي: {selectedClient?.weightKg} KG • الطول: {selectedClient?.heightCm} CM</p>
           </div>
         </div>
@@ -220,13 +220,13 @@ export default function AssignmentsPage() {
 
       {/* Assigned Workouts Feed */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-        <h3 className="text-sm font-bold text-white">جدول التمارين المعينة وحالات التنفيذ</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">جدول التمارين المعينة وحالات التنفيذ</h3>
 
         <div className="space-y-3">
           {assignments.map(a => (
             <div
               key={a.id}
-              className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-emerald-500/40 transition-colors"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-emerald-500/40 transition-colors"
             >
               <div className="flex items-center space-x-3.5 rtl:space-x-reverse">
                 <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400 font-bold text-xs">

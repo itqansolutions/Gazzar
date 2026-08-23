@@ -3,60 +3,63 @@
 import React from "react";
 import { ClientGoal } from "@/types";
 import { useLanguage } from "@/context/LanguageContext";
-import { Award, PlusCircle } from "lucide-react";
+import { Award, Target, CheckCircle2 } from "lucide-react";
 
 interface GoalsTabProps {
   goals: ClientGoal[];
 }
 
 export default function GoalsTab({ goals }: GoalsTabProps) {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-white">{t("clientGoals")}</h3>
+      <div>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+          {language === "ar" ? "الأهداف البدنية والرياضية" : "Training & Athletic Goals"}
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {language === "ar" ? "أهداف المتدرب في خسارة الوزن، بناء العضلات، أو تحسين الأداء" : "Target metrics and progression goals"}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {goals.map(g => {
-          const isWeightLoss = g.startingValue > g.targetValue;
-          const progress = isWeightLoss
-            ? Math.min(100, Math.max(0, Math.round(((g.startingValue - g.currentValue) / (g.startingValue - g.targetValue)) * 100)))
-            : Math.min(100, Math.max(0, Math.round(((g.currentValue - g.startingValue) / (g.targetValue - g.startingValue)) * 100)));
-
-          return (
-            <div key={g.id} className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-3">
+      {goals.length === 0 ? (
+        <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs">
+          {language === "ar" ? "لم يتم تحديد أهداف بعد." : "No goals specified yet."}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {goals.map(g => (
+            <div
+              key={g.id}
+              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-3"
+            >
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-white flex items-center space-x-2 rtl:space-x-reverse">
-                  <Award className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5 rtl:space-x-reverse">
+                  <Target className="w-4 h-4 text-emerald-500" />
                   <span>{g.title}</span>
-                </h4>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400">
-                  {g.status}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  {g.status === "IN_PROGRESS" ? (language === "ar" ? "قيد التنفيذ" : "In Progress") : g.status}
                 </span>
               </div>
 
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs text-slate-300 font-semibold">
-                  <span>التقدم المحقق: {progress}%</span>
-                  <span className="text-emerald-400 font-bold">الحالي: {g.currentValue} {g.unit}</span>
+              {g.targetValue && (
+                <div className="text-xs text-slate-600 dark:text-slate-300">
+                  <span>{language === "ar" ? "الهدف المستهدف: " : "Target Value: "}</span>
+                  <strong className="text-emerald-600 dark:text-emerald-400">{g.targetValue} {g.unit || "KG"}</strong>
                 </div>
-                <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] text-slate-400">
-                  <span>البداية: {g.startingValue} {g.unit}</span>
-                  <span>الهدف: {g.targetValue} {g.unit}</span>
-                </div>
-              </div>
+              )}
+
+              {g.deadline && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {language === "ar" ? "الموعد المستهدف: " : "Deadline: "} {g.deadline}
+                </p>
+              )}
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

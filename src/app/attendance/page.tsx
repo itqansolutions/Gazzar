@@ -36,11 +36,11 @@ export default function AttendancePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
           <CheckCircle2 className="w-6 h-6 text-emerald-400" />
           <span>{t("navAttendance")}</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar"
             ? "تسجيل حضور وغياب المشتركين للحصص الفردية والجماعية وحساب نسب الالتزام"
             : "Record session check-in, late arrivals, excused absences & adherence rates"}

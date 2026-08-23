@@ -47,11 +47,11 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
           <TrendingUp className="w-6 h-6 text-emerald-400" />
           <span>{t("navReports")}</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar"
             ? "تقارير الأداء التحليلية، نسب التزام المشتركين، توزيع الرياضات ونمو الإيرادات"
             : "Executive analytics, member retention, sport distribution & revenue metrics"}
@@ -89,7 +89,7 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Attendance Rate Trend */}
         <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
-          <h3 className="text-sm font-bold text-white">تطور نسبة حضور والتزام المشتركين (%)</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">تطور نسبة حضور والتزام المشتركين (%)</h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={attendanceData}>
@@ -105,7 +105,7 @@ export default function ReportsPage() {
 
         {/* Sports Breakdown Pie */}
         <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
-          <h3 className="text-sm font-bold text-white">توزيع المشتركين حسب الرياضة والنشاط</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">توزيع المشتركين حسب الرياضة والنشاط</h3>
           <div className="h-64 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

@@ -320,7 +320,7 @@ export default function WorkoutExecutionPage() {
                 <button
                   type="button"
                   onClick={() => startRestTimer(45)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-300"
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300"
                 >
                   45ث
                 </button>
@@ -334,7 +334,7 @@ export default function WorkoutExecutionPage() {
                 <button
                   type="button"
                   onClick={() => startRestTimer(90)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-300"
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300"
                 >
                   90ث
                 </button>
@@ -347,7 +347,7 @@ export default function WorkoutExecutionPage() {
       {/* Rate of Perceived Exertion (RPE) & Feedback Card */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center space-x-2 rtl:space-x-reverse">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
             <Flame className="w-4 h-4 text-amber-400" />
             <span>{t("rpeScale")}</span>
           </h3>
@@ -358,7 +358,7 @@ export default function WorkoutExecutionPage() {
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
             <span className="font-extrabold text-emerald-400 text-base">RPE: {overallRpe} / 10</span>
-            <span className="font-bold text-slate-300">{getRpeDescription(overallRpe)}</span>
+            <span className="font-bold text-slate-700 dark:text-slate-300">{getRpeDescription(overallRpe)}</span>
           </div>
           <input
             type="range"
@@ -372,7 +372,7 @@ export default function WorkoutExecutionPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
             ملاحظات وشعور المتدرب بعد التمرين (Feedback)
           </label>
           <textarea
@@ -395,14 +395,14 @@ export default function WorkoutExecutionPage() {
       {/* Celebration Completion Modal */}
       {isCompletedModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center space-y-5 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center space-y-5 animate-in fade-in zoom-in-95">
             <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white mx-auto shadow-xl shadow-emerald-500/30 animate-bounce">
               <Trophy className="w-8 h-8" />
             </div>
 
             <div>
               <h3 className="text-xl font-extrabold text-white">عاش يا بطل! تم إنهاء التمرين 🏆</h3>
-              <p className="text-xs text-slate-400 mt-1.5">{t("workoutCompletedSuccess")}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">{t("workoutCompletedSuccess")}</p>
             </div>
 
             <div className="grid grid-cols-3 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
@@ -431,7 +431,7 @@ export default function WorkoutExecutionPage() {
               </button>
               <button
                 onClick={() => router.push(`/clients/${assignment?.clientId || "client-1"}`)}
-                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs"
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs"
               >
                 عرض سجل التطور والقياسات
               </button>

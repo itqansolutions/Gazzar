@@ -40,11 +40,11 @@ export default function AssessmentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
           <Activity className="w-6 h-6 text-emerald-400" />
           <span>{t("navAssessments")}</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar"
             ? "التقييمات البدنية الدورية ومقارنة النتائج وحساب نسب التطور الفعلي"
             : "Periodic physical assessments, benchmark comparisons & improvement rates"}
@@ -120,7 +120,7 @@ export default function AssessmentsPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 text-xs text-slate-300">
+          <div className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 text-xs text-slate-700 dark:text-slate-300">
             <span className="font-bold text-emerald-400">تقييم الكابتن المشرف:</span> {a2.coachNotes}
           </div>
         </div>
@@ -128,11 +128,11 @@ export default function AssessmentsPage() {
 
       {/* Historical Assessments List */}
       <div className="space-y-4">
-        <h3 className="text-sm font-bold text-white">سجل جميع التقييمات المسجلة</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">سجل جميع التقييمات المسجلة</h3>
         {assessments.map(item => (
-          <div key={item.id} className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-3">
+          <div key={item.id} className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-white">{item.title}</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</h4>
               <span className="text-xs text-slate-400 font-semibold">{item.date}</span>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-xs">

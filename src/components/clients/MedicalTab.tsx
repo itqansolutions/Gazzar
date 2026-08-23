@@ -3,70 +3,72 @@
 import React from "react";
 import { ClientMedicalRestriction } from "@/types";
 import { useLanguage } from "@/context/LanguageContext";
-import { AlertTriangle, PlusCircle } from "lucide-react";
+import { AlertTriangle, PlusCircle, ShieldAlert } from "lucide-react";
 
 interface MedicalTabProps {
   restrictions: ClientMedicalRestriction[];
   onOpenModal: () => void;
+  isClient?: boolean;
 }
 
-export default function MedicalTab({ restrictions, onOpenModal }: MedicalTabProps) {
-  const { t } = useLanguage();
+export default function MedicalTab({ restrictions, onOpenModal, isClient }: MedicalTabProps) {
+  const { t, language } = useLanguage();
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-white">{t("clientMedical")}</h3>
-        <button
-          onClick={onOpenModal}
-          className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse shadow-md"
-        >
-          <PlusCircle className="w-3.5 h-3.5" />
-          <span>{t("addRestriction")}</span>
-        </button>
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t("clientMedical")}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {language === "ar" ? "سجل الإصابات النشطة والمحاذير البدنية والتمارين الممنوعة" : "Active injuries, restricted body parts and contraindicated exercises"}
+          </p>
+        </div>
+
+        {!isClient && (
+          <button
+            onClick={onOpenModal}
+            className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse cursor-pointer shadow-md shadow-amber-600/30"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>{t("addRestriction")}</span>
+          </button>
+        )}
       </div>
 
       {restrictions.length === 0 ? (
-        <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 text-xs">
-          لا توجد محاذير أو إصابات مسجلة لهذا المتدرب.
+        <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs">
+          {language === "ar" ? "لا توجد أي محاذير أو إصابات مسجلة (الحالة البدنية ممتازة) ✓" : "No medical restrictions recorded (Fit to train) ✓"}
         </div>
       ) : (
-        restrictions.map(r => (
-          <div key={r.id} className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
-                <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-xs">
-                  {r.bodyPart}
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">{r.conditionName}</h4>
-                  <p className="text-[11px] text-slate-400">{r.description}</p>
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {restrictions.map(r => (
+            <div
+              key={r.id}
+              className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5 rtl:space-x-reverse">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  <span>{r.conditionName}</span>
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+                  {r.severity}
+                </span>
               </div>
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                r.severity === "HIGH" || r.severity === "CRITICAL"
-                  ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                  : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-              }`}>
-                {r.severity}
-              </span>
-            </div>
 
-            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1.5 text-xs">
-              <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                <span className="text-slate-400 font-bold">التمارين المحظورة:</span>
-                <div className="flex flex-wrap gap-1">
-                  {r.restrictedExercises.map((e, idx) => (
-                    <span key={idx} className="px-2 py-0.5 rounded bg-red-900/40 text-red-300 font-bold text-[10px]">
-                      ⛔ {e}
-                    </span>
-                  ))}
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                {r.description}
+              </p>
+
+              {r.restrictedExercises && r.restrictedExercises.length > 0 && (
+                <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-500/20 text-xs text-red-700 dark:text-red-400">
+                  <span className="font-bold block mb-1">🚫 {language === "ar" ? "التمارين الممنوعة:" : "Contraindicated:"}</span>
+                  <span>{r.restrictedExercises.join(", ")}</span>
                 </div>
-              </div>
-              {r.notes && <p className="text-slate-400 text-[11px]">💡 {r.notes}</p>}
+              )}
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

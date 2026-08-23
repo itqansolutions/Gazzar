@@ -28,11 +28,11 @@ export default function MembershipsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
           <CreditCard className="w-6 h-6 text-emerald-400" />
           <span>{t("navMemberships")}</span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar"
             ? "باقات الاشتراكات، الحصص الفردية، المدفوعات وتواريخ انتهاء العضوية"
             : "Subscription packages, session packages, payment history & renewal tracking"}
@@ -48,13 +48,13 @@ export default function MembershipsPage() {
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-white">{p.nameAr}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{p.nameAr}</h3>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400">
                   {p.currency} {p.price}
                 </span>
               </div>
               <p className="text-xs text-slate-400">{p.nameEn}</p>
-              <p className="text-xs text-slate-300 leading-relaxed">{p.description}</p>
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{p.description}</p>
             </div>
 
             <div className="pt-3 border-t border-slate-800 space-y-1 text-xs text-slate-400">
@@ -75,7 +75,7 @@ export default function MembershipsPage() {
 
       {/* Client Subscriptions Table */}
       <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
-        <h3 className="text-sm font-bold text-white">سجل اشتراكات المتدربين النشطة والمدفوعات</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">سجل اشتراكات المتدربين النشطة والمدفوعات</h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-start text-xs">
@@ -90,11 +90,11 @@ export default function MembershipsPage() {
                 <th className="p-3 text-center">الحالة</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-100 dark:divide-slate-800/60 text-slate-700 dark:text-slate-300">
               {memberships.map(m => (
                 <tr key={m.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="p-3 font-bold text-white">{m.client?.user?.name || "مشترك"}</td>
-                  <td className="p-3 font-medium text-slate-300">{(m as any).plan?.nameAr || "باقة تدريب"}</td>
+                  <td className="p-3 font-medium text-slate-700 dark:text-slate-300">{(m as any).plan?.nameAr || "باقة تدريب"}</td>
                   <td className="p-3 text-center text-slate-400">{m.startDate}</td>
                   <td className="p-3 text-center font-semibold text-emerald-400">{m.endDate}</td>
                   <td className="p-3 text-center font-bold text-white">{m.paidAmount} EGP</td>

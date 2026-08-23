@@ -165,7 +165,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => loginAsRole("ADMIN")}
               className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "ADMIN" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                user?.role === "ADMIN" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
               }`}
             >
               👑 مدير (Admin)
@@ -174,7 +174,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => loginAsRole("HEAD_COACH")}
               className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "HEAD_COACH" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                user?.role === "HEAD_COACH" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
               }`}
             >
               ⭐ مشرف (Head Coach)
@@ -183,7 +183,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => loginAsRole("COACH")}
               className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "COACH" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                user?.role === "COACH" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
               }`}
             >
               🏋️ كابتن (Coach)
@@ -192,7 +192,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => loginAsRole("CLIENT")}
               className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "CLIENT" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                user?.role === "CLIENT" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
               }`}
             >
               🏃 مشترك (Athlete)

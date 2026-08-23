@@ -33,14 +33,14 @@ export default function AuditLogsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
           <FileCode2 className="w-6 h-6 text-emerald-400" />
           <span>{t("navAuditLogs")}</span>
-          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-700">
             {filteredLogs.length} سجل
           </span>
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar"
             ? "سجل الأمان والعمليات الشامل: تتبع من قام بإنشاء أو تعديل أي بيانات باللحظة والتواريخ"
             : "Enterprise audit trail: Track who created, updated, or deleted records in real-time"}
@@ -54,7 +54,7 @@ export default function AuditLogsPage() {
           placeholder="بحث في سجلات النظام..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
         />
       </div>
 
@@ -71,7 +71,7 @@ export default function AuditLogsPage() {
                 <th className="p-3 text-start">التفاصيل والتغييرات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-100 dark:divide-slate-800/60 text-slate-700 dark:text-slate-300">
               {filteredLogs.map(l => (
                 <tr key={l.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="p-3 font-mono text-[11px] text-slate-400">
@@ -85,7 +85,7 @@ export default function AuditLogsPage() {
                       {l.action}
                     </span>
                   </td>
-                  <td className="p-3 text-center font-semibold text-slate-300">
+                  <td className="p-3 text-center font-semibold text-slate-700 dark:text-slate-300">
                     {l.entityType}
                   </td>
                   <td className="p-3 font-mono text-[11px] text-slate-400 max-w-md truncate">

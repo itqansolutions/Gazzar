@@ -29,11 +29,11 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
             <CalendarIcon className="w-6 h-6 text-emerald-400" />
             <span>{t("navCalendar")}</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {language === "ar"
               ? "جدول حصص التدريب الفردية (PT) والتدريب الجماعي (CrossFit & Classes)"
               : "Individual PT sessions and Group Class schedule"}
@@ -67,11 +67,11 @@ export default function CalendarPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
-              <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-300">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-700 dark:text-slate-300">
                 <Clock className="w-4 h-4 text-emerald-400" />
                 <span>{new Date(sess.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
-              <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-300">
+              <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-700 dark:text-slate-300">
                 <MapPin className="w-4 h-4 text-blue-400" />
                 <span className="truncate">{sess.location || "صالة التدريب"}</span>
               </div>
