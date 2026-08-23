@@ -166,8 +166,9 @@ export default function ClientProfilePage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center space-x-4 rtl:space-x-reverse">
             <img
-              src={client.user.avatar}
-              alt={client.user.name}
+              src={client.user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
+              alt={client.user?.name || "Athlete"}
+              onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"; }}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-emerald-500 shadow-lg shadow-emerald-500/20"
             />
             <div>

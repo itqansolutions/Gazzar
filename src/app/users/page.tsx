@@ -304,6 +304,7 @@ export default function UsersPage() {
                       <img
                         src={u.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
                         alt={u.name}
+                        onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"; }}
                         className="w-9 h-9 rounded-full object-cover border border-slate-300 dark:border-slate-700"
                       />
                       <div>

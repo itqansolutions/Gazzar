@@ -275,6 +275,24 @@ class CoachingStore {
     };
   }
 
+  updateClient(id: string, updates: Partial<ClientProfile> & { name?: string; email?: string; phone?: string; avatar?: string }): ClientProfile {
+    const index = this.clients.findIndex(c => c.id === id || c.userId === id);
+    if (index === -1) throw new Error("Client not found");
+
+    const client = this.clients[index];
+    if (updates.name || updates.email || updates.phone || updates.avatar) {
+      this.updateUser(client.userId, {
+        ...(updates.name && { name: updates.name }),
+        ...(updates.email && { email: updates.email }),
+        ...(updates.phone && { phone: updates.phone }),
+        ...(updates.avatar && { avatar: updates.avatar })
+      });
+    }
+
+    this.clients[index] = { ...this.clients[index], ...updates };
+    return this.getClient360(this.clients[index].id)!;
+  }
+
   createClient(data: Partial<ClientProfile> & { name: string; email: string; phone?: string }) {
     const userId = `user-${Date.now()}`;
     const newUser: User = {

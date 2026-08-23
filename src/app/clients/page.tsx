@@ -199,8 +199,9 @@ export default function ClientsPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3 rtl:space-x-reverse">
                     <img
-                      src={client.user.avatar}
-                      alt={client.user.name}
+                      src={client.user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
+                      alt={client.user?.name || "Client"}
+                      onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"; }}
                       className="w-12 h-12 rounded-full object-cover border-2 border-slate-700 group-hover:border-emerald-400 transition-colors"
                     />
                     <div>

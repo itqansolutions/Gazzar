@@ -46,8 +46,9 @@ export default function CoachesPage() {
           >
             <div className="flex items-center space-x-3.5 rtl:space-x-reverse">
               <img
-                src={co.user?.avatar}
-                alt={co.user?.name}
+                src={co.user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
+                alt={co.user?.name || "Coach"}
+                onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"; }}
                 className="w-14 h-14 rounded-2xl object-cover border-2 border-emerald-500 shadow-lg shadow-emerald-500/20"
               />
               <div>
