@@ -781,9 +781,17 @@ class CoachingStore {
       ...t,
       sport: this.sports.find(s => s.id === t.sportId),
       creator: t.creatorId ? this.getCoachById(t.creatorId) : undefined,
-      exercises: t.exercises.map(te => ({
+      exercises: (t.exercises || []).map(te => ({
         ...te,
-        exercise: this.getExerciseById(te.exerciseId)!
+        exercise: this.getExerciseById(te.exerciseId) || te.exercise || {
+          id: te.exerciseId,
+          nameAr: "تمرين تدريبي",
+          nameEn: "Exercise",
+          difficulty: "BEGINNER",
+          metricType: "SETS_REPS_WEIGHT",
+          sportId: t.sportId || "sport-1",
+          contraindicatedBodyParts: []
+        }
       }))
     }));
   }
