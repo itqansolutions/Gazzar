@@ -5,6 +5,11 @@
 @tailwind utilities;
 
 :root {
+  --background: #020617;
+  --foreground: #f8fafc;
+}
+
+html.light {
   --background: #f8fafc;
   --foreground: #0f172a;
 }
@@ -19,7 +24,7 @@ body {
   color: var(--foreground);
   font-family: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Custom smooth scrollbars */
@@ -29,20 +34,20 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.2);
-}
-
-html.dark .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(15, 23, 42, 0.6);
 }
 
+html.light .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.6);
+  background: rgba(51, 65, 85, 0.8);
   border-radius: 9999px;
 }
 
-html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+html.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.9);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -56,22 +61,13 @@ html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
 
 /* Card glassmorphism effect */
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-}
-
-html.dark .glass-card {
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(51, 65, 85, 0.5);
 }
 
-.glass-card-hover {
-  transition: all 0.2s ease-in-out;
-}
-
-.glass-card-hover:hover {
-  border-color: rgba(16, 185, 129, 0.5);
-  transform: translateY(-2px);
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
 }

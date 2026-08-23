@@ -14,22 +14,23 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("gazzar_theme") as Theme | null;
-    if (saved === "light" || saved === "dark") {
-      setThemeState(saved);
-      applyTheme(saved);
+    if (saved === "light") {
+      setThemeState("light");
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
     } else {
-      // Default to dark mode for elite gym vibe
       setThemeState("dark");
-      applyTheme("dark");
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
     }
-    setMounted(true);
   }, []);
 
-  const applyTheme = (t: Theme) => {
+  const setTheme = (t: Theme) => {
+    setThemeState(t);
+    localStorage.setItem("gazzar_theme", t);
     if (typeof document !== "undefined") {
       const root = document.documentElement;
       if (t === "dark") {
@@ -40,12 +41,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.classList.add("light");
       }
     }
-  };
-
-  const setTheme = (t: Theme) => {
-    setThemeState(t);
-    localStorage.setItem("gazzar_theme", t);
-    applyTheme(t);
   };
 
   const toggleTheme = () => {

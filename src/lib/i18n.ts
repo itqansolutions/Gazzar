@@ -176,7 +176,11 @@ export const translations = {
     metricKg: "كيلوجرام (KG)",
     imperialLb: "باوند (LB)",
     unitSystem: "نظام القياس",
-    language: "اللغة"
+    language: "اللغة",
+    activeClients: "المشتركون النشطون",
+    totalAthletes: "إجمالي المشتركين",
+    coachesCount: "طاقم الكباتن والمدربين",
+    activeWorkouts: "التمارين المعينة النشطة"
   },
   en: {
     // App Brand
@@ -353,6 +357,10 @@ export const translations = {
     metricKg: "Kilograms (KG)",
     imperialLb: "Pounds (LB)",
     unitSystem: "Unit System",
-    language: "Language"
+    language: "Language",
+    activeClients: "Active Athletes",
+    totalAthletes: "Total Athletes",
+    coachesCount: "Coaching Staff",
+    activeWorkouts: "Active Workouts"
   }
 };
