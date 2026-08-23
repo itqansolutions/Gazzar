@@ -5,6 +5,11 @@
 @tailwind utilities;
 
 :root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+html.dark {
   --background: #020617;
   --foreground: #f8fafc;
 }
@@ -14,6 +19,7 @@ body {
   color: var(--foreground);
   font-family: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Custom smooth scrollbars */
@@ -23,25 +29,39 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.2);
+}
+
+html.dark .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(15, 23, 42, 0.6);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(100, 116, 139, 0.6);
   border-radius: 9999px;
+}
+
+html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.8);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(16, 185, 129, 0.8);
 }
 
-/* Safe area padding for mobile notches / bottom home bar */
+/* Safe area padding for mobile notches */
 .safe-area-pb {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
 /* Card glassmorphism effect */
 .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+html.dark .glass-card {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(51, 65, 85, 0.5);
@@ -50,8 +70,8 @@ body {
 .glass-card-hover {
   transition: all 0.2s ease-in-out;
 }
+
 .glass-card-hover:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: rgba(16, 185, 129, 0.5);
   transform: translateY(-2px);
 }

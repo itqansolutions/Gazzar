@@ -88,7 +88,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed top-16 bottom-0 z-40 w-64 bg-slate-900 border-e border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-16 bottom-0 z-40 w-64 bg-white dark:bg-slate-900 border-e border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
         }`}
       >
@@ -99,7 +99,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             return (
               <div key={groupIdx} className="space-y-1.5">
-                <p className="px-3 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                <p className="px-3 text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
                   {group.title}
                 </p>
                 <div className="space-y-1">
@@ -114,11 +114,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         onClick={onClose}
                         className={`flex items-center space-x-3 rtl:space-x-reverse px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                           isActive
-                            ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm"
-                            : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-sm font-bold"
+                            : "text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
                         }`}
                       >
-                        <Icon className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
+                        <Icon className={`w-4 h-4 ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-400"}`} />
                         <span className="truncate">{item.label}</span>
                       </Link>
                     );
@@ -131,10 +131,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Client quick workout execution pill for athletes */}
         {isClient && (
-          <div className="p-3 mx-3 mb-4 rounded-xl bg-gradient-to-br from-emerald-900/40 to-teal-900/30 border border-emerald-500/30">
+          <div className="p-3 mx-3 mb-4 rounded-xl bg-emerald-50 dark:bg-gradient-to-br dark:from-emerald-900/40 dark:to-teal-900/30 border border-emerald-200 dark:border-emerald-500/30">
             <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1.5">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-bold text-white">تمرين اليوم بانتظارك</span>
+              <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-bold text-slate-900 dark:text-white">تمرين اليوم بانتظارك</span>
             </div>
             <Link
               href="/workout/assign-wo-1/execute"
