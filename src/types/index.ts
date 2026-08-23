@@ -341,6 +341,7 @@ export interface ClientProgressPhoto {
 export interface ClientAssessment {
   id: string;
   clientId: string;
+  client?: ClientProfile;
   coachId: string;
   coach?: CoachProfile;
   date: string;
@@ -381,7 +382,9 @@ export interface SessionAttendance {
 export interface MealPlan {
   id: string;
   clientId: string;
+  client?: ClientProfile;
   coachId: string;
+  coach?: CoachProfile;
   title: string;
   dailyCalories: number;
   proteinGrams: number;

@@ -1065,10 +1065,15 @@ class CoachingStore {
   // --- Assessments CRUD ---
   getAssessments(clientId?: string) {
     this.loadFromStorage();
-    return this.assessments.filter(a => !clientId || a.clientId === clientId);
+    let list = this.assessments.map(a => ({
+      ...a,
+      client: this.getClient360(a.clientId),
+      coach: this.getCoachById(a.coachId)
+    }));
+    return list.filter(a => !clientId || a.clientId === clientId);
   }
 
-  createAssessment(data: Omit<ClientAssessment, "id">) {
+  createAssessment(data: Omit<ClientAssessment, "id">): ClientAssessment {
     this.loadFromStorage();
     const newAssess: ClientAssessment = {
       id: `assess-${Date.now()}`,
@@ -1076,7 +1081,16 @@ class CoachingStore {
     };
     this.assessments.unshift(newAssess);
     this.saveToStorage();
-    return newAssess;
+    return this.getAssessments().find(a => a.id === newAssess.id)!;
+  }
+
+  updateAssessment(id: string, updates: Partial<ClientAssessment>): ClientAssessment {
+    this.loadFromStorage();
+    const idx = this.assessments.findIndex(a => a.id === id);
+    if (idx === -1) throw new Error("Assessment not found");
+    this.assessments[idx] = { ...this.assessments[idx], ...updates };
+    this.saveToStorage();
+    return this.getAssessments().find(a => a.id === id)!;
   }
 
   deleteAssessment(id: string): boolean {
@@ -1145,18 +1159,47 @@ class CoachingStore {
   // --- Meal Plans CRUD ---
   getMealPlans(clientId?: string) {
     this.loadFromStorage();
-    return this.mealPlans.filter(m => !clientId || m.clientId === clientId);
+    let list = this.mealPlans.map(m => ({
+      ...m,
+      client: this.getClient360(m.clientId),
+      coach: this.getCoachById(m.coachId)
+    }));
+    return list.filter(m => !clientId || m.clientId === clientId);
   }
 
   createMealPlan(data: Omit<MealPlan, "id">): MealPlan {
     this.loadFromStorage();
+    // If set as active, deactivate previous active plans for this client
+    if (data.isActive) {
+      this.mealPlans.forEach(m => {
+        if (m.clientId === data.clientId) m.isActive = false;
+      });
+    }
+
     const newPlan: MealPlan = {
       id: `meal-${Date.now()}`,
       ...data
     };
     this.mealPlans.unshift(newPlan);
     this.saveToStorage();
-    return newPlan;
+    return this.getMealPlans().find(m => m.id === newPlan.id)!;
+  }
+
+  updateMealPlan(id: string, updates: Partial<MealPlan>): MealPlan {
+    this.loadFromStorage();
+    const idx = this.mealPlans.findIndex(m => m.id === id);
+    if (idx === -1) throw new Error("Meal plan not found");
+
+    if (updates.isActive && this.mealPlans[idx].clientId) {
+      const cId = this.mealPlans[idx].clientId;
+      this.mealPlans.forEach(m => {
+        if (m.clientId === cId && m.id !== id) m.isActive = false;
+      });
+    }
+
+    this.mealPlans[idx] = { ...this.mealPlans[idx], ...updates };
+    this.saveToStorage();
+    return this.getMealPlans().find(m => m.id === id)!;
   }
 
   deleteMealPlan(id: string): boolean {

@@ -16,7 +16,10 @@ import {
   Sparkles,
   User,
   Calendar,
-  X
+  X,
+  Edit2,
+  Trash2,
+  Scale
 } from "lucide-react";
 
 export default function AssessmentsPage() {
@@ -30,10 +33,15 @@ export default function AssessmentsPage() {
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>("ALL");
 
-  // Add Assessment Modal (Coach / Admin only)
+  // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAssessment, setEditingAssessment] = useState<ClientAssessment | null>(null);
+  const [deleteConfirmAssessment, setDeleteConfirmAssessment] = useState<ClientAssessment | null>(null);
+
+  // Form states
   const [targetClientId, setTargetClientId] = useState("");
-  const [title, setTitle] = useState("تقييم الأداء البدني الشهري");
+  const [title, setTitle] = useState("تقييم الأداء البدني واختبارات القوة والتحمل");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [pushups, setPushups] = useState(30);
   const [pullups, setPullups] = useState(10);
@@ -41,7 +49,7 @@ export default function AssessmentsPage() {
   const [runningSec, setRunningSec] = useState(270);
   const [flexibility, setFlexibility] = useState(8);
   const [vo2, setVo2] = useState(46.5);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState("أداء ممتاز، زيادة ملحوظة في قوة الصدر والأكتاف وتحسن ثبات الكور.");
 
   const loadData = () => {
     const allClients = db.getClients();
@@ -73,9 +81,23 @@ export default function AssessmentsPage() {
     return diff > 0 ? `+${diff.toFixed(0)}%` : `${diff.toFixed(0)}%`;
   };
 
+  const openAddModal = () => {
+    if (clients.length > 0) setTargetClientId(selectedClientId !== "ALL" ? selectedClientId : clients[0].id);
+    setTitle("تقييم الأداء البدني الدوري");
+    setDate(new Date().toISOString().slice(0, 10));
+    setPushups(30);
+    setPullups(10);
+    setPlankSec(75);
+    setRunningSec(270);
+    setFlexibility(8);
+    setVo2(46.5);
+    setNotes("أداء بدني ممتاز وثبات ملحوظ.");
+    setIsAddModalOpen(true);
+  };
+
   const handleCreateAssessment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!targetClientId) return;
+    if (!targetClientId || !title) return;
 
     db.createAssessment({
       clientId: targetClientId,
@@ -95,7 +117,51 @@ export default function AssessmentsPage() {
     loadData();
   };
 
-  // For Client comparison: latest vs oldest (baseline)
+  const openEditModal = (item: ClientAssessment) => {
+    setEditingAssessment(item);
+    setTargetClientId(item.clientId);
+    setTitle(item.title);
+    setDate(item.date);
+    setPushups(item.pushupsCount || 0);
+    setPullups(item.pullupsCount || 0);
+    setPlankSec(item.plankSeconds || 0);
+    setRunningSec(item.runningKmTimeSec || 0);
+    setFlexibility(item.flexibilityScore || 0);
+    setVo2(item.vo2Max || 0);
+    setNotes(item.coachNotes || "");
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateAssessment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAssessment) return;
+
+    db.updateAssessment(editingAssessment.id, {
+      clientId: targetClientId,
+      date,
+      title,
+      pushupsCount: Number(pushups),
+      pullupsCount: Number(pullups),
+      plankSeconds: Number(plankSec),
+      runningKmTimeSec: Number(runningSec),
+      flexibilityScore: Number(flexibility),
+      vo2Max: Number(vo2),
+      coachNotes: notes
+    });
+
+    setIsEditModalOpen(false);
+    setEditingAssessment(null);
+    loadData();
+  };
+
+  const handleDeleteAssessment = () => {
+    if (!deleteConfirmAssessment) return;
+    db.deleteAssessment(deleteConfirmAssessment.id);
+    setDeleteConfirmAssessment(null);
+    loadData();
+  };
+
+  // For Client comparison: latest vs baseline
   const aLatest = assessments[0];
   const aBaseline = assessments.length > 1 ? assessments[assessments.length - 1] : null;
 
@@ -114,27 +180,24 @@ export default function AssessmentsPage() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {isClient
               ? (language === "ar" ? "متابعة نتائج اختبارات القوة والتحمل والبلانك ومقارنة التطور مع نقطة البداية" : "Track your strength, endurance benchmarks and compare improvements over baseline")
-              : (language === "ar" ? "التقييمات البدنية الدورية ومقارنة النتائج وحساب نسب التطور الفعلي" : "Periodic physical assessments, benchmark comparisons & improvement rates")}
+              : (language === "ar" ? "إجراء وتقييم الاختبارات البدنية للمشتركين، تسجيل النتائج، ومقارنة نسب التطور" : "Conduct physical assessments, track strength & endurance benchmarks and compare improvements")}
           </p>
         </div>
 
         {!isClient && (
           <button
-            onClick={() => {
-              if (clients.length > 0) setTargetClientId(clients[0].id);
-              setIsAddModalOpen(true);
-            }}
+            onClick={openAddModal}
             className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all self-start sm:self-auto cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>{language === "ar" ? "تسجيل تقييم بدني جديد +" : "Record Assessment +"}</span>
+            <span>{language === "ar" ? "تسجيل تقييم بدني جديد لمشترك +" : "Record Assessment +"}</span>
           </button>
         )}
       </div>
 
       {/* Filter by Client for Coach / Admin */}
       {!isClient && (
-        <div className="flex items-center space-x-3 rtl:space-x-reverse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl max-w-md">
+        <div className="flex items-center space-x-3 rtl:space-x-reverse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl max-w-md shadow-sm">
           <User className="w-4 h-4 text-slate-400" />
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">تصفية بحسب المشترك:</span>
           <select
@@ -234,90 +297,128 @@ export default function AssessmentsPage() {
       {/* Historical Assessments List */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-          {isClient ? (language === "ar" ? "سجل جميع تقييماتي البدنية المكتملة" : "Completed Assessments Log") : "سجل جميع التقييمات المسجلة"}
+          {isClient ? (language === "ar" ? "سجل جميع تقييماتي البدنية المكتملة" : "Completed Assessments Log") : "سجل التقييمات والاختبارات البدنية"}
         </h3>
 
         {assessments.length === 0 ? (
-          <div className="p-8 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs space-y-2">
-            <Activity className="w-8 h-8 mx-auto text-slate-400 opacity-60" />
-            <p className="font-bold text-slate-700 dark:text-slate-300">
+          <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs space-y-2 shadow-sm">
+            <Activity className="w-10 h-10 mx-auto text-slate-400 opacity-60" />
+            <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">
               {isClient
                 ? (language === "ar" ? "لم يتم إجراء تقييم بدني لك حتى الآن." : "No physical assessments recorded yet.")
                 : (language === "ar" ? "لا توجد تقييمات مسجلة لهذا المشترك." : "No assessments found.")}
             </p>
-            <p className="text-[11px]">
+            <p className="text-xs">
               {isClient
                 ? (language === "ar" ? "سيقوم الكابتن المشرف بجدولة أول تقييم لقوتك وتحملك قريباً لمتابعة تقدمك." : "Your coach will conduct your initial fitness test soon.")
-                : (language === "ar" ? "اضغط على زر إضافة تقييم لتسجيل اختبار جديد." : "Click Record Assessment to add one.")}
+                : (language === "ar" ? "اضغط على زر تسجيل تقييم بدني جديد لإجراء اختبار للمتدرب." : "Click Record Assessment to add one.")}
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {assessments.map((item, idx) => (
-              <div key={item.id} className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                    <span className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center">
-                      #{assessments.length - idx}
-                    </span>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</h4>
-                  </div>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono font-bold">{item.date}</span>
-                </div>
+            {assessments.map((item, idx) => {
+              const clientObj = item.client || clients.find(c => c.id === item.clientId);
 
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-xs">
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "ضغط" : "Pushups"}</span>
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">{item.pushupsCount}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "عقلة" : "Pullups"}</span>
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">{item.pullupsCount}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "بلانك" : "Plank"}</span>
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">{item.plankSeconds} {language === "ar" ? "ث" : "s"}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "جري 1كم" : "1km Run"}</span>
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">{item.runningKmTimeSec} {language === "ar" ? "ث" : "s"}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "المرونة" : "Flexibility"}</span>
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">{item.flexibilityScore}/10</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "اللياقة القلبية" : "VO2 Max"}</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.vo2Max}</span>
-                  </div>
-                </div>
+              return (
+                <div key={item.id} className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
+                      <span className="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center">
+                        #{assessments.length - idx}
+                      </span>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</h4>
+                        {!isClient && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">
+                            المتدرب: {clientObj?.user?.name || "متدرب"}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-                {item.coachNotes && (
-                  <p className="text-xs text-slate-600 dark:text-slate-300 pt-1">
-                    💡 <span className="font-bold">ملاحظات الكابتن:</span> {item.coachNotes}
-                  </p>
-                )}
-              </div>
-            ))}
+                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-mono font-bold">{item.date}</span>
+
+                      {!isClient && (
+                        <>
+                          <button
+                            onClick={() => openEditModal(item)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => setDeleteConfirmAssessment(item)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-xs">
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "ضغط" : "Pushups"}</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.pushupsCount}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "عقلة" : "Pullups"}</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.pullupsCount}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "بلانك" : "Plank"}</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.plankSeconds} {language === "ar" ? "ث" : "s"}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "جري 1كم" : "1km Run"}</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.runningKmTimeSec} {language === "ar" ? "ث" : "s"}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "المرونة" : "Flexibility"}</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.flexibilityScore}/10</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "اللياقة القلبية" : "VO2 Max"}</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.vo2Max}</span>
+                    </div>
+                  </div>
+
+                  {item.coachNotes && (
+                    <p className="text-xs text-slate-600 dark:text-slate-300 pt-1">
+                      💡 <span className="font-bold">ملاحظات الكابتن:</span> {item.coachNotes}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* --- ADD ASSESSMENT MODAL (COACH / ADMIN ONLY) --- */}
-      {isAddModalOpen && !isClient && (
+      {/* --- ADD / EDIT ASSESSMENT MODAL (COACH / ADMIN ONLY) --- */}
+      {(isAddModalOpen || isEditModalOpen) && !isClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Activity className="w-5 h-5 text-emerald-500" />
-                <span>تسجيل تقييم واختبار بدني جديد</span>
+                <span>{isAddModalOpen ? "تسجيل تقييم واختبار بدني جديد" : "تعديل التقييم البدني"}</span>
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setIsEditModalOpen(false);
+                }}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateAssessment} className="space-y-3.5">
+            <form onSubmit={isAddModalOpen ? handleCreateAssessment : handleUpdateAssessment} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اختر المشترك *</label>
                 <select
@@ -431,19 +532,55 @@ export default function AssessmentsPage() {
               <div className="flex justify-end space-x-2 rtl:space-x-reverse pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setIsEditModalOpen(false);
+                  }}
                   className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold"
                 >
                   {t("cancel")}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 cursor-pointer"
                 >
-                  حفظ التقييم البدني ✓
+                  {isAddModalOpen ? "حفظ التقييم البدني ✓" : "تحديث التقييم البدني ✓"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- DELETE CONFIRM MODAL --- */}
+      {deleteConfirmAssessment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">تأكيد حذف التقييم</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                هل أنت متأكد من حذف هذا التقييم البدني؟
+              </p>
+            </div>
+            <div className="flex justify-center space-x-3 rtl:space-x-reverse pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmAssessment(null)}
+                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAssessment}
+                className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/30 cursor-pointer"
+              >
+                نعم، احذف التقييم
+              </button>
+            </div>
           </div>
         </div>
       )}
