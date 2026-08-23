@@ -108,6 +108,7 @@ export interface Sport {
   nameAr: string;
   nameEn: string;
   icon?: string;
+  imageUrl?: string;
   descriptionAr?: string;
   descriptionEn?: string;
   categories: string[];

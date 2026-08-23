@@ -1,61 +1,6 @@
 import { Sport, MuscleGroup, Equipment } from "@/types";
 
-export const initialSports: Sport[] = [
-  {
-    id: "sport-1",
-    nameAr: "كمال الأجسام واللياقة البدنية",
-    nameEn: "Bodybuilding & Fitness",
-    icon: "Dumbbell",
-    descriptionAr: "بناء العضلات، زيادة القوة، وخفض نسبة الدهون",
-    descriptionEn: "Muscle hypertrophy, strength building, and fat loss",
-    categories: ["Hypertrophy", "Strength", "Fat Loss"]
-  },
-  {
-    id: "sport-2",
-    nameAr: "كروس فيت والتدريب الوظيفي",
-    nameEn: "CrossFit & Functional Training",
-    icon: "Flame",
-    descriptionAr: "تمارين عالية الكثافة وتدريبات القوة الوظيفية",
-    descriptionEn: "High-intensity functional conditioning and WODs",
-    categories: ["WOD", "Endurance", "Gymnastics"]
-  },
-  {
-    id: "sport-3",
-    nameAr: "الجري واللياقة القلبية",
-    nameEn: "Running & Athletics",
-    icon: "Activity",
-    descriptionAr: "تمارين الجري للمسافات وتحسين التحمل والسرعة",
-    descriptionEn: "Distance running, pace workouts, and endurance",
-    categories: ["Sprint", "5K/10K", "Marathon"]
-  },
-  {
-    id: "sport-4",
-    nameAr: "السباحة",
-    nameEn: "Swimming",
-    icon: "Waves",
-    descriptionAr: "تدريبات السباحة بأنواعها والتحمل المائي",
-    descriptionEn: "Freestyle, breaststroke, butterfly and aquatic conditioning",
-    categories: ["Freestyle", "Backstroke", "Endurance Laps"]
-  },
-  {
-    id: "sport-5",
-    nameAr: "الملاكمة والفنون القتالية",
-    nameEn: "Boxing & Combat Sports",
-    icon: "Shield",
-    descriptionAr: "تدريبات اللياقة القتالية، السرعة، وردود الأفعال",
-    descriptionEn: "Boxing drills, footwork, shadowboxing and bag work",
-    categories: ["Boxing", "Kickboxing", "Conditioning"]
-  },
-  {
-    id: "sport-6",
-    nameAr: "كرة القدم",
-    nameEn: "Football / Soccer",
-    icon: "Trophy",
-    descriptionAr: "اللياقة البدنية للاعبي كرة القدم والرشاقة",
-    descriptionEn: "Agility, match endurance, speed and sprint drills",
-    categories: ["Agility", "Match Conditioning", "Sprint Speed"]
-  }
-];
+export const initialSports: Sport[] = [];
 
 export const initialMuscleGroups: MuscleGroup[] = [
   { id: "mg-chest", nameAr: "الصدر", nameEn: "Chest", code: "CHEST" },
