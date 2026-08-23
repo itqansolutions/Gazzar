@@ -4,7 +4,7 @@ export const initialUsers: User[] = [
   {
     id: "user-admin",
     email: "admin@gazzar.com",
-    name: "أحمد الجزار (المدير العام)",
+    name: "Abdullah Elgazzar",
     role: "ADMIN",
     password: "A@123456",
     phone: "+20 100 123 4567",

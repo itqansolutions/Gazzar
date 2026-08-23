@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (email: string, password?: string) => Promise<{ success: boolean; message?: string }>;
   loginAsRole: (role: UserRole) => void;
   logout: () => void;
+  updateCurrentUser: (updates: Partial<SessionUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const defaultAdminUser: SessionUser = {
   id: "user-admin",
   email: "admin@gazzar.com",
-  name: "أحمد الجزار (المدير العام)",
+  name: "Abdullah Elgazzar",
   role: "ADMIN",
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"
 };
@@ -27,11 +28,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Sync session with live db
+  const syncWithDb = (savedUser: SessionUser | null): SessionUser | null => {
+    if (!savedUser) return null;
+    const liveUser = db.getUserById(savedUser.id) || db.getUserByEmail(savedUser.email);
+    if (liveUser) {
+      return {
+        ...savedUser,
+        id: liveUser.id,
+        email: liveUser.email,
+        name: liveUser.name,
+        role: liveUser.role,
+        avatar: liveUser.avatar,
+        phone: liveUser.phone
+      };
+    }
+    return savedUser;
+  };
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem("gazzar_session_user");
       if (saved) {
-        setUser(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        const synced = syncWithDb(parsed);
+        setUser(synced);
+        if (synced) {
+          localStorage.setItem("gazzar_session_user", JSON.stringify(synced));
+        }
       } else {
         setUser(null);
       }
@@ -40,6 +64,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setLoading(false);
   }, []);
+
+  // Listen to DB changes across the app to update currently logged-in user profile immediately
+  useEffect(() => {
+    const handleDbChange = () => {
+      setUser(prev => {
+        if (!prev) return null;
+        const synced = syncWithDb(prev);
+        if (synced) {
+          localStorage.setItem("gazzar_session_user", JSON.stringify(synced));
+        }
+        return synced;
+      });
+    };
+
+    window.addEventListener("gazzar_db_change", handleDbChange);
+    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+  }, []);
+
+  const updateCurrentUser = (updates: Partial<SessionUser>) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updates };
+      localStorage.setItem("gazzar_session_user", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const login = async (email: string, password?: string): Promise<{ success: boolean; message?: string }> => {
     try {
@@ -102,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginAsRole, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, loginAsRole, logout, updateCurrentUser }}>
       {children}
     </AuthContext.Provider>
   );

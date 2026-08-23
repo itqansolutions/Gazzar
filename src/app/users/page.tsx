@@ -30,7 +30,7 @@ import {
 export default function UsersPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
-  const { user: currentUser, loginAsRole } = useAuth();
+  const { user: currentUser, loginAsRole, updateCurrentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -117,13 +117,23 @@ export default function UsersPage() {
     if (!selectedUser) return;
 
     try {
-      db.updateUser(selectedUser.id, {
+      const updatedUser = db.updateUser(selectedUser.id, {
         name: selectedUser.name.trim(),
         email: selectedUser.email.trim().toLowerCase(),
         role: selectedUser.role,
         phone: selectedUser.phone,
         avatar: selectedUser.avatar
       });
+
+      if (currentUser && (currentUser.id === selectedUser.id || currentUser.email.toLowerCase() === selectedUser.email.toLowerCase())) {
+        updateCurrentUser({
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          avatar: updatedUser.avatar,
+          phone: updatedUser.phone
+        });
+      }
 
       refreshUsers();
       setIsEditModalOpen(false);

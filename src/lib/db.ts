@@ -200,6 +200,17 @@ class CoachingStore {
     return this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
   }
 
+  getAdminUser(): User {
+    this.loadFromStorage();
+    return this.users.find(u => u.role === "ADMIN") || this.users[0] || {
+      id: "user-admin",
+      email: "admin@gazzar.com",
+      name: "Abdullah Elgazzar",
+      role: "ADMIN",
+      createdAt: new Date().toISOString()
+    };
+  }
+
   createUser(data: {
     email: string;
     name: string;
@@ -269,7 +280,7 @@ class CoachingStore {
 
     logAuditEvent({
       action: "CREATE_USER",
-      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      user: { id: this.getAdminUser().id, name: this.getAdminUser().name, role: this.getAdminUser().role },
       entityType: "User",
       entityId: newUser.id,
       newValues: { email: newUser.email, role: newUser.role, name: newUser.name }
@@ -299,7 +310,7 @@ class CoachingStore {
 
     logAuditEvent({
       action: "UPDATE_USER",
-      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      user: { id: this.getAdminUser().id, name: this.getAdminUser().name, role: this.getAdminUser().role },
       entityType: "User",
       entityId: id,
       oldValues: old,
@@ -322,7 +333,7 @@ class CoachingStore {
 
     logAuditEvent({
       action: "DELETE_USER",
-      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      user: { id: this.getAdminUser().id, name: this.getAdminUser().name, role: this.getAdminUser().role },
       entityType: "User",
       entityId: id,
       oldValues: { email: user.email, name: user.name }
@@ -473,7 +484,7 @@ class CoachingStore {
 
     logAuditEvent({
       action: "CREATE_CLIENT",
-      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      user: { id: this.getAdminUser().id, name: this.getAdminUser().name, role: this.getAdminUser().role },
       entityType: "ClientProfile",
       entityId: clientId,
       newValues: { name: data.name, email: data.email, status: newClient.status }
@@ -541,7 +552,7 @@ class CoachingStore {
 
     logAuditEvent({
       action: "ASSIGN_COACH",
-      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      user: { id: this.getAdminUser().id, name: this.getAdminUser().name, role: this.getAdminUser().role },
       entityType: "ClientCoachAssignment",
       entityId: clientId,
       newValues: { clientId, coachId, role, notes }
