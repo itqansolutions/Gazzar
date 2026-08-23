@@ -17,7 +17,8 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  Trash2
 } from "lucide-react";
 
 export default function AssignmentsPage() {
@@ -37,14 +38,17 @@ export default function AssignmentsPage() {
   const templates = db.getTemplates();
   const coaches = db.getCoaches();
 
-  useEffect(() => {
-    setMounted(true);
-    loadAssignments();
-  }, []);
-
   const loadAssignments = () => {
     setAssignments(db.getAssignments());
   };
+
+  useEffect(() => {
+    setMounted(true);
+    loadAssignments();
+    const handleDbChange = () => loadAssignments();
+    window.addEventListener("gazzar_db_change", handleDbChange);
+    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+  }, []);
 
   const selectedClient = clients.find(c => c.id === selectedClientId) || clients[0];
   const clientRestrictions = selectedClient?.medicalRestrictions || [];
@@ -257,6 +261,21 @@ export default function AssignmentsPage() {
                 >
                   {a.status === "COMPLETED" ? "نتائج الأداء 🏆" : "تنفيذ الآن 🏋️"}
                 </Link>
+
+                {user?.role !== "CLIENT" && (
+                  <button
+                    onClick={() => {
+                      if (confirm(language === "ar" ? "هل تريد حذف هذا التعيين؟" : "Delete this assignment?")) {
+                        db.deleteAssignment(a.id);
+                        loadAssignments();
+                      }
+                    }}
+                    title="حذف التعيين"
+                    className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

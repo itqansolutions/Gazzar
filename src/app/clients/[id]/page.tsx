@@ -68,6 +68,9 @@ export default function ClientProfilePage() {
 
   useEffect(() => {
     loadClientData();
+    const handleDbChange = () => loadClientData();
+    window.addEventListener("gazzar_db_change", handleDbChange);
+    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
   }, [clientId]);
 
   const loadClientData = () => {
