@@ -1,6 +1,6 @@
 FROM node:20-alpine AS base
 
-# Install OpenSSL for Prisma
+# Install OpenSSL & libc for Prisma
 RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
@@ -10,12 +10,15 @@ COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci || npm install
 
-# Build application
+# Copy source and ensure public directory exists
 COPY . .
+RUN mkdir -p /app/public
+
+# Build application
 RUN npx prisma generate
 RUN npm run build
 
-# Production image
+# Production Runner
 FROM node:20-alpine AS runner
 WORKDIR /app
 
