@@ -128,15 +128,15 @@ export default function ClientsPage() {
   const getStatusBadge = (status: ClientStatus) => {
     switch (status) {
       case "ACTIVE":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">{language === "ar" ? "نشط" : "Active"}</span>;
       case "LEAD":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">Lead</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">{language === "ar" ? "محتمل" : "Lead"}</span>;
       case "FROZEN":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Frozen</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">{language === "ar" ? "مجمد" : "Frozen"}</span>;
       case "EXPIRED":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Expired</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">{language === "ar" ? "منتهي" : "Expired"}</span>;
       case "SUSPENDED":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">Suspended</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30">{language === "ar" ? "موقوف" : "Suspended"}</span>;
       default:
         return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-500/20 text-slate-400 border border-slate-500/30">{status}</span>;
     }
@@ -164,7 +164,7 @@ export default function ClientsPage() {
         {user?.role !== "CLIENT" && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all self-start sm:self-auto"
+            className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all self-start sm:self-auto cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{language === "ar" ? "إضافة مشترك جديد +" : "Add New Client +"}</span>
@@ -192,11 +192,11 @@ export default function ClientsPage() {
             className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           >
             <option value="ALL">{language === "ar" ? "جميع الحالات" : "All Statuses"}</option>
-            <option value="ACTIVE">Active (نشط)</option>
-            <option value="LEAD">Lead (عميل محتمل)</option>
-            <option value="FROZEN">Frozen (مجمّد)</option>
-            <option value="EXPIRED">Expired (منتهي)</option>
-            <option value="SUSPENDED">Suspended (موقوف)</option>
+            <option value="ACTIVE">{language === "ar" ? "نشط" : "Active"}</option>
+            <option value="LEAD">{language === "ar" ? "محتمل" : "Lead"}</option>
+            <option value="FROZEN">{language === "ar" ? "مجمد" : "Frozen"}</option>
+            <option value="EXPIRED">{language === "ar" ? "منتهي" : "Expired"}</option>
+            <option value="SUSPENDED">{language === "ar" ? "موقوف" : "Suspended"}</option>
           </select>
         </div>
 

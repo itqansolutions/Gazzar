@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { db } from "@/lib/db";
 import {
   LayoutDashboard,
   Users,
@@ -12,7 +13,8 @@ import {
   Calendar,
   Layers,
   Activity,
-  Menu
+  Menu,
+  User
 } from "lucide-react";
 
 interface BottomNavProps {
@@ -26,12 +28,15 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
 
   const isClient = user?.role === "CLIENT";
 
+  const myClient = user ? db.getClients().find(c => c.userId === user.id) : null;
+  const myProfileHref = myClient ? `/clients/${myClient.id}` : "/dashboard";
+
   const navItems = isClient
     ? [
-        { href: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard },
-        { href: "/workout/assign-wo-1/execute", label: language === "ar" ? "تمرين اليوم" : "Today Workout", icon: Dumbbell, highlight: true },
-        { href: "/exercises", label: t("navExercises"), icon: Layers },
-        { href: "/assessments", label: t("navAssessments"), icon: Activity }
+        { href: "/dashboard", label: language === "ar" ? "الرئيسية" : "Overview", icon: LayoutDashboard },
+        { href: myProfileHref, label: language === "ar" ? "ملفي" : "Profile", icon: User },
+        { href: "/assignments", label: language === "ar" ? "تماريني" : "Workouts", icon: Dumbbell, highlight: true },
+        { href: "/assessments", label: language === "ar" ? "تقييماتي" : "Assessments", icon: Activity }
       ]
     : [
         { href: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard },
@@ -81,7 +86,7 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
         {/* More Menu Drawer Trigger */}
         <button
           onClick={onOpenSidebar}
-          className="flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+          className="flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer"
         >
           <Menu className="w-5 h-5 mb-0.5" />
           <span>{language === "ar" ? "المزيد" : "More"}</span>

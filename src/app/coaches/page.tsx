@@ -301,7 +301,7 @@ export default function CoachesPage() {
                         )}
                       </h3>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        {co.user?.role === "HEAD_COACH" ? (language === "ar" ? "مشرف تدريب (Head Coach)" : "Head Coach") : (language === "ar" ? "كابتن ومدرب معتمد" : "Certified Coach")}
+                        {co.user?.role === "HEAD_COACH" ? (language === "ar" ? "كبير المدربين" : "Head Coach") : (language === "ar" ? "كابتن تدريب" : "Coach")}
                       </span>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">{co.user?.email}</p>
                     </div>

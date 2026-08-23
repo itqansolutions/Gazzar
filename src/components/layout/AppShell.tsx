@@ -18,8 +18,36 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading && !user && !isLoginPage) {
       router.replace("/login");
+      return;
     }
-  }, [user, loading, isLoginPage, router]);
+
+    if (!loading && user) {
+      const clientRestrictedRoutes = [
+        "/users",
+        "/coaches",
+        "/clients",
+        "/exercises",
+        "/templates",
+        "/programs",
+        "/attendance",
+        "/sports",
+        "/reports",
+        "/audit-logs"
+      ];
+
+      const coachRestrictedRoutes = [
+        "/users",
+        "/reports",
+        "/audit-logs"
+      ];
+
+      if (user.role === "CLIENT" && clientRestrictedRoutes.some(r => pathname === r || (pathname.startsWith(r) && pathname === "/clients"))) {
+        router.replace("/dashboard");
+      } else if (user.role === "COACH" && coachRestrictedRoutes.some(r => pathname === r || pathname.startsWith(r))) {
+        router.replace("/dashboard");
+      }
+    }
+  }, [user, loading, isLoginPage, pathname, router]);
 
   if (isLoginPage) {
     return (

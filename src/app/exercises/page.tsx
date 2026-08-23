@@ -175,11 +175,11 @@ export default function ExercisesPage() {
   const getDifficultyBadge = (diff: Difficulty) => {
     switch (diff) {
       case "BEGINNER":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">مبتدئ • Beginner</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">{language === "ar" ? "مبتدئ" : "Beginner"}</span>;
       case "INTERMEDIATE":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">متوسط • Intermediate</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">{language === "ar" ? "متوسط" : "Intermediate"}</span>;
       case "ADVANCED":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30">متقدم • Advanced</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30">{language === "ar" ? "متقدم" : "Advanced"}</span>;
       default:
         return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/20 text-slate-400 border border-slate-500/30">{diff}</span>;
     }

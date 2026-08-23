@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { db } from "@/lib/db";
 import {
   LayoutDashboard,
   Users,
@@ -23,7 +24,8 @@ import {
   Layers,
   Sparkles,
   ClipboardList,
-  LogOut
+  LogOut,
+  User
 } from "lucide-react";
 
 interface SidebarProps {
@@ -38,11 +40,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const isClient = user?.role === "CLIENT";
 
-  const navigationGroups = [
+  // Find client ID for profile link
+  const myClient = user ? db.getClients().find(c => c.userId === user.id) : null;
+  const myProfileHref = myClient ? `/clients/${myClient.id}` : "/dashboard";
+
+  const clientNavigationGroups = [
     {
-      title: language === "ar" ? "الرئيسية والمشتركين" : "Core & Clients",
+      title: language === "ar" ? "لوحة المتدرب" : "Athlete Portal",
       items: [
-        { href: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] },
+        { href: "/dashboard", label: language === "ar" ? "الرئيسية" : "Overview", icon: LayoutDashboard },
+        { href: myProfileHref, label: language === "ar" ? "ملفي الشخصي والقياسات" : "My Profile & Stats", icon: User },
+        { href: "/assessments", label: language === "ar" ? "تقييماتي البدنية" : "My Assessments", icon: Activity },
+        { href: "/assignments", label: language === "ar" ? "جدول تماريني" : "My Workouts", icon: Dumbbell },
+        { href: "/nutrition", label: language === "ar" ? "خطتي الغذائية" : "My Meal Plan", icon: Apple },
+        { href: "/memberships", label: language === "ar" ? "اشتراكي وعضويتي" : "My Membership", icon: CreditCard },
+        { href: "/settings", label: language === "ar" ? "الإعدادات" : "Settings", icon: Settings }
+      ]
+    }
+  ];
+
+  const adminCoachNavigationGroups = [
+    {
+      title: language === "ar" ? "الإدارة والمشتركون" : "Core Management",
+      items: [
+        { href: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
         { href: "/users", label: t("navUsers"), icon: Users, roles: ["ADMIN", "HEAD_COACH"] },
         { href: "/clients", label: t("navClients"), icon: Users, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
         { href: "/coaches", label: t("navCoaches"), icon: UserCheck, roles: ["ADMIN", "HEAD_COACH"] }
@@ -52,31 +73,33 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: language === "ar" ? "المكتبة والبرامج التدريبية" : "Training & Library",
       items: [
         { href: "/sports", label: t("navSports"), icon: Trophy, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/exercises", label: t("navExercises"), icon: Dumbbell, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] },
+        { href: "/exercises", label: t("navExercises"), icon: Dumbbell, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
         { href: "/templates", label: t("navTemplates"), icon: Layers, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/programs", label: t("navPrograms"), icon: BookOpen, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] },
-        { href: "/assignments", label: t("navAssignments"), icon: ClipboardList, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] }
+        { href: "/programs", label: t("navPrograms"), icon: BookOpen, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+        { href: "/assignments", label: t("navAssignments"), icon: ClipboardList, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
       ]
     },
     {
-      title: language === "ar" ? "العمليات والأنشطة" : "Operations & Health",
+      title: language === "ar" ? "العمليات والمتابعة الصحية" : "Operations & Health",
       items: [
-        { href: "/calendar", label: t("navCalendar"), icon: Calendar, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] },
+        { href: "/calendar", label: t("navCalendar"), icon: Calendar, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
         { href: "/attendance", label: t("navAttendance"), icon: CheckCircle2, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/assessments", label: t("navAssessments"), icon: Activity, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] },
-        { href: "/nutrition", label: t("navNutrition"), icon: Apple, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] },
-        { href: "/memberships", label: t("navMemberships"), icon: CreditCard, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] }
+        { href: "/assessments", label: t("navAssessments"), icon: Activity, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+        { href: "/nutrition", label: t("navNutrition"), icon: Apple, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+        { href: "/memberships", label: t("navMemberships"), icon: CreditCard, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
       ]
     },
     {
-      title: language === "ar" ? "الرقابة والتقارير" : "Reports & Audit",
+      title: language === "ar" ? "التقارير والرقابة" : "Reports & Governance",
       items: [
         { href: "/reports", label: t("navReports"), icon: BarChart3, roles: ["ADMIN", "HEAD_COACH"] },
         { href: "/audit-logs", label: t("navAuditLogs"), icon: ShieldAlert, roles: ["ADMIN"] },
-        { href: "/settings", label: t("navSettings"), icon: Settings, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] }
+        { href: "/settings", label: t("navSettings"), icon: Settings, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
       ]
     }
   ];
+
+  const activeGroups = isClient ? clientNavigationGroups : adminCoachNavigationGroups;
 
   return (
     <>
@@ -95,15 +118,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         }`}
       >
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6 custom-scrollbar">
-          {navigationGroups.map((group, groupIdx) => {
-            const visibleItems = group.items.filter(item => !user || item.roles.includes(user.role));
+          {activeGroups.map((group, groupIdx) => {
+            const visibleItems = isClient
+              ? group.items
+              : (group.items as any[]).filter(item => !user || item.roles.includes(user.role));
+
             if (visibleItems.length === 0) return null;
 
             return (
               <div key={groupIdx} className="space-y-1.5">
-                <p className="px-3 text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+                <h3 className="px-3 text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400">
                   {group.title}
-                </p>
+                </h3>
                 <div className="space-y-1">
                   {visibleItems.map(item => {
                     const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -114,14 +140,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         key={item.href}
                         href={item.href}
                         onClick={onClose}
-                        className={`flex items-center space-x-3 rtl:space-x-reverse px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                        className={`flex items-center space-x-3 rtl:space-x-reverse px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                           isActive
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-sm font-bold"
-                            : "text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
+                            ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
-                        <Icon className={`w-4 h-4 ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-400"}`} />
-                        <span className="truncate">{item.label}</span>
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-emerald-500"}`} />
+                        <span>{item.label}</span>
                       </Link>
                     );
                   })}
@@ -131,34 +157,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           })}
         </div>
 
-        {/* Client quick workout execution pill for athletes */}
-        {isClient && (
-          <div className="p-3 mx-3 mb-4 rounded-xl bg-emerald-50 dark:bg-gradient-to-br dark:from-emerald-900/40 dark:to-teal-900/30 border border-emerald-200 dark:border-emerald-500/30">
-            <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1.5">
-              <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xs font-bold text-slate-900 dark:text-white">تمرين اليوم بانتظارك</span>
-            </div>
-            <Link
-              href="/workout/assign-wo-1/execute"
-              onClick={onClose}
-              className="block w-full py-2 text-center text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-md transition-all"
-            >
-              ابدأ تمرين اليوم 🏋️
-            </Link>
-          </div>
-        )}
-
-        {/* Logout button */}
-        <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 mt-auto">
+        {/* Sidebar Footer with Logout Button */}
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <button
             onClick={() => {
               onClose();
               logout();
             }}
-            className="w-full flex items-center space-x-2.5 rtl:space-x-reverse px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            className="w-full flex items-center justify-center space-x-2 rtl:space-x-reverse px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-800/40 transition-all cursor-pointer"
           >
-            <LogOut className="w-4 h-4 flex-shrink-0" />
-            <span>{t("navLogout")}</span>
+            <LogOut className="w-4 h-4" />
+            <span>{language === "ar" ? "تسجيل الخروج" : "Log Out"}</span>
           </button>
         </div>
       </aside>

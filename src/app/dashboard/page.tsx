@@ -83,9 +83,7 @@ export default function DashboardPage() {
     { month: language === "ar" ? "مايو" : "May", revenue: 56000, clients: 44 }
   ];
 
-  const displayName = language === "ar"
-    ? (user?.name || "كابتن")
-    : (user?.name === "محمد إبراهيم الفقي" ? "Mohamed Ibrahim" : user?.name || "Athlete");
+  const displayName = user?.name || (language === "ar" ? "مرحباً" : "Welcome");
 
   return (
     <div className="space-y-6">
@@ -97,7 +95,7 @@ export default function DashboardPage() {
               <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 {role === "ADMIN" ? t("roleAdmin") : role === "HEAD_COACH" ? t("roleHeadCoach") : role === "COACH" ? t("roleCoach") : t("roleClient")}
               </span>
-              <span className="text-xs text-slate-300">
+              <span className="text-xs text-slate-300 font-medium">
                 {new Date().toLocaleDateString(language === "ar" ? "ar-EG" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
               </span>
             </div>
@@ -107,7 +105,7 @@ export default function DashboardPage() {
             <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-xl">
               {role === "CLIENT"
                 ? language === "ar"
-                  ? "تمرين اليوم جاهز، استمر في الالتزام لتحقيق هدفك في خسارة الوزن وبناء العضلات!"
+                  ? "جدول تمرين اليوم جاهز، استمر في الالتزام والوصول لأفضل لياقة وقوة بدنية!"
                   : "Today's workout is ready. Stay consistent to crush your fitness targets!"
                 : language === "ar"
                 ? "إليك ملخص أداء المشتركين، جلسات التدريب المقررة لليوم، وسجل التنبيهات الطبية."
@@ -118,16 +116,16 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             {role === "CLIENT" ? (
               <Link
-                href="/workout/assign-wo-1/execute"
-                className="inline-flex items-center space-x-2 rtl:space-x-reverse px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all scale-100 hover:scale-105 active:scale-95"
+                href="/assignments"
+                className="inline-flex items-center space-x-2 rtl:space-x-reverse px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 transition-all scale-100 hover:scale-105 active:scale-95 cursor-pointer"
               >
                 <Dumbbell className="w-5 h-5" />
-                <span>{t("startWorkout")} 🏋️</span>
+                <span>{language === "ar" ? "عرض جدول تماريني 🏋️" : "View My Workouts 🏋️"}</span>
               </Link>
             ) : (
               <Link
                 href="/assignments"
-                className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all"
+                className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>{t("navAssignments")}</span>
@@ -148,13 +146,13 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">{t("medicalAlert")}</h3>
                 <p className="text-xs text-amber-900 dark:text-amber-200/90 mt-0.5">
                   {language === "ar"
-                    ? `المتدرب لديه إصابات ومحاذير نشطة: ${clientRestrictions.map(r => r.conditionName).join("، ")}.`
-                    : `This athlete has active restrictions: ${clientRestrictions.map(r => r.bodyPart === "KNEE" ? "Right Knee Meniscus Tear" : r.conditionName).join(", ")}.`}
+                    ? `لديك محاذير وإصابات مسجلة: ${clientRestrictions.map(r => r.conditionName).join("، ")}.`
+                    : `Active restrictions recorded: ${clientRestrictions.map(r => r.conditionName).join(", ")}.`}
                 </p>
                 <p className="text-[11px] text-amber-700 dark:text-amber-300/80 mt-1">
                   {language === "ar"
-                    ? "💡 تم تكييف التمارين تلقائياً لتجنب الحركات المحظورة (مثل السكوات بالأوزان الثقيلة)."
-                    : "💡 Workouts are automatically adjusted to avoid restricted movements (such as heavy squats)."}
+                    ? "💡 يتم تكييف التمارين تلقائياً لتجنب الحركات التي تضغط على منطقة الإصابة."
+                    : "💡 Workouts are automatically adjusted to avoid movements affecting restricted joints."}
                 </p>
               </div>
             </div>
@@ -167,9 +165,11 @@ export default function DashboardPage() {
                 <span className="text-xs font-medium">{t("weight")}</span>
                 <Scale className="w-4 h-4 text-emerald-500" />
               </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">{myClient?.weightKg} <span className="text-xs font-normal text-slate-400">KG</span></p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">
+                {myClient?.weightKg || 80} <span className="text-xs font-normal text-slate-400">{language === "ar" ? "كجم" : "KG"}</span>
+              </p>
               <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold flex items-center">
-                <TrendingUp className="w-3 h-3 me-1" /> -4.0 KG {language === "ar" ? "منذ البداية" : "since baseline"}
+                <TrendingUp className="w-3 h-3 me-1" /> {language === "ar" ? "متابعة مستمرة للوزن" : "Weight tracking active"}
               </p>
             </div>
 
@@ -178,9 +178,9 @@ export default function DashboardPage() {
                 <span className="text-xs font-medium">{t("bmi")}</span>
                 <Activity className="w-4 h-4 text-blue-500" />
               </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">28.7</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">24.5</p>
               <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1 font-semibold">
-                {language === "ar" ? "تحسن من 30.0 (نزول صحي)" : "Improved from 30.0"}
+                {language === "ar" ? "ضمن المعدل الصحي الطبيعي" : "Healthy Range"}
               </p>
             </div>
 
@@ -189,52 +189,55 @@ export default function DashboardPage() {
                 <span className="text-xs font-medium">{t("bodyFat")}</span>
                 <Flame className="w-4 h-4 text-amber-500" />
               </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">25%</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">18%</p>
               <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 font-semibold">
-                -3.0% {language === "ar" ? "نزول دهون" : "fat loss"}
+                {language === "ar" ? "تحسن مستمر" : "Steady progress"}
               </p>
             </div>
 
             <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm dark:shadow-md">
               <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-                <span className="text-xs font-medium">{language === "ar" ? "نسبة الالتزام" : "Attendance Rate"}</span>
+                <span className="text-xs font-medium">{t("attendanceRate")}</span>
                 <CheckCircle className="w-4 h-4 text-purple-500" />
               </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">95%</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">100%</p>
               <p className="text-[11px] text-purple-600 dark:text-purple-400 mt-1 font-semibold">
-                {language === "ar" ? "19/20 حصة مكتملة" : "19/20 sessions done"}
+                {language === "ar" ? "التزام ممتاز بالحصص" : "Excellent attendance"}
               </p>
             </div>
           </div>
 
-          {/* Weight & Body Fat Progression Chart */}
-          <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm dark:shadow-xl">
-            <div className="flex items-center justify-between mb-4">
+          {/* Quick Access to Profile and Assessments */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              href={`/clients/${myClient?.id || "client-1"}`}
+              className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-all shadow-sm flex items-center justify-between group"
+            >
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{t("measurementsHistory")}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "متابعة نزول الوزن ونسبة الدهون عبر الزمن" : "Weight & Body Fat % progression over time"}</p>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
+                  {language === "ar" ? "ملفي الشخصي والقياسات البدنية 📊" : "My Profile & Body Stats 📊"}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {language === "ar" ? "عرض قياسات الجسم، الأهداف التدريبية، ومعرض صور التطور" : "View circumference stats, training goals, and photo gallery"}
+                </p>
               </div>
-              <Link href={`/clients/${myClient?.id || "client-1"}`} className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
-                {t("viewDetails")}
-              </Link>
-            </div>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weightTrendData}>
-                  <defs>
-                    <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
-                  <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
-                  <YAxis stroke="#94a3b8" fontSize={11} domain={[80, 100]} />
-                  <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "12px", color: "#fff" }} />
-                  <Area type="monotone" dataKey="weight" name={t("weight")} stroke="#10b981" strokeWidth={3} fill="url(#weightGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+              <span className="text-emerald-500 font-bold text-xs">{language === "ar" ? "فتح الملف ←" : "Open →"}</span>
+            </Link>
+
+            <Link
+              href="/assessments"
+              className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-all shadow-sm flex items-center justify-between group"
+            >
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
+                  {language === "ar" ? "اختباراتي وتقييماتي البدنية 🏆" : "My Fitness Assessments 🏆"}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {language === "ar" ? "متابعة نتائج اختبارات القوة، التحمل، ومقارنة التطور" : "Track performance in pushups, plank, VO2 max and strength"}
+                </p>
+              </div>
+              <span className="text-emerald-500 font-bold text-xs">{language === "ar" ? "عرض التقييمات ←" : "View →"}</span>
+            </Link>
           </div>
         </div>
       )}
@@ -246,29 +249,29 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
               <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                <span className="text-xs font-medium">{t("activeClients")}</span>
+                <span className="text-xs font-medium">{t("navClients")}</span>
                 <Users className="w-5 h-5 text-emerald-500" />
               </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white">{activeClients.length}</p>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{clients.length} {t("totalAthletes")}</span>
+              <p className="text-3xl font-black text-slate-900 dark:text-white">{clients.length}</p>
+              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{activeClients.length} {language === "ar" ? "مشترك نشط" : "active athletes"}</span>
             </div>
 
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
               <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                <span className="text-xs font-medium">{t("coachesCount")}</span>
+                <span className="text-xs font-medium">{t("navCoaches")}</span>
                 <ShieldCheck className="w-5 h-5 text-blue-500" />
               </div>
               <p className="text-3xl font-black text-slate-900 dark:text-white">{coaches.length}</p>
-              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">1 {t("roleHeadCoach")}</span>
+              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">{coaches.length} {language === "ar" ? "كابتن تدريب" : "active coaches"}</span>
             </div>
 
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
               <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                <span className="text-xs font-medium">{t("activeWorkouts")}</span>
+                <span className="text-xs font-medium">{t("navTemplates")}</span>
                 <Dumbbell className="w-5 h-5 text-purple-500" />
               </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white">{assignments.length}</p>
-              <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400">{templates.length} {t("navTemplates")}</span>
+              <p className="text-3xl font-black text-slate-900 dark:text-white">{templates.length}</p>
+              <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400">{templates.length} {language === "ar" ? "قالب تمرين جاهز" : "workout templates"}</span>
             </div>
 
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
@@ -277,14 +280,18 @@ export default function DashboardPage() {
                 <Calendar className="w-5 h-5 text-amber-500" />
               </div>
               <p className="text-3xl font-black text-slate-900 dark:text-white">{calendars.length}</p>
-              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">PT & Group Classes</span>
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">{language === "ar" ? "جلسات تدريبية مجدولة" : "Scheduled training sessions"}</span>
             </div>
           </div>
 
           {/* Revenue & Growth Chart */}
           <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm dark:shadow-xl">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">{language === "ar" ? "نمو الاشتراكات والإيرادات (EGP)" : "Revenue & Memberships Growth"}</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{language === "ar" ? "تطور الدخل الشهري للأكاديمية وتجديدات المشتركين" : "Monthly academy revenue and active athlete subscriptions"}</p>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
+              {language === "ar" ? "نمو الاشتراكات والإيرادات (ج.م)" : "Revenue & Memberships Growth (EGP)"}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              {language === "ar" ? "تطور الدخل الشهري للأكاديمية وتجديدات المشتركين" : "Monthly academy revenue and active athlete subscriptions"}
+            </p>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={revenueData}>
@@ -292,7 +299,7 @@ export default function DashboardPage() {
                   <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} />
                   <YAxis stroke="#94a3b8" fontSize={11} />
                   <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "12px", color: "#fff" }} />
-                  <Bar dataKey="revenue" name={language === "ar" ? "الإيرادات (EGP)" : "Revenue (EGP)"} fill="#10b981" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="revenue" name={language === "ar" ? "الإيرادات (ج.م)" : "Revenue (EGP)"} fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
