@@ -1,0 +1,677 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  HEAD_COACH
+  COACH
+  CLIENT
+}
+
+enum ClientStatus {
+  LEAD
+  ACTIVE
+  FROZEN
+  INACTIVE
+  EXPIRED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum CoachRoleInClient {
+  PRIMARY
+  ASSISTANT
+  NUTRITIONIST
+  PHYSIOTHERAPIST
+}
+
+enum MetricType {
+  SETS_REPS_WEIGHT
+  DISTANCE_TIME_PACE
+  LAPS_TIME
+  ROUNDS_REPS_TIME
+  TIME_HOLD
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum GoalType {
+  WEIGHT_LOSS
+  MUSCLE_GAIN
+  STRENGTH
+  ENDURANCE
+  PERFORMANCE
+  REHABILITATION
+  GENERAL_FITNESS
+}
+
+enum GoalStatus {
+  IN_PROGRESS
+  ACHIEVED
+  ABANDONED
+}
+
+enum RestrictionSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum BodyPart {
+  KNEE
+  SHOULDER
+  LOWER_BACK
+  NECK
+  ANKLE
+  WRIST
+  ELBOW
+  HIP
+  HEART
+  ASTHMA
+  OTHER
+}
+
+enum AssignmentStatus {
+  SCHEDULED
+  COMPLETED
+  SKIPPED
+  MISSED
+}
+
+enum SessionType {
+  INDIVIDUAL
+  GROUP
+  ASSESSMENT
+  RECOVERY
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum MembershipPlan {
+  MONTHLY
+  THREE_MONTHS
+  SIX_MONTHS
+  ANNUAL
+  PERSONAL_TRAINING
+  GROUP_CLASS
+}
+
+enum PaymentStatus {
+  PAID
+  PARTIAL
+  UNPAID
+}
+
+enum NoteType {
+  PRIVATE_COACH
+  PUBLIC_CLIENT
+}
+
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  role         UserRole     @default(CLIENT)
+  phone        String?
+  avatar       String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  coachProfile   CoachProfile?
+  clientProfile  ClientProfile?
+  authoredNotes  ClientNote[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+
+  @@map("users")
+}
+
+model CoachProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialties       String[]
+  bio               String?
+  yearsOfExperience Int      @default(0)
+  headCoachId       String?
+  headCoach         CoachProfile? @relation("HeadCoachSubordinates", fields: [headCoachId], references: [id])
+  subordinateCoaches CoachProfile[] @relation("HeadCoachSubordinates")
+
+  clientAssignments ClientCoachAssignment[]
+  createdTemplates  WorkoutTemplate[]
+  createdPrograms   TrainingProgram[]
+  workoutLogs       WorkoutLog[]
+  measurementsTaken ClientMeasurementHistory[]
+  assessmentsGiven  ClientAssessment[]
+  mealPlansGiven    MealPlan[]
+  sessionsScheduled SessionCalendar[]
+  assignedWorkouts  ClientWorkoutAssignment[]
+
+  @@map("coach_profiles")
+}
+
+model ClientProfile {
+  id                 String       @id @default(uuid())
+  userId             String       @unique
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dob                DateTime?
+  gender             Gender       @default(MALE)
+  heightCm           Float?
+  weightKg           Float?
+  address            String?
+  emergencyContact   String?
+  status             ClientStatus @default(ACTIVE)
+  preferredSportId   String?
+  sport              Sport?       @relation(fields: [preferredSportId], references: [id])
+  membershipExpiry   DateTime?
+
+  coachAssignments   ClientCoachAssignment[]
+  measurements       ClientMeasurementHistory[]
+  goals              ClientGoal[]
+  medicalRestrictions ClientMedicalRestriction[]
+  progressPhotos     ClientProgressPhoto[]
+  assessments        ClientAssessment[]
+  workoutAssignments ClientWorkoutAssignment[]
+  workoutLogs        WorkoutLog[]
+  attendances        SessionAttendance[]
+  mealPlans          MealPlan[]
+  memberships        Membership[]
+  notes              ClientNote[]
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@map("client_profiles")
+}
+
+model ClientCoachAssignment {
+  id         String            @id @default(uuid())
+  clientId   String
+  client     ClientProfile     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  coachId    String
+  coach      CoachProfile      @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  role       CoachRoleInClient @default(PRIMARY)
+  assignedAt DateTime          @default(now())
+  active     Boolean           @default(true)
+  notes      String?
+
+  @@unique([clientId, coachId])
+  @@map("client_coach_assignments")
+}
+
+model Sport {
+  id            String          @id @default(uuid())
+  nameAr        String
+  nameEn        String
+  icon          String?
+  descriptionAr String?
+  descriptionEn String?
+  categories    String[]
+  
+  exercises     Exercise[]
+  templates     WorkoutTemplate[]
+  programs      TrainingProgram[]
+  clients       ClientProfile[]
+  sessions      SessionCalendar[]
+
+  @@map("sports")
+}
+
+model MuscleGroup {
+  id        String     @id @default(uuid())
+  nameAr    String
+  nameEn    String
+  code      String     @unique
+  exercises Exercise[]
+
+  @@map("muscle_groups")
+}
+
+model Equipment {
+  id        String     @id @default(uuid())
+  nameAr    String
+  nameEn    String
+  exercises Exercise[]
+
+  @@map("equipment")
+}
+
+model Exercise {
+  id               String       @id @default(uuid())
+  nameAr           String
+  nameEn           String
+  descriptionAr    String?
+  descriptionEn    String?
+  instructionsAr   String?
+  instructionsEn   String?
+  commonMistakesAr String?
+  commonMistakesEn String?
+  coachTipsAr      String?
+  coachTipsEn      String?
+  videoUrl         String?
+  thumbnailUrl     String?
+  difficulty       Difficulty   @default(BEGINNER)
+  metricType       MetricType   @default(SETS_REPS_WEIGHT)
+  
+  sportId          String
+  sport            Sport        @relation(fields: [sportId], references: [id])
+  primaryMuscleId  String?
+  primaryMuscle    MuscleGroup? @relation(fields: [primaryMuscleId], references: [id])
+  equipmentId      String?
+  equipment        Equipment?   @relation(fields: [equipmentId], references: [id])
+
+  contraindicatedBodyParts BodyPart[]
+  
+  templateExercises WorkoutTemplateExercise[]
+  loggedExercises   WorkoutExerciseLog[]
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("exercises")
+}
+
+model WorkoutTemplate {
+  id            String   @id @default(uuid())
+  titleAr       String
+  titleEn       String
+  descriptionAr String?
+  descriptionEn String?
+  sportId       String
+  sport         Sport    @relation(fields: [sportId], references: [id])
+  difficulty    Difficulty @default(BEGINNER)
+  creatorId     String?
+  creator       CoachProfile? @relation(fields: [creatorId], references: [id])
+  
+  exercises     WorkoutTemplateExercise[]
+  programWorkouts ProgramWorkout[]
+  assignments   ClientWorkoutAssignment[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("workout_templates")
+}
+
+model WorkoutTemplateExercise {
+  id                String          @id @default(uuid())
+  templateId        String
+  template          WorkoutTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exerciseId        String
+  exercise          Exercise        @relation(fields: [exerciseId], references: [id])
+  orderIndex        Int             @default(0)
+  targetSets        Int?            @default(3)
+  targetReps        String?         @default("10-12")
+  targetWeightKg    Float?
+  targetDistanceKm  Float?
+  targetTimeSeconds Int?
+  targetPace        String?
+  targetRounds      Int?
+  restSeconds       Int?            @default(60)
+  tempo             String?
+  notes             String?
+
+  @@map("workout_template_exercises")
+}
+
+model TrainingProgram {
+  id            String   @id @default(uuid())
+  titleAr       String
+  titleEn       String
+  descriptionAr String?
+  descriptionEn String?
+  durationWeeks Int      @default(4)
+  sportId       String
+  sport         Sport    @relation(fields: [sportId], references: [id])
+  goalType      GoalType @default(GENERAL_FITNESS)
+  difficulty    Difficulty @default(BEGINNER)
+  creatorId     String?
+  creator       CoachProfile? @relation(fields: [creatorId], references: [id])
+  isTemplate    Boolean  @default(true)
+
+  weeks         ProgramWeek[]
+  assignments   ClientWorkoutAssignment[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("training_programs")
+}
+
+model ProgramWeek {
+  id          String      @id @default(uuid())
+  programId   String
+  program     TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  weekNumber  Int
+  focusAr     String?
+  focusEn     String?
+
+  days        ProgramDay[]
+
+  @@map("program_weeks")
+}
+
+model ProgramDay {
+  id          String       @id @default(uuid())
+  weekId      String
+  week        ProgramWeek  @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  dayNumber   Int
+  titleAr     String
+  titleEn     String
+  isRestDay   Boolean      @default(false)
+
+  workouts    ProgramWorkout[]
+
+  @@map("program_days")
+}
+
+model ProgramWorkout {
+  id          String          @id @default(uuid())
+  dayId       String
+  day         ProgramDay      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  templateId  String
+  template    WorkoutTemplate @relation(fields: [templateId], references: [id])
+  orderIndex  Int             @default(0)
+
+  @@map("program_workouts")
+}
+
+model ClientWorkoutAssignment {
+  id            String           @id @default(uuid())
+  clientId      String
+  client        ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  coachId       String
+  coach         CoachProfile     @relation(fields: [coachId], references: [id])
+  templateId    String?
+  template      WorkoutTemplate? @relation(fields: [templateId], references: [id])
+  programId     String?
+  program       TrainingProgram? @relation(fields: [programId], references: [id])
+  scheduledDate DateTime
+  status        AssignmentStatus @default(SCHEDULED)
+  completedAt   DateTime?
+  coachNotes    String?
+
+  workoutLog    WorkoutLog?
+
+  createdAt     DateTime         @default(now())
+
+  @@map("client_workout_assignments")
+}
+
+model WorkoutLog {
+  id              String                  @id @default(uuid())
+  assignmentId    String?                 @unique
+  assignment      ClientWorkoutAssignment? @relation(fields: [assignmentId], references: [id])
+  clientId        String
+  client          ClientProfile           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  coachId         String?
+  coach           CoachProfile?           @relation(fields: [coachId], references: [id])
+  startedAt       DateTime                @default(now())
+  completedAt     DateTime?
+  durationMinutes Int?
+  overallRpe      Int?
+  clientFeedback  String?
+  coachFeedback   String?
+  isCompleted     Boolean                 @default(false)
+
+  exercises       WorkoutExerciseLog[]
+
+  @@map("workout_logs")
+}
+
+model WorkoutExerciseLog {
+  id           String       @id @default(uuid())
+  workoutLogId String
+  workoutLog   WorkoutLog   @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
+  exerciseId   String
+  exercise     Exercise     @relation(fields: [exerciseId], references: [id])
+  notes        String?
+
+  sets         SetLog[]
+
+  @@map("workout_exercise_logs")
+}
+
+model SetLog {
+  id                String             @id @default(uuid())
+  exerciseLogId     String
+  exerciseLog       WorkoutExerciseLog @relation(fields: [exerciseLogId], references: [id], onDelete: Cascade)
+  setNumber         Int
+  targetReps        String?
+  targetWeightKg    Float?
+  actualReps        Int?
+  actualWeightKg    Float?
+  actualDistanceKm  Float?
+  actualTimeSeconds Int?
+  actualRpe         Int?
+  isCompleted       Boolean            @default(true)
+
+  @@map("set_logs")
+}
+
+model ClientMeasurementHistory {
+  id                 String        @id @default(uuid())
+  clientId           String
+  client             ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  recordedByCoachId  String?
+  recordedByCoach    CoachProfile? @relation(fields: [recordedByCoachId], references: [id])
+  date               DateTime      @default(now())
+  weightKg           Float
+  heightCm           Float?
+  bmi                Float?
+  bodyFatPercentage  Float?
+  muscleMassKg       Float?
+  waistCm            Float?
+  chestCm            Float?
+  armsCm             Float?
+  thighCm            Float?
+  notes              String?
+
+  @@map("client_measurement_histories")
+}
+
+model ClientGoal {
+  id            String        @id @default(uuid())
+  clientId      String
+  client        ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  goalType      GoalType
+  title         String
+  startingValue Float
+  targetValue   Float
+  currentValue  Float
+  unit          String        @default("KG")
+  deadline      DateTime?
+  status        GoalStatus    @default(IN_PROGRESS)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("client_goals")
+}
+
+model ClientMedicalRestriction {
+  id                 String              @id @default(uuid())
+  clientId           String
+  client             ClientProfile       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  conditionName      String
+  bodyPart           BodyPart
+  severity           RestrictionSeverity @default(MEDIUM)
+  description        String?
+  restrictedMuscles  String[]
+  restrictedExercises String[]
+  isActive           Boolean             @default(true)
+  notes              String?
+  createdAt          DateTime            @default(now())
+
+  @@map("client_medical_restrictions")
+}
+
+model ClientProgressPhoto {
+  id            String        @id @default(uuid())
+  clientId      String
+  client        ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  date          DateTime      @default(now())
+  frontImageUrl String?
+  sideImageUrl  String?
+  backImageUrl  String?
+  weightAtTime  Float?
+  notes         String?
+
+  @@map("client_progress_photos")
+}
+
+model ClientAssessment {
+  id               String        @id @default(uuid())
+  clientId         String
+  client           ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  coachId          String
+  coach            CoachProfile  @relation(fields: [coachId], references: [id])
+  date             DateTime      @default(now())
+  title            String
+  pushupsCount     Int?
+  pullupsCount     Int?
+  plankSeconds     Int?
+  runningKmTimeSec Int?
+  flexibilityScore Int?
+  vo2Max           Float?
+  coachNotes       String?
+
+  @@map("client_assessments")
+}
+
+model SessionCalendar {
+  id              String              @id @default(uuid())
+  coachId         String
+  coach           CoachProfile        @relation(fields: [coachId], references: [id])
+  sportId         String
+  sport           Sport               @relation(fields: [sportId], references: [id])
+  title           String
+  sessionType     SessionType         @default(INDIVIDUAL)
+  startTime       DateTime
+  endTime         DateTime
+  location        String?
+  maxParticipants Int                 @default(1)
+  
+  attendances     SessionAttendance[]
+
+  @@map("session_calendars")
+}
+
+model SessionAttendance {
+  id        String           @id @default(uuid())
+  sessionId String
+  session   SessionCalendar  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status    AttendanceStatus @default(PRESENT)
+  notes     String?
+
+  @@unique([sessionId, clientId])
+  @@map("session_attendances")
+}
+
+model MealPlan {
+  id            String        @id @default(uuid())
+  clientId      String
+  client        ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  coachId       String
+  coach         CoachProfile  @relation(fields: [coachId], references: [id])
+  title         String
+  dailyCalories Int           @default(2000)
+  proteinGrams  Int           @default(150)
+  carbsGrams    Int           @default(200)
+  fatsGrams     Int           @default(60)
+  waterLiters   Float         @default(3.0)
+  breakfast     String?
+  lunch         String?
+  dinner        String?
+  snacks        String?
+  notes         String?
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+
+  @@map("meal_plans")
+}
+
+model Membership {
+  id              String         @id @default(uuid())
+  clientId        String
+  client          ClientProfile  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  planType        MembershipPlan @default(MONTHLY)
+  startDate       DateTime
+  endDate         DateTime
+  totalAmount     Float
+  paidAmount      Float          @default(0)
+  remainingAmount Float          @default(0)
+  paymentStatus   PaymentStatus  @default(PAID)
+  paymentMethod   String?        @default("Cash")
+  notes           String?
+  createdAt       DateTime       @default(now())
+
+  @@map("memberships")
+}
+
+model ClientNote {
+  id        String        @id @default(uuid())
+  clientId  String
+  client    ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User          @relation(fields: [authorId], references: [id])
+  noteType  NoteType      @default(PRIVATE_COACH)
+  content   String
+  createdAt DateTime      @default(now())
+
+  @@map("client_notes")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName   String?
+  userRole   String?
+  action     String
+  entityType String
+  entityId   String?
+  oldValues  String?
+  newValues  String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}
