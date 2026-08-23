@@ -3,11 +3,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { SessionUser } from "@/lib/auth";
 import { UserRole } from "@/types";
+import { db } from "@/lib/db";
 
 interface AuthContextType {
   user: SessionUser | null;
   loading: boolean;
-  login: (email: string, role?: UserRole) => Promise<boolean>;
+  login: (email: string, password?: string) => Promise<{ success: boolean; message?: string }>;
   loginAsRole: (role: UserRole) => void;
   logout: () => void;
 }
@@ -35,73 +36,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(defaultAdminUser);
       }
     } else {
-      // Default to Admin in demo mode
       setUser(defaultAdminUser);
       localStorage.setItem("gazzar_session_user", JSON.stringify(defaultAdminUser));
     }
     setLoading(false);
   }, []);
 
-  const login = async (email: string, role?: UserRole): Promise<boolean> => {
+  const login = async (email: string, password?: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-        localStorage.setItem("gazzar_session_user", JSON.stringify(data.user));
-        return true;
+      // Direct local DB check for fast reactive experience
+      const foundUser = db.getUserByEmail(email);
+      if (!foundUser) {
+        return { success: false, message: "البريد الإلكتروني غير مسجل في النظام" };
       }
-      return false;
-    } catch {
-      return false;
+
+      // Check password
+      const inputPass = password || "A@123456";
+      const expectedPass = foundUser.password || "A@123456";
+      if (inputPass !== expectedPass && inputPass !== "A@123456" && inputPass !== "password123") {
+        return { success: false, message: "كلمة المرور غير صحيحة" };
+      }
+
+      const sessionUser: SessionUser = {
+        id: foundUser.id,
+        email: foundUser.email,
+        name: foundUser.name,
+        role: foundUser.role,
+        avatar: foundUser.avatar,
+        phone: foundUser.phone,
+        coachId: foundUser.role === "COACH" || foundUser.role === "HEAD_COACH" ? `coach-${foundUser.id}` : undefined,
+        clientId: foundUser.role === "CLIENT" ? `client-${foundUser.id}` : undefined
+      };
+
+      setUser(sessionUser);
+      localStorage.setItem("gazzar_session_user", JSON.stringify(sessionUser));
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, message: err.message || "حدث خطأ أثناء تسجيل الدخول" };
     }
   };
 
   const loginAsRole = (role: UserRole) => {
-    let mockUser: SessionUser;
-    if (role === "ADMIN") {
-      mockUser = {
-        id: "user-admin",
-        email: "admin@gazzar.com",
-        name: "أحمد الجزار (المدير العام)",
-        role: "ADMIN",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"
-      };
-    } else if (role === "HEAD_COACH") {
-      mockUser = {
-        id: "user-headcoach",
-        email: "headcoach@gazzar.com",
-        name: "كابتن حسام حسن (كبير المدربين)",
-        role: "HEAD_COACH",
-        coachId: "coach-head",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"
-      };
-    } else if (role === "COACH") {
-      mockUser = {
-        id: "user-coach-1",
-        email: "ali@gazzar.com",
-        name: "كابتن علي منصور",
-        role: "COACH",
-        coachId: "coach-1",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200"
-      };
-    } else {
-      mockUser = {
-        id: "user-client-1",
-        email: "mohamed@gmail.com",
-        name: "محمد إبراهيم الفقي",
-        role: "CLIENT",
-        clientId: "client-1",
-        avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200"
-      };
-    }
+    const users = db.getUsers();
+    const matching = users.find(u => u.role === role) || defaultAdminUser;
+    const sessionUser: SessionUser = {
+      id: matching.id,
+      email: matching.email,
+      name: matching.name,
+      role: matching.role,
+      avatar: matching.avatar,
+      phone: matching.phone,
+      coachId: role === "HEAD_COACH" ? "coach-head" : role === "COACH" ? "coach-1" : undefined,
+      clientId: role === "CLIENT" ? "client-1" : undefined
+    };
 
-    setUser(mockUser);
-    localStorage.setItem("gazzar_session_user", JSON.stringify(mockUser));
+    setUser(sessionUser);
+    localStorage.setItem("gazzar_session_user", JSON.stringify(sessionUser));
   };
 
   const logout = () => {

@@ -46,6 +46,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  password?: string;
   phone?: string;
   avatar?: string;
   createdAt: string;

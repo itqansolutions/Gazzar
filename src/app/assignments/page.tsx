@@ -23,6 +23,7 @@ import {
 export default function AssignmentsPage() {
   const { t, language, dir } = useLanguage();
   const { user } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [assignments, setAssignments] = useState<ClientWorkoutAssignment[]>([]);
 
   const [selectedClientId, setSelectedClientId] = useState("client-1");
@@ -37,6 +38,7 @@ export default function AssignmentsPage() {
   const coaches = db.getCoaches();
 
   useEffect(() => {
+    setMounted(true);
     loadAssignments();
   }, []);
 
@@ -44,7 +46,7 @@ export default function AssignmentsPage() {
     setAssignments(db.getAssignments());
   };
 
-  const selectedClient = clients.find(c => c.id === selectedClientId);
+  const selectedClient = clients.find(c => c.id === selectedClientId) || clients[0];
   const clientRestrictions = selectedClient?.medicalRestrictions || [];
 
   const handleAssign = (e: React.FormEvent) => {
@@ -105,7 +107,7 @@ export default function AssignmentsPage() {
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
                 >
                   {clients.map(c => (
-                    <option key={c.id} value={c.id}>{c.user.name} ({c.sport?.nameAr || "كمال أجسام"})</option>
+                    <option key={c.id} value={c.id}>{c.user?.name || "متدرب"} ({c.sport?.nameAr || "كمال أجسام"})</option>
                   ))}
                 </select>
               </div>
@@ -206,7 +208,7 @@ export default function AssignmentsPage() {
 
           <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1 text-xs">
             <p className="font-bold text-white">المتدرب المختار:</p>
-            <p className="text-slate-300">{selectedClient?.user.name}</p>
+            <p className="text-slate-300">{selectedClient?.user?.name || "متدرب"}</p>
             <p className="text-[11px] text-slate-400">الوزن الحالي: {selectedClient?.weightKg} KG • الطول: {selectedClient?.heightCm} CM</p>
           </div>
         </div>
@@ -229,7 +231,7 @@ export default function AssignmentsPage() {
                 <div>
                   <div className="flex items-center space-x-2 rtl:space-x-reverse">
                     <h4 className="text-xs sm:text-sm font-bold text-white">{a.template?.titleAr || "تمرين مخصص"}</h4>
-                    <span className="text-[10px] text-slate-400 font-medium">← {a.client?.user.name}</span>
+                    <span className="text-[10px] text-slate-400 font-medium">← {a.client?.user?.name || "متدرب"}</span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">التاريخ: {a.scheduledDate} • الكابتن: {a.coach?.user?.name}</p>
                   {a.coachNotes && <p className="text-[10px] text-slate-500 mt-0.5">💡 {a.coachNotes}</p>}

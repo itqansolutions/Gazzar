@@ -179,6 +179,15 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
                   >
                     {t("clientProfile")}
                   </Link>
+                  {(user?.role === "ADMIN" || user?.role === "HEAD_COACH") && (
+                    <Link
+                      href="/users"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 font-semibold"
+                    >
+                      {t("navUsers")} 👥
+                    </Link>
+                  )}
                   <Link
                     href="/settings"
                     onClick={() => setUserDropdownOpen(false)}

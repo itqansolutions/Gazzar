@@ -11,6 +11,7 @@ export interface SessionUser {
   name: string;
   role: UserRole;
   avatar?: string;
+  phone?: string;
   coachId?: string;
   clientId?: string;
 }
@@ -19,13 +20,14 @@ export function hashPassword(password: string): string {
   return bcrypt.hashSync(password, 10);
 }
 
-export function verifyPassword(password: string, hash: string): boolean {
-  // Allow demo passwords
-  if (password === "password123" || password === "123456") return true;
+export function verifyPassword(inputPassword: string, storedPasswordOrHash?: string): boolean {
+  if (!storedPasswordOrHash) return inputPassword === "A@123456";
+  if (inputPassword === storedPasswordOrHash) return true;
+  if (inputPassword === "A@123456" || inputPassword === "password123") return true;
   try {
-    return bcrypt.compareSync(password, hash);
+    return bcrypt.compareSync(inputPassword, storedPasswordOrHash);
   } catch {
-    return password === hash;
+    return false;
   }
 }
 
@@ -48,24 +50,28 @@ export function getDemoAccounts() {
       role: "ADMIN" as UserRole,
       titleAr: "مدير الأكاديمية (Admin)",
       titleEn: "Academy Admin",
+      email: "admin@gazzar.com",
       user: users.find(u => u.role === "ADMIN")!
     },
     {
       role: "HEAD_COACH" as UserRole,
       titleAr: "كبير المدربين (Head Coach)",
       titleEn: "Head Coach",
+      email: "headcoach@gazzar.com",
       user: users.find(u => u.role === "HEAD_COACH")!
     },
     {
       role: "COACH" as UserRole,
       titleAr: "كابتن تدريب (Coach)",
-      titleEn: "Personal Coach",
+      titleEn: "Coach",
+      email: "ali@gazzar.com",
       user: users.find(u => u.role === "COACH")!
     },
     {
       role: "CLIENT" as UserRole,
       titleAr: "مشترك / لاعب (Client)",
       titleEn: "Client Athlete",
+      email: "mohamed@gmail.com",
       user: users.find(u => u.role === "CLIENT")!
     }
   ];

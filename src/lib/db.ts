@@ -1,5 +1,6 @@
 import {
   User,
+  UserRole,
   CoachProfile,
   ClientProfile,
   ClientCoachAssignment,
@@ -81,6 +82,114 @@ class CoachingStore {
   getUsers() { return [...this.users]; }
   getUserById(id: string) { return this.users.find(u => u.id === id); }
   getUserByEmail(email: string) { return this.users.find(u => u.email.toLowerCase() === email.toLowerCase()); }
+
+  createUser(data: {
+    email: string;
+    name: string;
+    role: UserRole;
+    password?: string;
+    phone?: string;
+    avatar?: string;
+    specialties?: string[];
+    bio?: string;
+    yearsOfExperience?: number;
+    weightKg?: number;
+    heightCm?: number;
+    preferredSportId?: string;
+  }): User {
+    const existing = this.getUserByEmail(data.email);
+    if (existing) {
+      throw new Error("User with this email already exists");
+    }
+
+    const newUser: User = {
+      id: `user-${Date.now()}`,
+      email: data.email.trim().toLowerCase(),
+      name: data.name.trim(),
+      role: data.role,
+      password: data.password || "A@123456",
+      phone: data.phone || "+20 100 000 0000",
+      avatar: data.avatar || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200`,
+      createdAt: new Date().toISOString()
+    };
+
+    this.users.unshift(newUser);
+
+    // If COACH or HEAD_COACH, create CoachProfile
+    if (data.role === "COACH" || data.role === "HEAD_COACH") {
+      const coachProf: CoachProfile = {
+        id: `coach-${Date.now()}`,
+        userId: newUser.id,
+        specialties: data.specialties && data.specialties.length > 0 ? data.specialties : ["تدريب لياقة عامة", "كمال أجسام"],
+        bio: data.bio || "كابتن معتمد في الأكاديمية",
+        yearsOfExperience: data.yearsOfExperience || 3,
+        assignedClientsCount: 0
+      };
+      this.coachProfiles.push(coachProf);
+    }
+
+    // If CLIENT, create ClientProfile
+    if (data.role === "CLIENT") {
+      const clientProf: ClientProfile = {
+        id: `client-${Date.now()}`,
+        userId: newUser.id,
+        user: newUser,
+        dob: "1998-05-15",
+        gender: "MALE",
+        heightCm: data.heightCm || 175,
+        weightKg: data.weightKg || 80,
+        status: "ACTIVE",
+        preferredSportId: data.preferredSportId || "sport-bodybuilding",
+        createdAt: new Date().toISOString(),
+        emergencyContact: "+20 100 999 8888"
+      };
+      this.clients.unshift(clientProf);
+    }
+
+    logAuditEvent({
+      action: "CREATE_USER",
+      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      entityType: "User",
+      entityId: newUser.id,
+      newValues: { email: newUser.email, role: newUser.role, name: newUser.name }
+    });
+    return newUser;
+  }
+
+  updateUser(id: string, updates: Partial<User>): User {
+    const index = this.users.findIndex(u => u.id === id);
+    if (index === -1) throw new Error("User not found");
+    const old = { ...this.users[index] };
+    this.users[index] = { ...this.users[index], ...updates };
+    logAuditEvent({
+      action: "UPDATE_USER",
+      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      entityType: "User",
+      entityId: id,
+      oldValues: old,
+      newValues: this.users[index]
+    });
+    return this.users[index];
+  }
+
+  deleteUser(id: string): boolean {
+    const user = this.getUserById(id);
+    if (!user) return false;
+    if (user.role === "ADMIN" && this.users.filter(u => u.role === "ADMIN").length <= 1) {
+      throw new Error("Cannot delete the only Admin user");
+    }
+    this.users = this.users.filter(u => u.id !== id);
+    this.clients = this.clients.filter(c => c.userId !== id);
+    this.coachProfiles = this.coachProfiles.filter(cp => cp.userId !== id);
+    logAuditEvent({
+      action: "DELETE_USER",
+      user: { id: "user-admin", name: "أحمد الجزار", role: "ADMIN" },
+      entityType: "User",
+      entityId: id,
+      oldValues: { email: user.email, name: user.name }
+    });
+    return true;
+  }
 
   // --- Coaches ---
   getCoaches() {

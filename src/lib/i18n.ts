@@ -12,6 +12,7 @@ export const translations = {
     
     // Navigation
     navDashboard: "لوحة التحكم",
+    navUsers: "إدارة المستخدمين",
     navClients: "المشتركون",
     navCoaches: "الكباتن",
     navSports: "الرياضات",
@@ -193,6 +194,7 @@ export const translations = {
     
     // Navigation
     navDashboard: "Dashboard",
+    navUsers: "User Management",
     navClients: "Clients",
     navCoaches: "Coaches",
     navSports: "Sports",

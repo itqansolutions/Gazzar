@@ -42,6 +42,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: language === "ar" ? "الرئيسية والمشتركين" : "Core & Clients",
       items: [
         { href: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, roles: ["ADMIN", "HEAD_COACH", "COACH", "CLIENT"] },
+        { href: "/users", label: t("navUsers"), icon: Users, roles: ["ADMIN", "HEAD_COACH"] },
         { href: "/clients", label: t("navClients"), icon: Users, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
         { href: "/coaches", label: t("navCoaches"), icon: UserCheck, roles: ["ADMIN", "HEAD_COACH"] }
       ]
