@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import AppShell from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "أكاديمية الجزار للتدريب الرياضي | Gazzar Coaching Academy",
-  description: "نظام إدارة التدريب الرياضي المتكامل للأكاديميات والكباتن والمشتركين"
+  title: "Gazzar Coaching Academy",
+  description: "Gazzar Sports Coaching Academy - Professional Athletic Coaching Platform"
 };
 
 export const viewport: Viewport = {
