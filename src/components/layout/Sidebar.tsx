@@ -53,8 +53,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { href: "/assessments", label: language === "ar" ? "تقييماتي البدنية" : "My Assessments", icon: Activity },
         { href: "/assignments", label: language === "ar" ? "جدول تماريني" : "My Workouts", icon: Dumbbell },
         { href: "/nutrition", label: language === "ar" ? "خطتي الغذائية" : "My Meal Plan", icon: Apple },
-        { href: "/memberships", label: language === "ar" ? "اشتراكي وعضويتي" : "My Membership", icon: CreditCard },
-        { href: "/settings", label: language === "ar" ? "الإعدادات" : "Settings", icon: Settings }
+        { href: "/memberships", label: language === "ar" ? "اشتراكي وعضويتي" : "My Membership", icon: CreditCard }
       ]
     }
   ];

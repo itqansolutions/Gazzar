@@ -32,7 +32,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         "/attendance",
         "/sports",
         "/reports",
-        "/audit-logs"
+        "/audit-logs",
+        "/settings"
       ];
 
       const coachRestrictedRoutes = [
