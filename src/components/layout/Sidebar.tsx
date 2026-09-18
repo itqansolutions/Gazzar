@@ -112,7 +112,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed top-16 bottom-0 z-40 w-64 bg-white dark:bg-slate-900 border-e border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-16 bottom-0 start-0 z-40 w-64 bg-white border-e border-slate-200 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 lg:rtl:translate-x-0 rtl:lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
         }`}
       >

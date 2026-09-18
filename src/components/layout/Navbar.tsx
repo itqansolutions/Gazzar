@@ -122,19 +122,6 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
               )}
             </div>
 
-            {/* Dark / Light Mode Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 transition-all cursor-pointer"
-              title={theme === "dark" ? "الوضع الفاتح" : "الوضع الليلي"}
-              aria-label="Toggle Theme"
-            >
-              {theme === "dark" ? (
-                <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-180 duration-300" />
-              ) : (
-                <Moon className="w-4 h-4 text-slate-700 animate-in spin-in-180 duration-300" />
-              )}
-            </button>
 
             {/* Language Toggle AR / EN */}
             <button

@@ -267,18 +267,20 @@ export default function ClientsPage() {
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-500 block">{t("sport")}</span>
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate block">{client.sport?.nameAr || "لياقة"}</span>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate block">
+                      {client.sport ? (language === "ar" ? client.sport.nameAr : (client.sport.nameEn || client.sport.nameAr)) : (language === "ar" ? "لياقة" : "Fitness")}
+                    </span>
                   </div>
                 </div>
 
                 {/* Coaches Pills */}
                 <div className="space-y-1 mt-2 text-[11px]">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">الكابتن المسؤول:</span>
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">{primaryCoach || "غير محدد"}</span>
+                    <span className="text-slate-500 dark:text-slate-400">{language === "ar" ? "الكابتن المسؤول:" : "Assigned Coach:"}</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-200">{primaryCoach || (language === "ar" ? "غير محدد" : "Unassigned")}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">انتهاء الاشتراك:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{language === "ar" ? "انتهاء الاشتراك:" : "Membership Expiry:"}</span>
                     <span className="font-semibold text-slate-700 dark:text-slate-300">{client.membershipExpiry || "2026-12-31"}</span>
                   </div>
                 </div>
@@ -300,7 +302,7 @@ export default function ClientsPage() {
                       setSelectedClient(JSON.parse(JSON.stringify(client)));
                       setIsEditModalOpen(true);
                     }}
-                    title="تعديل المشترك"
+                    title={language === "ar" ? "تعديل المشترك" : "Edit Athlete"}
                     className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-colors"
                   >
                     <Edit className="w-3.5 h-3.5" />
@@ -308,7 +310,7 @@ export default function ClientsPage() {
 
                   <button
                     onClick={() => handleDeleteClient(client.id, client.user?.name || "المشترك")}
-                    title="حذف المشترك"
+                    title={language === "ar" ? "حذف المشترك" : "Delete Athlete"}
                     className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -336,20 +338,24 @@ export default function ClientsPage() {
 
             <form onSubmit={handleCreateClient} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الاسم بالكامل *</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                  {language === "ar" ? "الاسم بالكامل *" : "Full Name *"}
+                </label>
                 <input
                   type="text"
                   required
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  placeholder="محمد أحمد علي"
+                  placeholder={language === "ar" ? "محمد أحمد علي" : "e.g. John Doe"}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">البريد الإلكتروني *</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  </label>
                   <input
                     type="email"
                     required
@@ -360,12 +366,14 @@ export default function ClientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">رقم الهاتف</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                  </label>
                   <input
                     type="text"
                     value={newPhone}
                     onChange={e => setNewPhone(e.target.value)}
-                    placeholder="01012345678"
+                    placeholder="+20 100 000 0000"
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -373,7 +381,9 @@ export default function ClientsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الوزن الحالي (KG)</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "الوزن الحالي (KG)" : "Current Weight (KG)"}
+                  </label>
                   <input
                     type="number"
                     value={newWeight}
@@ -382,7 +392,9 @@ export default function ClientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الطول (CM)</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "الطول (CM)" : "Height (CM)"}
+                  </label>
                   <input
                     type="number"
                     value={newHeight}
@@ -394,28 +406,34 @@ export default function ClientsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الرياضة المفضلة</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "الرياضة المفضلة" : "Preferred Sport"}
+                  </label>
                   <select
                     value={newSportId}
                     onChange={e => setNewSportId(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                   >
                     {sports.map(s => (
-                      <option key={s.id} value={s.id}>{s.nameAr}</option>
+                      <option key={s.id} value={s.id}>
+                        {language === "ar" ? s.nameAr : (s.nameEn || s.nameAr)}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">حالة الاشتراك</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "حالة الاشتراك" : "Membership Status"}
+                  </label>
                   <select
                     value={newStatus}
                     onChange={e => setNewStatus(e.target.value as ClientStatus)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="ACTIVE">Active (نشط)</option>
-                    <option value="LEAD">Lead (محتمل)</option>
-                    <option value="FROZEN">Frozen (مجمّد)</option>
-                    <option value="EXPIRED">Expired (منتهي)</option>
+                    <option value="ACTIVE">{language === "ar" ? "نشط (Active)" : "Active"}</option>
+                    <option value="LEAD">{language === "ar" ? "محتمل (Lead)" : "Lead"}</option>
+                    <option value="FROZEN">{language === "ar" ? "مجمّد (Frozen)" : "Frozen"}</option>
+                    <option value="EXPIRED">{language === "ar" ? "منتهي (Expired)" : "Expired"}</option>
                   </select>
                 </div>
               </div>
@@ -426,13 +444,13 @@ export default function ClientsPage() {
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
                 >
-                  إلغاء
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md"
                 >
-                  حفظ المشترك
+                  {language === "ar" ? "حفظ المشترك" : "Save Athlete"}
                 </button>
               </div>
             </form>
@@ -447,7 +465,7 @@ export default function ClientsPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Edit className="w-5 h-5 text-blue-500" />
-                <span>تعديل بيانات المشترك</span>
+                <span>{language === "ar" ? "تعديل بيانات المشترك" : "Edit Athlete Profile"}</span>
               </h3>
               <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
                 <X className="w-5 h-5" />
@@ -456,7 +474,9 @@ export default function ClientsPage() {
 
             <form onSubmit={handleEditSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الاسم بالكامل</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                  {language === "ar" ? "الاسم بالكامل *" : "Full Name *"}
+                </label>
                 <input
                   type="text"
                   required
@@ -468,7 +488,9 @@ export default function ClientsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">البريد الإلكتروني</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  </label>
                   <input
                     type="email"
                     required
@@ -478,7 +500,9 @@ export default function ClientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">رقم الهاتف</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                  </label>
                   <input
                     type="text"
                     value={selectedClient.user?.phone || ""}
@@ -490,7 +514,9 @@ export default function ClientsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الوزن (KG)</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "الوزن (KG)" : "Weight (KG)"}
+                  </label>
                   <input
                     type="number"
                     value={selectedClient.weightKg || 80}
@@ -499,7 +525,9 @@ export default function ClientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الطول (CM)</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "الطول (CM)" : "Height (CM)"}
+                  </label>
                   <input
                     type="number"
                     value={selectedClient.heightCm || 175}
@@ -511,29 +539,35 @@ export default function ClientsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">الرياضة</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "الرياضة" : "Sport"}
+                  </label>
                   <select
                     value={selectedClient.preferredSportId || "sport-bodybuilding"}
                     onChange={e => setSelectedClient({ ...selectedClient, preferredSportId: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
                     {sports.map(s => (
-                      <option key={s.id} value={s.id}>{s.nameAr}</option>
+                      <option key={s.id} value={s.id}>
+                        {language === "ar" ? s.nameAr : (s.nameEn || s.nameAr)}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">حالة الحساب</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                    {language === "ar" ? "حالة الحساب" : "Account Status"}
+                  </label>
                   <select
                     value={selectedClient.status}
                     onChange={e => setSelectedClient({ ...selectedClient, status: e.target.value as ClientStatus })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="LEAD">LEAD</option>
-                    <option value="FROZEN">FROZEN</option>
-                    <option value="EXPIRED">EXPIRED</option>
-                    <option value="SUSPENDED">SUSPENDED</option>
+                    <option value="ACTIVE">{language === "ar" ? "نشط (Active)" : "Active"}</option>
+                    <option value="LEAD">{language === "ar" ? "محتمل (Lead)" : "Lead"}</option>
+                    <option value="FROZEN">{language === "ar" ? "مجمّد (Frozen)" : "Frozen"}</option>
+                    <option value="EXPIRED">{language === "ar" ? "منتهي (Expired)" : "Expired"}</option>
+                    <option value="SUSPENDED">{language === "ar" ? "موقوف (Suspended)" : "Suspended"}</option>
                   </select>
                 </div>
               </div>
@@ -544,13 +578,13 @@ export default function ClientsPage() {
                   onClick={() => setIsEditModalOpen(false)}
                   className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
                 >
-                  إلغاء
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md"
                 >
-                  تأكيد التعديلات
+                  {language === "ar" ? "تأكيد التعديلات" : "Save Changes"}
                 </button>
               </div>
             </form>

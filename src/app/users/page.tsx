@@ -408,11 +408,13 @@ export default function UsersPage() {
 
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">الاسم الكامل *</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  {language === "ar" ? "الاسم الكامل *" : "Full Name *"}
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder="مثال: كابتن إسلام أحمد"
+                  placeholder={language === "ar" ? "مثال: كابتن إسلام أحمد" : "e.g. John Doe"}
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
@@ -421,7 +423,9 @@ export default function UsersPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">البريد الإلكتروني *</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  </label>
                   <input
                     type="email"
                     required
@@ -432,7 +436,9 @@ export default function UsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">كلمة المرور *</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    {language === "ar" ? "كلمة المرور *" : "Password *"}
+                  </label>
                   <input
                     type="text"
                     required
@@ -445,20 +451,24 @@ export default function UsersPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">الدور والصلاحية *</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    {language === "ar" ? "الدور والصلاحية *" : "Role & Permission *"}
+                  </label>
                   <select
                     value={formData.role}
                     onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
                   >
-                    <option value="ADMIN">مدير نظام (Admin)</option>
-                    <option value="HEAD_COACH">كبير المدربين (Head Coach)</option>
-                    <option value="COACH">كابتن تدريب (Coach)</option>
-                    <option value="CLIENT">مشترك / متدرب (Client)</option>
+                    <option value="ADMIN">{language === "ar" ? "مدير نظام (Admin)" : "System Admin"}</option>
+                    <option value="HEAD_COACH">{language === "ar" ? "كبير المدربين (Head Coach)" : "Head Coach"}</option>
+                    <option value="COACH">{language === "ar" ? "كابتن تدريب (Coach)" : "Coach"}</option>
+                    <option value="CLIENT">{language === "ar" ? "مشترك / متدرب (Client)" : "Client Athlete"}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">رقم الهاتف</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                  </label>
                   <input
                     type="text"
                     placeholder="+20 100 000 0000"
@@ -471,12 +481,16 @@ export default function UsersPage() {
 
               {(formData.role === "COACH" || formData.role === "HEAD_COACH") && (
                 <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
-                  <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">🏋️ بيانات الكابتن الإضافية:</p>
+                  <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    {language === "ar" ? "🏋️ بيانات الكابتن الإضافية:" : "🏋️ Coach Details:"}
+                  </p>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">التخصصات (مفصولة بفواصل)</label>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                      {language === "ar" ? "التخصصات (مفصولة بفواصل)" : "Specialties (comma-separated)"}
+                    </label>
                     <input
                       type="text"
-                      placeholder="كمال أجسام، كروس فيت، تغذية"
+                      placeholder={language === "ar" ? "كمال أجسام، كروس فيت، تغذية" : "Bodybuilding, CrossFit, Nutrition"}
                       value={formData.specialties}
                       onChange={e => setFormData({ ...formData, specialties: e.target.value })}
                       className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
@@ -487,10 +501,14 @@ export default function UsersPage() {
 
               {formData.role === "CLIENT" && (
                 <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
-                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400">🏃 بيانات المشترك المبدئية:</p>
+                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                    {language === "ar" ? "🏃 بيانات المشترك المبدئية:" : "🏃 Athlete Details:"}
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">الوزن (KG)</label>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {language === "ar" ? "الوزن (KG)" : "Weight (KG)"}
+                      </label>
                       <input
                         type="number"
                         value={formData.weightKg}
@@ -499,7 +517,9 @@ export default function UsersPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">الطول (CM)</label>
+                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                        {language === "ar" ? "الطول (CM)" : "Height (CM)"}
+                      </label>
                       <input
                         type="number"
                         value={formData.heightCm}
@@ -517,13 +537,13 @@ export default function UsersPage() {
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
                 >
-                  إلغاء
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md"
                 >
-                  حفظ وإنشاء المستخدم
+                  {language === "ar" ? "حفظ وإنشاء المستخدم" : "Create User"}
                 </button>
               </div>
             </form>
@@ -538,7 +558,7 @@ export default function UsersPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Edit className="w-5 h-5 text-blue-500" />
-                <span>تعديل بيانات المستخدم</span>
+                <span>{language === "ar" ? "تعديل بيانات المستخدم" : "Edit User Profile"}</span>
               </h2>
               <button onClick={() => setIsEditModalOpen(false)} className="p-1 text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -547,7 +567,9 @@ export default function UsersPage() {
 
             <form onSubmit={handleUpdateUser} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">الاسم</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  {language === "ar" ? "الاسم *" : "Name *"}
+                </label>
                 <input
                   type="text"
                   required
@@ -558,7 +580,9 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">البريد الإلكتروني</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                </label>
                 <input
                   type="email"
                   required
@@ -570,20 +594,24 @@ export default function UsersPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">الصلاحية</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    {language === "ar" ? "الصلاحية" : "Role"}
+                  </label>
                   <select
                     value={selectedUser.role}
                     onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value as UserRole })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="HEAD_COACH">HEAD_COACH</option>
-                    <option value="COACH">COACH</option>
-                    <option value="CLIENT">CLIENT</option>
+                    <option value="ADMIN">{language === "ar" ? "مدير نظام (Admin)" : "Admin"}</option>
+                    <option value="HEAD_COACH">{language === "ar" ? "كبير المدربين (Head Coach)" : "Head Coach"}</option>
+                    <option value="COACH">{language === "ar" ? "كابتن تدريب (Coach)" : "Coach"}</option>
+                    <option value="CLIENT">{language === "ar" ? "مشترك (Client)" : "Client"}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">الهاتف</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                    {language === "ar" ? "الهاتف" : "Phone"}
+                  </label>
                   <input
                     type="text"
                     value={selectedUser.phone || ""}
@@ -599,13 +627,13 @@ export default function UsersPage() {
                   onClick={() => setIsEditModalOpen(false)}
                   className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
                 >
-                  إلغاء
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md"
                 >
-                  حفظ التعديلات
+                  {language === "ar" ? "حفظ التعديلات" : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -620,7 +648,7 @@ export default function UsersPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Key className="w-5 h-5 text-amber-500" />
-                <span>تعيين كلمة مرور جديدة</span>
+                <span>{language === "ar" ? "تعيين كلمة مرور جديدة" : "Reset User Password"}</span>
               </h2>
               <button onClick={() => setIsPasswordModalOpen(false)} className="p-1 text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -629,10 +657,13 @@ export default function UsersPage() {
 
             <form onSubmit={handleResetPassword} className="space-y-3">
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                تعيين كلمة مرور جديدة للمستخدم: <strong className="text-slate-900 dark:text-white">{selectedUser.name}</strong>
+                {language === "ar" ? "تعيين كلمة مرور جديدة للمستخدم:" : "Set new password for user:"}{" "}
+                <strong className="text-slate-900 dark:text-white">{selectedUser.name}</strong>
               </p>
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">كلمة المرور الجديدة</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  {language === "ar" ? "كلمة المرور الجديدة" : "New Password"}
+                </label>
                 <input
                   type="text"
                   required
@@ -648,13 +679,13 @@ export default function UsersPage() {
                   onClick={() => setIsPasswordModalOpen(false)}
                   className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
                 >
-                  إلغاء
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md"
                 >
-                  تأكيد الحفظ
+                  {language === "ar" ? "تحديث كلمة المرور" : "Update Password"}
                 </button>
               </div>
             </form>
