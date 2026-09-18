@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/db";
-import { CoachProfile, UserRole } from "@/types";
+import { CoachProfile, UserRole, Sport } from "@/types";
 import {
   Shield,
   Users,
@@ -22,7 +23,9 @@ import {
   AlertTriangle,
   Sparkles,
   UserCheck,
-  Briefcase
+  Briefcase,
+  Check,
+  Plus
 } from "lucide-react";
 
 export default function CoachesPage() {
@@ -30,6 +33,7 @@ export default function CoachesPage() {
   const { user: currentUser } = useAuth();
 
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
+  const [sports, setSports] = useState<Sport[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("ALL");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -48,16 +52,18 @@ export default function CoachesPage() {
   const [formRole, setFormRole] = useState<UserRole>("COACH");
   const [formBio, setFormBio] = useState("");
   const [formExperience, setFormExperience] = useState<number>(3);
-  const [formSpecialties, setFormSpecialties] = useState<string>("لياقة بدنية، كمال أجسام");
+  const [formSpecialties, setFormSpecialties] = useState<string[]>([]);
+  const [customSpecialtyInput, setCustomSpecialtyInput] = useState("");
 
-  const refreshCoaches = () => {
+  const refreshData = () => {
     setCoaches(db.getCoaches());
+    setSports(db.getSports());
   };
 
   useEffect(() => {
-    refreshCoaches();
+    refreshData();
 
-    const handleDbChange = () => refreshCoaches();
+    const handleDbChange = () => refreshData();
     window.addEventListener("gx_db_change", handleDbChange);
     return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
@@ -67,14 +73,20 @@ export default function CoachesPage() {
     setTimeout(() => setNotification(null), 3500);
   };
 
+  const addCustomSpecialty = () => {
+    const trimmed = customSpecialtyInput.trim();
+    if (trimmed && !formSpecialties.includes(trimmed)) {
+      setFormSpecialties(prev => [...prev, trimmed]);
+      setCustomSpecialtyInput("");
+    }
+  };
+
   // Handle Add Coach
   const handleAddCoach = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const specs = formSpecialties
-        .split(/[،,]/)
-        .map(s => s.trim())
-        .filter(Boolean);
+      const defaultSport = sports[0] ? (language === "ar" ? sports[0].nameAr : (sports[0].nameEn || sports[0].nameAr)) : (language === "ar" ? "لياقة بدنية" : "Fitness");
+      const specs = formSpecialties.length > 0 ? formSpecialties : [defaultSport];
 
       db.createUser({
         name: formName.trim(),
@@ -84,14 +96,16 @@ export default function CoachesPage() {
         role: formRole,
         bio: formBio.trim() || "كابتن ومدرب معتمد في الأكاديمية",
         yearsOfExperience: Number(formExperience) || 3,
-        specialties: specs.length > 0 ? specs : ["لياقة بدنية", "كمال أجسام"]
+        specialties: specs
       });
 
-      refreshCoaches();
+      refreshData();
       setIsAddModalOpen(false);
       setFormName("");
       setFormEmail("");
       setFormBio("");
+      setFormSpecialties([]);
+      setCustomSpecialtyInput("");
       showNotification(language === "ar" ? "تم إضافة الكابتن الجديد بنجاح! ✓" : "Coach added successfully!");
     } catch (err: any) {
       showNotification(err.message || "حدث خطأ أثناء إضافة الكابتن", "error");
@@ -104,10 +118,8 @@ export default function CoachesPage() {
     if (!editingCoach) return;
 
     try {
-      const specs = formSpecialties
-        .split(/[،,]/)
-        .map(s => s.trim())
-        .filter(Boolean);
+      const defaultSport = sports[0] ? (language === "ar" ? sports[0].nameAr : (sports[0].nameEn || sports[0].nameAr)) : (language === "ar" ? "لياقة بدنية" : "Fitness");
+      const specs = formSpecialties.length > 0 ? formSpecialties : [defaultSport];
 
       // Update User info
       db.updateUser(editingCoach.userId, {
@@ -125,9 +137,10 @@ export default function CoachesPage() {
         editingCoach.specialties = specs;
       }
 
-      refreshCoaches();
+      refreshData();
       setIsEditModalOpen(false);
       setEditingCoach(null);
+      setCustomSpecialtyInput("");
       showNotification(language === "ar" ? "تم تحديث بيانات الكابتن بنجاح! ✓" : "Coach updated successfully!");
     } catch (err: any) {
       showNotification(err.message || "حدث خطأ أثناء التحديث", "error");
@@ -139,7 +152,7 @@ export default function CoachesPage() {
     if (!deleteConfirmCoach) return;
     try {
       db.deleteUser(deleteConfirmCoach.userId);
-      refreshCoaches();
+      refreshData();
       setDeleteConfirmCoach(null);
       showNotification(language === "ar" ? "تم حذف حساب الكابتن بنجاح" : "Coach account deleted successfully");
     } catch (err: any) {
@@ -155,7 +168,8 @@ export default function CoachesPage() {
     setFormRole(co.user?.role || "COACH");
     setFormBio(co.bio || "");
     setFormExperience(co.yearsOfExperience || 3);
-    setFormSpecialties(co.specialties?.join("، ") || "");
+    setFormSpecialties(co.specialties || []);
+    setCustomSpecialtyInput("");
     setIsEditModalOpen(true);
   };
 
@@ -175,7 +189,10 @@ export default function CoachesPage() {
   });
 
   const allSpecialties = Array.from(
-    new Set(coaches.flatMap(c => c.specialties || []))
+    new Set([
+      ...sports.map(s => language === "ar" ? s.nameAr : (s.nameEn || s.nameAr)),
+      ...coaches.flatMap(c => c.specialties || [])
+    ])
   );
 
   return (
@@ -216,7 +233,8 @@ export default function CoachesPage() {
             setFormName("");
             setFormEmail("");
             setFormBio("");
-            setFormSpecialties("لياقة بدنية، كمال أجسام");
+            setFormSpecialties([]);
+            setCustomSpecialtyInput("");
             setIsAddModalOpen(true);
           }}
           className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
@@ -527,16 +545,110 @@ export default function CoachesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {language === "ar" ? "التخصصات (مفصولة بفواصل)" : "Specialties (comma-separated)"}
-                </label>
-                <input
-                  type="text"
-                  placeholder={language === "ar" ? "كمال أجسام، فتنس، تغذية رياضية" : "Bodybuilding, Fitness, Sports Nutrition"}
-                  value={formSpecialties}
-                  onChange={e => setFormSpecialties(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    {language === "ar" ? "التخصصات الرياضية (اختر من قائمة الرياضات) *" : "Sports & Specialties (Select from Catalog) *"}
+                  </label>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    {formSpecialties.length} {language === "ar" ? "تخصص محدد" : "selected"}
+                  </span>
+                </div>
+
+                {sports.length > 0 ? (
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                    <p className="text-[11px] text-slate-500">
+                      {language === "ar"
+                        ? "اختر الرياضات المعتمدة للكابتن من الدليل التدريبي للأكاديمية:"
+                        : "Select sports from the academy catalog for this coach:"}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
+                      {sports.map(sport => {
+                        const sportName = language === "ar" ? sport.nameAr : (sport.nameEn || sport.nameAr);
+                        const isSelected = formSpecialties.some(
+                          s => s === sport.nameAr || s === sport.nameEn || s.toLowerCase() === (sport.nameEn || "").toLowerCase()
+                        );
+
+                        return (
+                          <button
+                            type="button"
+                            key={sport.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                setFormSpecialties(prev => prev.filter(s => s !== sport.nameAr && s !== sport.nameEn && s.toLowerCase() !== (sport.nameEn || "").toLowerCase()));
+                              } else {
+                                setFormSpecialties(prev => [...prev, sportName]);
+                              }
+                            }}
+                            className={`flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                              isSelected
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20"
+                                : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50"
+                            }`}
+                          >
+                            <span>{sport.icon || "🏆"}</span>
+                            <span>{sportName}</span>
+                            {isSelected ? (
+                              <Check className="w-3.5 h-3.5 ms-1 text-white" />
+                            ) : (
+                              <Plus className="w-3.5 h-3.5 ms-1 text-slate-400" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Add custom specialty input */}
+                    <div className="pt-2 border-t border-slate-200/80 flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder={language === "ar" ? "أو أضف تخصصاً يدوياً..." : "Or add custom specialty..."}
+                        value={customSpecialtyInput}
+                        onChange={e => setCustomSpecialtyInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addCustomSpecialty();
+                          }
+                        }}
+                        className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={addCustomSpecialty}
+                        className="px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-emerald-600 hover:text-white text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        {language === "ar" ? "إضافة +" : "Add +"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between">
+                    <span>{language === "ar" ? "لا توجد رياضات في الدليل بعد." : "No sports in catalog yet."}</span>
+                    <Link href="/sports" className="underline font-bold">{language === "ar" ? "إضافة رياضة الآن" : "Add Sport Now"}</Link>
+                  </div>
+                )}
+
+                {/* Selected specialties chips */}
+                {formSpecialties.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {formSpecialties.map((spec, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center space-x-1 rtl:space-x-reverse px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold"
+                      >
+                        <span>{spec}</span>
+                        <button
+                          type="button"
+                          onClick={() => setFormSpecialties(prev => prev.filter((_, i) => i !== idx))}
+                          className="p-0.5 hover:bg-emerald-200/60 rounded text-emerald-600 hover:text-emerald-900 cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -658,15 +770,110 @@ export default function CoachesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {language === "ar" ? "التخصصات" : "Specialties"}
-                </label>
-                <input
-                  type="text"
-                  value={formSpecialties}
-                  onChange={e => setFormSpecialties(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    {language === "ar" ? "التخصصات الرياضية (اختر من قائمة الرياضات) *" : "Sports & Specialties (Select from Catalog) *"}
+                  </label>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    {formSpecialties.length} {language === "ar" ? "تخصص محدد" : "selected"}
+                  </span>
+                </div>
+
+                {sports.length > 0 ? (
+                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                    <p className="text-[11px] text-slate-500">
+                      {language === "ar"
+                        ? "اختر الرياضات المعتمدة للكابتن من الدليل التدريبي للأكاديمية:"
+                        : "Select sports from the academy catalog for this coach:"}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
+                      {sports.map(sport => {
+                        const sportName = language === "ar" ? sport.nameAr : (sport.nameEn || sport.nameAr);
+                        const isSelected = formSpecialties.some(
+                          s => s === sport.nameAr || s === sport.nameEn || s.toLowerCase() === (sport.nameEn || "").toLowerCase()
+                        );
+
+                        return (
+                          <button
+                            type="button"
+                            key={sport.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                setFormSpecialties(prev => prev.filter(s => s !== sport.nameAr && s !== sport.nameEn && s.toLowerCase() !== (sport.nameEn || "").toLowerCase()));
+                              } else {
+                                setFormSpecialties(prev => [...prev, sportName]);
+                              }
+                            }}
+                            className={`flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                              isSelected
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20"
+                                : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50"
+                            }`}
+                          >
+                            <span>{sport.icon || "🏆"}</span>
+                            <span>{sportName}</span>
+                            {isSelected ? (
+                              <Check className="w-3.5 h-3.5 ms-1 text-white" />
+                            ) : (
+                              <Plus className="w-3.5 h-3.5 ms-1 text-slate-400" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Add custom specialty input */}
+                    <div className="pt-2 border-t border-slate-200/80 flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder={language === "ar" ? "أو أضف تخصصاً يدوياً..." : "Or add custom specialty..."}
+                        value={customSpecialtyInput}
+                        onChange={e => setCustomSpecialtyInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addCustomSpecialty();
+                          }
+                        }}
+                        className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={addCustomSpecialty}
+                        className="px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-emerald-600 hover:text-white text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        {language === "ar" ? "إضافة +" : "Add +"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between">
+                    <span>{language === "ar" ? "لا توجد رياضات في الدليل بعد." : "No sports in catalog yet."}</span>
+                    <Link href="/sports" className="underline font-bold">{language === "ar" ? "إضافة رياضة الآن" : "Add Sport Now"}</Link>
+                  </div>
+                )}
+
+                {/* Selected specialties chips */}
+                {formSpecialties.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {formSpecialties.map((spec, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center space-x-1 rtl:space-x-reverse px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold"
+                      >
+                        <span>{spec}</span>
+                        <button
+                          type="button"
+                          onClick={() => setFormSpecialties(prev => prev.filter((_, i) => i !== idx))}
+                          className="p-0.5 hover:bg-emerald-200/60 rounded text-emerald-600 hover:text-emerald-900 cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
