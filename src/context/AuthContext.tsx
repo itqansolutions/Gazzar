@@ -18,8 +18,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const defaultAdminUser: SessionUser = {
   id: "user-admin",
-  email: "admin@gazzar.com",
-  name: "Abdullah Elgazzar",
+  email: "admin@gxacademy.com",
+  name: "Abdullah (Admin)",
   role: "ADMIN",
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"
 };

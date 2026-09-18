@@ -3,8 +3,8 @@ import { User, CoachProfile } from "@/types";
 export const initialUsers: User[] = [
   {
     id: "user-admin",
-    email: "admin@gazzar.com",
-    name: "Abdullah Elgazzar",
+    email: "admin@gxacademy.com",
+    name: "Abdullah (Admin)",
     role: "ADMIN",
     password: "A@123456",
     phone: "+20 100 123 4567",

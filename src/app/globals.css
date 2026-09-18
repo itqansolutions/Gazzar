@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 html.light {
@@ -15,8 +15,8 @@ html.light {
 }
 
 html.dark {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 body {

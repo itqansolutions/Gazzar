@@ -21,7 +21,7 @@ export default function LoginPage() {
   const { t, language, dir } = useLanguage();
   const { user, login } = useAuth();
 
-  const [email, setEmail] = useState("admin@gazzar.com");
+  const [email, setEmail] = useState("admin@gxacademy.com");
   const [password, setPassword] = useState("A@123456");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -53,7 +53,7 @@ export default function LoginPage() {
   };
 
   const handleFillAdmin = () => {
-    setEmail("admin@gazzar.com");
+    setEmail("admin@gxacademy.com");
     setPassword("A@123456");
     setErrorMessage("");
   };
@@ -66,7 +66,7 @@ export default function LoginPage() {
           <Dumbbell className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          {language === "ar" ? "أكاديمية الجزار للتدريب الرياضي" : "Gazzar Sports Academy"}
+          GX Academy
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
           {language === "ar" ? "نظام إدارة التدريب الرياضي والكباتن والمشتركين" : "Sports Coaching & Academy Management System"}
@@ -112,7 +112,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
-                  placeholder="admin@gazzar.com"
+                  placeholder="admin@gxacademy.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="w-full ps-9 pe-3 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
@@ -153,7 +153,7 @@ export default function LoginPage() {
                 <span>{language === "ar" ? "حساب مدير النظام الرئيسي:" : "Default Admin Account:"}</span>
               </p>
               <div className="flex items-center justify-between font-mono text-[11px] pt-0.5">
-                <span>Email: <strong className="text-emerald-600 dark:text-emerald-400">admin@gazzar.com</strong></span>
+                <span>Email: <strong className="text-emerald-600 dark:text-emerald-400">admin@gxacademy.com</strong></span>
                 <span>Pass: <strong className="text-emerald-600 dark:text-emerald-400">A@123456</strong></span>
               </div>
             </div>

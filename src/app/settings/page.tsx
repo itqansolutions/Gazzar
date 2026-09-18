@@ -212,7 +212,7 @@ export default function SettingsPage() {
               <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">اسم الأكاديمية</label>
               <input
                 type="text"
-                defaultValue="Gazzar Athletic Performance Academy"
+                defaultValue="GX Academy"
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
               />
             </div>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
               <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">البريد الرسمي</label>
               <input
                 type="email"
-                defaultValue="contact@gazzar-academy.com"
+                defaultValue="contact@gxacademy.com"
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
               />
             </div>

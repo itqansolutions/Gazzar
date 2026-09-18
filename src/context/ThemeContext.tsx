@@ -13,39 +13,29 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
-    const saved = localStorage.getItem("gazzar_theme") as Theme | null;
-    if (saved === "light") {
-      setThemeState("light");
-      document.documentElement.classList.remove("dark");
-      document.documentElement.classList.add("light");
-    } else {
-      setThemeState("dark");
-      document.documentElement.classList.add("dark");
-      document.documentElement.classList.remove("light");
-    }
+    // Always force light mode - dark mode is disabled
+    setThemeState("light");
+    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.add("light");
+    localStorage.setItem("gx_theme", "light");
   }, []);
 
   const setTheme = (t: Theme) => {
-    setThemeState(t);
-    localStorage.setItem("gazzar_theme", t);
+    // Force light always
+    setThemeState("light");
+    localStorage.setItem("gx_theme", "light");
     if (typeof document !== "undefined") {
       const root = document.documentElement;
-      if (t === "dark") {
-        root.classList.add("dark");
-        root.classList.remove("light");
-      } else {
-        root.classList.remove("dark");
-        root.classList.add("light");
-      }
+      root.classList.remove("dark");
+      root.classList.add("light");
     }
   };
 
   const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
+    // No-op: dark mode disabled
   };
 
   return (

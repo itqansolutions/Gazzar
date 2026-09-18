@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import AppShell from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "Gazzar Coaching Academy",
-  description: "Gazzar Sports Coaching Academy - Professional Athletic Coaching Platform"
+  title: "GX Academy",
+  description: "GX Academy - Professional Athletic Coaching Platform"
 };
 
 export const viewport: Viewport = {
@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className="dark">
-      <body className="antialiased min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <html lang="ar" dir="rtl" className="light">
+      <body className="antialiased min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300">
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

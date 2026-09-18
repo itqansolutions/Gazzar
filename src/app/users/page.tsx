@@ -425,7 +425,7 @@ export default function UsersPage() {
                   <input
                     type="email"
                     required
-                    placeholder="user@gazzar.com"
+                    placeholder="user@gxacademy.com"
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"

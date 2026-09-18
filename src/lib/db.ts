@@ -204,8 +204,8 @@ class CoachingStore {
     this.loadFromStorage();
     return this.users.find(u => u.role === "ADMIN") || this.users[0] || {
       id: "user-admin",
-      email: "admin@gazzar.com",
-      name: "Abdullah Elgazzar",
+      email: "admin@gxacademy.com",
+      name: "Abdullah (Admin)",
       role: "ADMIN",
       createdAt: new Date().toISOString()
     };

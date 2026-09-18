@@ -67,7 +67,7 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-base sm:text-lg leading-tight tracking-tight text-slate-900 dark:text-white">
-                  {language === "ar" ? "أكاديمية الجزار" : "GAZZAR ACADEMY"}
+                  GX Academy
                 </span>
                 <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
                   {language === "ar" ? "نظام التدريب الاحترافي" : "Sports Coaching Platform"}

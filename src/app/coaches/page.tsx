@@ -410,7 +410,7 @@ export default function CoachesPage() {
                   <input
                     type="email"
                     required
-                    placeholder="coach@gazzar.com"
+                    placeholder="coach@gxacademy.com"
                     value={formEmail}
                     onChange={e => setFormEmail(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-mono"

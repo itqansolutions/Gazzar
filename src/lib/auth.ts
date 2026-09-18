@@ -50,21 +50,21 @@ export function getDemoAccounts() {
       role: "ADMIN" as UserRole,
       titleAr: "مدير الأكاديمية (Admin)",
       titleEn: "Academy Admin",
-      email: "admin@gazzar.com",
+      email: "admin@gxacademy.com",
       user: users.find(u => u.role === "ADMIN")!
     },
     {
       role: "HEAD_COACH" as UserRole,
       titleAr: "كبير المدربين (Head Coach)",
       titleEn: "Head Coach",
-      email: "headcoach@gazzar.com",
+      email: "headcoach@gxacademy.com",
       user: users.find(u => u.role === "HEAD_COACH")!
     },
     {
       role: "COACH" as UserRole,
       titleAr: "كابتن تدريب (Coach)",
       titleEn: "Coach",
-      email: "ali@gazzar.com",
+      email: "ali@gxacademy.com",
       user: users.find(u => u.role === "COACH")!
     },
     {

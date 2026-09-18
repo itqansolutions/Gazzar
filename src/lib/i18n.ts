@@ -3,7 +3,7 @@ export type Language = "ar" | "en";
 export const translations = {
   ar: {
     // App Brand
-    appName: "أكاديمية الجزار للتدريب الرياضي",
+    appName: "GX Academy",
     appSubtitle: "نظام إدارة التدريب الرياضي الشامل",
     roleAdmin: "مدير النظام",
     roleHeadCoach: "كبير المدربين",
@@ -192,7 +192,7 @@ export const translations = {
   },
   en: {
     // App Brand
-    appName: "Gazzar Sports Coaching Academy",
+    appName: "GX Academy",
     appSubtitle: "Comprehensive Athletic Coaching Platform",
     roleAdmin: "System Admin",
     roleHeadCoach: "Head Coach",
