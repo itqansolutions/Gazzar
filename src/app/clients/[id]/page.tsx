@@ -365,6 +365,12 @@ export default function ClientProfilePage() {
           <CoachesTab
             assignments={client.coaches || []}
             onOpenModal={() => setCoachAssignModalOpen(true)}
+            onUnassign={(coachId) => {
+              if (confirm(language === "ar" ? "هل أنت متأكد من إلغاء تعيين هذا الكابتن؟" : "Unassign this coach?")) {
+                db.removeCoachFromClient(client.id, coachId);
+                loadClientData();
+              }
+            }}
             isClient={isClient}
           />
         )}
@@ -607,23 +613,25 @@ export default function ClientProfilePage() {
         </div>
       )}
 
-      {/* --- ASSIGN COACH MODAL (ADMIN / HEAD COACH ONLY) --- */}
-      {coachAssignModalOpen && (user?.role === "ADMIN" || user?.role === "HEAD_COACH") && (
+      {/* --- ASSIGN COACH MODAL --- */}
+      {coachAssignModalOpen && !isClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-                <Users className="w-5 h-5 text-blue-500" />
-                <span>تعيين كابتن / أخصائي للمتدرب</span>
+                <Users className="w-5 h-5 text-emerald-500" />
+                <span>{language === "ar" ? "تعيين كابتن / أخصائي للمتدرب" : "Assign Coach / Specialist to Athlete"}</span>
               </h3>
-              <button onClick={() => setCoachAssignModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setCoachAssignModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAssignCoach} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اختر الكابتن</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {language === "ar" ? "اختر الكابتن *" : "Select Coach *"}
+                </label>
                 <select
                   value={selectedCoachId}
                   onChange={e => setSelectedCoachId(e.target.value)}
@@ -631,23 +639,25 @@ export default function ClientProfilePage() {
                 >
                   {coachesList.map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.user?.name} ({c.specialties?.join(", ") || "كابتن تدريب"})
+                      {c.user?.name} ({c.specialties?.slice(0, 2).join(", ") || (language === "ar" ? "كابتن تدريب" : "Coach")})
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الدور التدريبي</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {language === "ar" ? "الدور التدريبي *" : "Coaching Role *"}
+                </label>
                 <select
                   value={coachRole}
                   onChange={e => setCoachRole(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium"
                 >
-                  <option value="PRIMARY">كابتن رئيسي (Primary Coach)</option>
-                  <option value="ASSISTANT">كابتن مساعد (Assistant Coach)</option>
-                  <option value="NUTRITIONIST">أخصائي تغذية (Nutritionist)</option>
-                  <option value="PHYSIOTHERAPIST">أخصائي علاج طبيعي (Physiotherapist)</option>
+                  <option value="PRIMARY">{language === "ar" ? "كابتن رئيسي (Primary Coach)" : "Primary Coach"}</option>
+                  <option value="ASSISTANT">{language === "ar" ? "كابتن مساعد (Assistant Coach)" : "Assistant Coach"}</option>
+                  <option value="NUTRITIONIST">{language === "ar" ? "أخصائي تغذية (Nutritionist)" : "Nutritionist"}</option>
+                  <option value="PHYSIOTHERAPIST">{language === "ar" ? "أخصائي علاج طبيعي (Physiotherapist)" : "Physiotherapist"}</option>
                 </select>
               </div>
 
@@ -655,15 +665,15 @@ export default function ClientProfilePage() {
                 <button
                   type="button"
                   onClick={() => setCoachAssignModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold cursor-pointer"
                 >
                   {t("cancel")}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 cursor-pointer"
                 >
-                  تأكيد التعيين ✓
+                  {language === "ar" ? "تأكيد التعيين ✓" : "Confirm Assignment ✓"}
                 </button>
               </div>
             </form>

@@ -349,19 +349,25 @@ class CoachingStore {
   // --- Coaches CRUD ---
   getCoaches(): CoachProfile[] {
     this.loadFromStorage();
-    return this.coachProfiles.map(cp => ({
-      ...cp,
-      user: this.getUserById(cp.userId) || cp.user
-    }));
+    return this.coachProfiles.map(cp => {
+      const assignedClientsCount = this.coachAssignments.filter(ca => ca.coachId === cp.id && ca.active).length;
+      return {
+        ...cp,
+        user: this.getUserById(cp.userId) || cp.user,
+        assignedClientsCount
+      };
+    });
   }
 
   getCoachById(id: string): CoachProfile | undefined {
     this.loadFromStorage();
     const cp = this.coachProfiles.find(c => c.id === id || c.userId === id);
     if (!cp) return undefined;
+    const assignedClientsCount = this.coachAssignments.filter(ca => ca.coachId === cp.id && ca.active).length;
     return {
       ...cp,
-      user: this.getUserById(cp.userId) || cp.user
+      user: this.getUserById(cp.userId) || cp.user,
+      assignedClientsCount
     };
   }
 
@@ -372,7 +378,7 @@ class CoachingStore {
       const user = this.getUserById(c.userId) || c.user;
       const sport = this.sports.find(s => s.id === c.preferredSportId);
       const coaches = this.coachAssignments
-        .filter(ca => ca.clientId === c.id)
+        .filter(ca => ca.clientId === c.id && ca.active)
         .map(ca => ({
           ...ca,
           coach: this.getCoachById(ca.coachId)
@@ -413,7 +419,7 @@ class CoachingStore {
     const user = this.getUserById(client.userId) || client.user;
     const sport = this.sports.find(s => s.id === client.preferredSportId);
     const coaches = this.coachAssignments
-      .filter(ca => ca.clientId === client.id)
+      .filter(ca => ca.clientId === client.id && ca.active)
       .map(ca => ({
         ...ca,
         coach: this.getCoachById(ca.coachId)
@@ -452,7 +458,7 @@ class CoachingStore {
     };
   }
 
-  createClient(data: Partial<ClientProfile> & { name: string; email: string; phone?: string; password?: string }) {
+  createClient(data: Partial<ClientProfile> & { name: string; email: string; phone?: string; password?: string; coachId?: string; coachRole?: any; coachNotes?: string }) {
     this.loadFromStorage();
     const userId = `user-${Date.now()}`;
     const newUser: User = {
@@ -485,6 +491,19 @@ class CoachingStore {
     };
     this.clients.unshift(newClient);
 
+    if (data.coachId) {
+      const newAssign: ClientCoachAssignment = {
+        id: `assign-${Date.now()}`,
+        clientId: clientId,
+        coachId: data.coachId,
+        role: data.coachRole || "PRIMARY",
+        assignedAt: new Date().toISOString(),
+        active: true,
+        notes: data.coachNotes
+      };
+      this.coachAssignments.push(newAssign);
+    }
+
     this.saveToStorage();
 
     logAuditEvent({
@@ -492,13 +511,13 @@ class CoachingStore {
       user: { id: this.getAdminUser().id, name: this.getAdminUser().name, role: this.getAdminUser().role },
       entityType: "ClientProfile",
       entityId: clientId,
-      newValues: { name: data.name, email: data.email, status: newClient.status }
+      newValues: { name: data.name, email: data.email, status: newClient.status, coachId: data.coachId }
     });
 
     return this.getClient360(clientId)!;
   }
 
-  updateClient(id: string, updates: Partial<ClientProfile> & { name?: string; email?: string; phone?: string; avatar?: string }): ClientProfile {
+  updateClient(id: string, updates: Partial<ClientProfile> & { name?: string; email?: string; phone?: string; avatar?: string; coachId?: string; coachRole?: any; coachNotes?: string }): ClientProfile {
     this.loadFromStorage();
     const index = this.clients.findIndex(c => c.id === id || c.userId === id);
     if (index === -1) throw new Error("Client not found");
@@ -511,6 +530,19 @@ class CoachingStore {
         ...(updates.phone && { phone: updates.phone }),
         ...(updates.avatar && { avatar: updates.avatar })
       });
+    }
+
+    if (updates.coachId !== undefined) {
+      if (!updates.coachId || updates.coachId === "NONE") {
+        // Deactivate primary coach assignments
+        this.coachAssignments.forEach(ca => {
+          if (ca.clientId === client.id && ca.role === "PRIMARY") {
+            ca.active = false;
+          }
+        });
+      } else {
+        this.assignCoachToClient(client.id, updates.coachId, updates.coachRole || "PRIMARY", updates.coachNotes);
+      }
     }
 
     this.clients[index] = { ...this.clients[index], ...updates };
@@ -535,11 +567,22 @@ class CoachingStore {
 
   assignCoachToClient(clientId: string, coachId: string, role: any = "PRIMARY", notes?: string) {
     this.loadFromStorage();
+    
+    // If setting as PRIMARY, deactivate any prior PRIMARY coach for this client
+    if (role === "PRIMARY") {
+      this.coachAssignments.forEach(ca => {
+        if (ca.clientId === clientId && ca.role === "PRIMARY") {
+          ca.active = false;
+        }
+      });
+    }
+
     const existing = this.coachAssignments.find(ca => ca.clientId === clientId && ca.coachId === coachId);
     if (existing) {
       existing.role = role;
       existing.active = true;
       existing.notes = notes;
+      existing.assignedAt = new Date().toISOString();
     } else {
       const newAssign: ClientCoachAssignment = {
         id: `assign-${Date.now()}`,
@@ -561,6 +604,24 @@ class CoachingStore {
       entityType: "ClientCoachAssignment",
       entityId: clientId,
       newValues: { clientId, coachId, role, notes }
+    });
+
+    return this.getClient360(clientId);
+  }
+
+  removeCoachFromClient(clientId: string, coachId: string) {
+    this.loadFromStorage();
+    this.coachAssignments = this.coachAssignments.filter(
+      ca => !(ca.clientId === clientId && ca.coachId === coachId)
+    );
+    this.saveToStorage();
+
+    logAuditEvent({
+      action: "UNASSIGN_COACH",
+      user: { id: this.getAdminUser().id, name: this.getAdminUser().name, role: this.getAdminUser().role },
+      entityType: "ClientCoachAssignment",
+      entityId: clientId,
+      newValues: { clientId, coachId }
     });
 
     return this.getClient360(clientId);

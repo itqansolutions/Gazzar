@@ -3,15 +3,16 @@
 import React from "react";
 import { ClientCoachAssignment } from "@/types";
 import { useLanguage } from "@/context/LanguageContext";
-import { Users, PlusCircle, ShieldCheck } from "lucide-react";
+import { Users, PlusCircle, ShieldCheck, Trash2 } from "lucide-react";
 
 interface CoachesTabProps {
   assignments: ClientCoachAssignment[];
   onOpenModal: () => void;
+  onUnassign?: (coachId: string) => void;
   isClient?: boolean;
 }
 
-export default function CoachesTab({ assignments, onOpenModal, isClient }: CoachesTabProps) {
+export default function CoachesTab({ assignments, onOpenModal, onUnassign, isClient }: CoachesTabProps) {
   const { language } = useLanguage();
 
   return (
@@ -60,15 +61,33 @@ export default function CoachesTab({ assignments, onOpenModal, isClient }: Coach
                   <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-mono">{ca.assignedAt?.slice(0, 10)}</p>
                 </div>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                ca.role === "PRIMARY"
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                  : ca.role === "NUTRITIONIST"
-                  ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20"
-                  : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
-              }`}>
-                {ca.role === "PRIMARY" ? (language === "ar" ? "مدرب رئيسي" : "Primary") : ca.role}
-              </span>
+
+              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                  ca.role === "PRIMARY"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                    : ca.role === "NUTRITIONIST"
+                    ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20"
+                    : ca.role === "PHYSIOTHERAPIST"
+                    ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
+                    : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                }`}>
+                  {ca.role === "PRIMARY" ? (language === "ar" ? "مدرب رئيسي" : "Primary") :
+                   ca.role === "NUTRITIONIST" ? (language === "ar" ? "أخصائي تغذية" : "Nutritionist") :
+                   ca.role === "PHYSIOTHERAPIST" ? (language === "ar" ? "علاج طبيعي" : "Physio") :
+                   (language === "ar" ? "مدرب مساعد" : "Assistant")}
+                </span>
+
+                {!isClient && onUnassign && (
+                  <button
+                    onClick={() => onUnassign(ca.coachId)}
+                    title={language === "ar" ? "إلغاء التعيين" : "Unassign"}
+                    className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
