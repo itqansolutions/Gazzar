@@ -56,8 +56,8 @@ export default function ClientsPage() {
   useEffect(() => {
     loadClients();
     const handleDbChange = () => loadClients();
-    window.addEventListener("gazzar_db_change", handleDbChange);
-    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+    window.addEventListener("gx_db_change", handleDbChange);
+    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const handleCreateClient = (e: React.FormEvent) => {

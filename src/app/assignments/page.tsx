@@ -66,8 +66,8 @@ export default function AssignmentsPage() {
     setMounted(true);
     loadData();
     const handleDbChange = () => loadData();
-    window.addEventListener("gazzar_db_change", handleDbChange);
-    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+    window.addEventListener("gx_db_change", handleDbChange);
+    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, [isClient, myClient?.id]);
 
   const handleAssign = (e: React.FormEvent) => {

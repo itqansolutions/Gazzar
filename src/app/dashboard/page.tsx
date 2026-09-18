@@ -46,8 +46,8 @@ export default function DashboardPage() {
   useEffect(() => {
     setMounted(true);
     const handleDbChange = () => setTick(t => t + 1);
-    window.addEventListener("gazzar_db_change", handleDbChange);
-    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+    window.addEventListener("gx_db_change", handleDbChange);
+    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   if (!mounted) return null;

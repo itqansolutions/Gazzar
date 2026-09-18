@@ -53,7 +53,12 @@ import {
 } from "./mockData";
 import { logAuditEvent, getAuditLogs } from "./audit";
 
-const STORAGE_KEY = "gazzar_clean_db_v3";
+const STORAGE_KEY = "gx_db_v1";
+const OLD_KEYS = ["gazzar_clean_db_v3", "gazzar_theme", "gazzar_session_user", "gazzar_lang"];
+// Wipe legacy keys once so old devices start clean
+if (typeof window !== "undefined") {
+  OLD_KEYS.forEach(k => localStorage.removeItem(k));
+}
 
 // In-Memory live reactive & localStorage persistent store
 class CoachingStore {
@@ -149,7 +154,7 @@ class CoachingStore {
         notifications: this.notifications
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      window.dispatchEvent(new CustomEvent("gazzar_db_change"));
+      window.dispatchEvent(new CustomEvent("gx_db_change"));
     } catch (e) {
       console.error("Failed to save store to localStorage", e);
     }
@@ -180,7 +185,7 @@ class CoachingStore {
     this.notifications = [...initialNotifications];
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);
-      window.dispatchEvent(new CustomEvent("gazzar_db_change"));
+      window.dispatchEvent(new CustomEvent("gx_db_change"));
     }
   }
 

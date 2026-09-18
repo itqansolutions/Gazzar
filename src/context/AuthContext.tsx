@@ -48,13 +48,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("gazzar_session_user");
+      const saved = localStorage.getItem("gx_session_user");
       if (saved) {
         const parsed = JSON.parse(saved);
         const synced = syncWithDb(parsed);
         setUser(synced);
         if (synced) {
-          localStorage.setItem("gazzar_session_user", JSON.stringify(synced));
+          localStorage.setItem("gx_session_user", JSON.stringify(synced));
         }
       } else {
         setUser(null);
@@ -72,21 +72,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!prev) return null;
         const synced = syncWithDb(prev);
         if (synced) {
-          localStorage.setItem("gazzar_session_user", JSON.stringify(synced));
+          localStorage.setItem("gx_session_user", JSON.stringify(synced));
         }
         return synced;
       });
     };
 
-    window.addEventListener("gazzar_db_change", handleDbChange);
-    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+    window.addEventListener("gx_db_change", handleDbChange);
+    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const updateCurrentUser = (updates: Partial<SessionUser>) => {
     setUser(prev => {
       if (!prev) return null;
       const updated = { ...prev, ...updates };
-      localStorage.setItem("gazzar_session_user", JSON.stringify(updated));
+      localStorage.setItem("gx_session_user", JSON.stringify(updated));
       return updated;
     });
   };
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setUser(sessionUser);
-      localStorage.setItem("gazzar_session_user", JSON.stringify(sessionUser));
+      localStorage.setItem("gx_session_user", JSON.stringify(sessionUser));
       return { success: true };
     } catch (err: any) {
       return { success: false, message: err.message || "حدث خطأ أثناء تسجيل الدخول" };
@@ -140,12 +140,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     setUser(sessionUser);
-    localStorage.setItem("gazzar_session_user", JSON.stringify(sessionUser));
+    localStorage.setItem("gx_session_user", JSON.stringify(sessionUser));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("gazzar_session_user");
+    localStorage.removeItem("gx_session_user");
     if (typeof window !== "undefined") {
       window.location.href = "/login";
     }

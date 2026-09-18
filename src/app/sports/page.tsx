@@ -50,8 +50,8 @@ export default function SportsPage() {
   useEffect(() => {
     refreshSports();
     const handleDbChange = () => refreshSports();
-    window.addEventListener("gazzar_db_change", handleDbChange);
-    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+    window.addEventListener("gx_db_change", handleDbChange);
+    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {

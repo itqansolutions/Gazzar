@@ -77,8 +77,8 @@ export default function ExercisesPage() {
   useEffect(() => {
     loadExercises();
     const handleDbChange = () => loadExercises();
-    window.addEventListener("gazzar_db_change", handleDbChange);
-    return () => window.removeEventListener("gazzar_db_change", handleDbChange);
+    window.addEventListener("gx_db_change", handleDbChange);
+    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const filteredExercises = exercises.filter(ex => {
