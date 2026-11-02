@@ -20,7 +20,7 @@ import {
 
 export default function SettingsPage() {
   const { t, language, setLanguage } = useLanguage();
-  const { user, loginAsRole } = useAuth();
+  const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [unit, setUnit] = useState<"METRIC" | "IMPERIAL">("METRIC");
   const [savedMessage, setSavedMessage] = useState("");
@@ -148,55 +148,6 @@ export default function SettingsPage() {
               }`}
             >
               النظام الإمبراطوري: باوند وبوصة (LBS / IN)
-            </button>
-          </div>
-        </div>
-
-        {/* Role Switcher Demo */}
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            <Shield className="w-4 h-4 text-purple-500" />
-            <span>التبديل السريع بين الصلاحيات (Role Switcher Preview)</span>
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            يمكنك تجربة النظام بكافة الأدوار التدريبية والإدارية بضغطة زر:
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <button
-              type="button"
-              onClick={() => loginAsRole("ADMIN")}
-              className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "ADMIN" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              👑 مدير (Admin)
-            </button>
-            <button
-              type="button"
-              onClick={() => loginAsRole("HEAD_COACH")}
-              className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "HEAD_COACH" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              ⭐ مشرف (Head Coach)
-            </button>
-            <button
-              type="button"
-              onClick={() => loginAsRole("COACH")}
-              className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "COACH" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              🏋️ كابتن (Coach)
-            </button>
-            <button
-              type="button"
-              onClick={() => loginAsRole("CLIENT")}
-              className={`p-2.5 rounded-xl border text-xs font-bold ${
-                user?.role === "CLIENT" ? "bg-emerald-600 text-white shadow-md" : "bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              🏃 مشترك (Athlete)
             </button>
           </div>
         </div>

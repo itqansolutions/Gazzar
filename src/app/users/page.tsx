@@ -17,7 +17,6 @@ import {
   Trash2,
   Edit,
   Key,
-  LogIn,
   CheckCircle,
   AlertTriangle,
   X,
@@ -30,7 +29,7 @@ import {
 export default function UsersPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
-  const { user: currentUser, loginAsRole, updateCurrentUser } = useAuth();
+  const { user: currentUser, updateCurrentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -175,12 +174,6 @@ export default function UsersPage() {
     } catch (err: any) {
       showNotification(err.message || "لا يمكن حذف هذا المستخدم", "error");
     }
-  };
-
-  const handleQuickLoginAs = (userToLogin: User) => {
-    loginAsRole(userToLogin.role);
-    showNotification(language === "ar" ? `تم التبديل إلى حساب: ${userToLogin.name}` : `Switched to: ${userToLogin.name}`);
-    router.push("/dashboard");
   };
 
   const filteredUsers = users.filter(u => {
@@ -346,14 +339,6 @@ export default function UsersPage() {
                   </td>
                   <td className="px-4 py-3.5 text-center">
                     <div className="flex items-center justify-center space-x-1.5 rtl:space-x-reverse">
-                      <button
-                        onClick={() => handleQuickLoginAs(u)}
-                        title={language === "ar" ? "دخول فوري بهذا الحساب" : "Login as this user"}
-                        className="p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-                      >
-                        <LogIn className="w-4 h-4" />
-                      </button>
-
                       <button
                         onClick={() => {
                           setSelectedUser(u);

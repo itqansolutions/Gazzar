@@ -42,9 +42,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         "/audit-logs"
       ];
 
-      if (user.role === "CLIENT" && clientRestrictedRoutes.some(r => pathname === r || (pathname.startsWith(r) && pathname === "/clients"))) {
+      // Note: This is a UI-level UX navigation guard to prevent accidental navigation.
+      // True security authorization must be enforced on the server in Phase 2.
+      const isClientRouteRestricted =
+        pathname === "/clients" ||
+        (pathname.startsWith("/clients/") && user.clientId && pathname !== `/clients/${user.clientId}`) ||
+        clientRestrictedRoutes.some(r => r !== "/clients" && (pathname === r || pathname.startsWith(`${r}/`)));
+
+      const isCoachRouteRestricted =
+        coachRestrictedRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`));
+
+      if (user.role === "CLIENT" && isClientRouteRestricted) {
         router.replace("/dashboard");
-      } else if (user.role === "COACH" && coachRestrictedRoutes.some(r => pathname === r || pathname.startsWith(r))) {
+      } else if (user.role === "COACH" && isCoachRouteRestricted) {
         router.replace("/dashboard");
       }
     }

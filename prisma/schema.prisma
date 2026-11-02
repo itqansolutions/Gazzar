@@ -129,34 +129,36 @@ enum NoteType {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
+  id           String   @id @default(uuid())
+  email        String   @unique
   name         String
   passwordHash String
-  role         UserRole     @default(CLIENT)
+  role         UserRole @default(CLIENT)
   phone        String?
   avatar       String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  coachProfile   CoachProfile?
-  clientProfile  ClientProfile?
-  authoredNotes  ClientNote[]
-  notifications  Notification[]
-  auditLogs      AuditLog[]
+  coachProfile        CoachProfile?
+  clientProfile       ClientProfile?
+  authoredNotes       ClientNote[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
 
 model CoachProfile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  specialties       String[]
-  bio               String?
-  yearsOfExperience Int      @default(0)
-  headCoachId       String?
-  headCoach         CoachProfile? @relation("HeadCoachSubordinates", fields: [headCoachId], references: [id])
+  id                 String         @id @default(uuid())
+  userId             String         @unique
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialties        String[]
+  bio                String?
+  yearsOfExperience  Int            @default(0)
+  headCoachId        String?
+  headCoach          CoachProfile?  @relation("HeadCoachSubordinates", fields: [headCoachId], references: [id])
   subordinateCoaches CoachProfile[] @relation("HeadCoachSubordinates")
 
   clientAssignments ClientCoachAssignment[]
@@ -173,35 +175,35 @@ model CoachProfile {
 }
 
 model ClientProfile {
-  id                 String       @id @default(uuid())
-  userId             String       @unique
-  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dob                DateTime?
-  gender             Gender       @default(MALE)
-  heightCm           Float?
-  weightKg           Float?
-  address            String?
-  emergencyContact   String?
-  status             ClientStatus @default(ACTIVE)
-  preferredSportId   String?
-  sport              Sport?       @relation(fields: [preferredSportId], references: [id])
-  membershipExpiry   DateTime?
+  id               String       @id @default(uuid())
+  userId           String       @unique
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dob              DateTime?
+  gender           Gender       @default(MALE)
+  heightCm         Float?
+  weightKg         Float?
+  address          String?
+  emergencyContact String?
+  status           ClientStatus @default(ACTIVE)
+  preferredSportId String?
+  sport            Sport?       @relation(fields: [preferredSportId], references: [id])
+  membershipExpiry DateTime?
 
-  coachAssignments   ClientCoachAssignment[]
-  measurements       ClientMeasurementHistory[]
-  goals              ClientGoal[]
+  coachAssignments    ClientCoachAssignment[]
+  measurements        ClientMeasurementHistory[]
+  goals               ClientGoal[]
   medicalRestrictions ClientMedicalRestriction[]
-  progressPhotos     ClientProgressPhoto[]
-  assessments        ClientAssessment[]
-  workoutAssignments ClientWorkoutAssignment[]
-  workoutLogs        WorkoutLog[]
-  attendances        SessionAttendance[]
-  mealPlans          MealPlan[]
-  memberships        Membership[]
-  notes              ClientNote[]
+  progressPhotos      ClientProgressPhoto[]
+  assessments         ClientAssessment[]
+  workoutAssignments  ClientWorkoutAssignment[]
+  workoutLogs         WorkoutLog[]
+  attendances         SessionAttendance[]
+  mealPlans           MealPlan[]
+  memberships         Membership[]
+  notes               ClientNote[]
 
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("client_profiles")
 }
@@ -222,19 +224,19 @@ model ClientCoachAssignment {
 }
 
 model Sport {
-  id            String          @id @default(uuid())
+  id            String   @id @default(uuid())
   nameAr        String
   nameEn        String
   icon          String?
   descriptionAr String?
   descriptionEn String?
   categories    String[]
-  
-  exercises     Exercise[]
-  templates     WorkoutTemplate[]
-  programs      TrainingProgram[]
-  clients       ClientProfile[]
-  sessions      SessionCalendar[]
+
+  exercises Exercise[]
+  templates WorkoutTemplate[]
+  programs  TrainingProgram[]
+  clients   ClientProfile[]
+  sessions  SessionCalendar[]
 
   @@map("sports")
 }
@@ -259,7 +261,7 @@ model Equipment {
 }
 
 model Exercise {
-  id               String       @id @default(uuid())
+  id               String     @id @default(uuid())
   nameAr           String
   nameEn           String
   descriptionAr    String?
@@ -272,45 +274,45 @@ model Exercise {
   coachTipsEn      String?
   videoUrl         String?
   thumbnailUrl     String?
-  difficulty       Difficulty   @default(BEGINNER)
-  metricType       MetricType   @default(SETS_REPS_WEIGHT)
-  
-  sportId          String
-  sport            Sport        @relation(fields: [sportId], references: [id])
-  primaryMuscleId  String?
-  primaryMuscle    MuscleGroup? @relation(fields: [primaryMuscleId], references: [id])
-  equipmentId      String?
-  equipment        Equipment?   @relation(fields: [equipmentId], references: [id])
+  difficulty       Difficulty @default(BEGINNER)
+  metricType       MetricType @default(SETS_REPS_WEIGHT)
+
+  sportId         String
+  sport           Sport        @relation(fields: [sportId], references: [id])
+  primaryMuscleId String?
+  primaryMuscle   MuscleGroup? @relation(fields: [primaryMuscleId], references: [id])
+  equipmentId     String?
+  equipment       Equipment?   @relation(fields: [equipmentId], references: [id])
 
   contraindicatedBodyParts BodyPart[]
-  
+
   templateExercises WorkoutTemplateExercise[]
   loggedExercises   WorkoutExerciseLog[]
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("exercises")
 }
 
 model WorkoutTemplate {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   titleAr       String
   titleEn       String
   descriptionAr String?
   descriptionEn String?
   sportId       String
-  sport         Sport    @relation(fields: [sportId], references: [id])
-  difficulty    Difficulty @default(BEGINNER)
+  sport         Sport         @relation(fields: [sportId], references: [id])
+  difficulty    Difficulty    @default(BEGINNER)
   creatorId     String?
   creator       CoachProfile? @relation(fields: [creatorId], references: [id])
-  
-  exercises     WorkoutTemplateExercise[]
-  programWorkouts ProgramWorkout[]
-  assignments   ClientWorkoutAssignment[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  exercises       WorkoutTemplateExercise[]
+  programWorkouts ProgramWorkout[]
+  assignments     ClientWorkoutAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("workout_templates")
 }
@@ -337,63 +339,63 @@ model WorkoutTemplateExercise {
 }
 
 model TrainingProgram {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   titleAr       String
   titleEn       String
   descriptionAr String?
   descriptionEn String?
-  durationWeeks Int      @default(4)
+  durationWeeks Int           @default(4)
   sportId       String
-  sport         Sport    @relation(fields: [sportId], references: [id])
-  goalType      GoalType @default(GENERAL_FITNESS)
-  difficulty    Difficulty @default(BEGINNER)
+  sport         Sport         @relation(fields: [sportId], references: [id])
+  goalType      GoalType      @default(GENERAL_FITNESS)
+  difficulty    Difficulty    @default(BEGINNER)
   creatorId     String?
   creator       CoachProfile? @relation(fields: [creatorId], references: [id])
-  isTemplate    Boolean  @default(true)
+  isTemplate    Boolean       @default(true)
 
-  weeks         ProgramWeek[]
-  assignments   ClientWorkoutAssignment[]
+  weeks       ProgramWeek[]
+  assignments ClientWorkoutAssignment[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("training_programs")
 }
 
 model ProgramWeek {
-  id          String      @id @default(uuid())
-  programId   String
-  program     TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
-  weekNumber  Int
-  focusAr     String?
-  focusEn     String?
+  id         String          @id @default(uuid())
+  programId  String
+  program    TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  weekNumber Int
+  focusAr    String?
+  focusEn    String?
 
-  days        ProgramDay[]
+  days ProgramDay[]
 
   @@map("program_weeks")
 }
 
 model ProgramDay {
-  id          String       @id @default(uuid())
-  weekId      String
-  week        ProgramWeek  @relation(fields: [weekId], references: [id], onDelete: Cascade)
-  dayNumber   Int
-  titleAr     String
-  titleEn     String
-  isRestDay   Boolean      @default(false)
+  id        String      @id @default(uuid())
+  weekId    String
+  week      ProgramWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  dayNumber Int
+  titleAr   String
+  titleEn   String
+  isRestDay Boolean     @default(false)
 
-  workouts    ProgramWorkout[]
+  workouts ProgramWorkout[]
 
   @@map("program_days")
 }
 
 model ProgramWorkout {
-  id          String          @id @default(uuid())
-  dayId       String
-  day         ProgramDay      @relation(fields: [dayId], references: [id], onDelete: Cascade)
-  templateId  String
-  template    WorkoutTemplate @relation(fields: [templateId], references: [id])
-  orderIndex  Int             @default(0)
+  id         String          @id @default(uuid())
+  dayId      String
+  day        ProgramDay      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  templateId String
+  template   WorkoutTemplate @relation(fields: [templateId], references: [id])
+  orderIndex Int             @default(0)
 
   @@map("program_workouts")
 }
@@ -413,43 +415,43 @@ model ClientWorkoutAssignment {
   completedAt   DateTime?
   coachNotes    String?
 
-  workoutLog    WorkoutLog?
+  workoutLog WorkoutLog?
 
-  createdAt     DateTime         @default(now())
+  createdAt DateTime @default(now())
 
   @@map("client_workout_assignments")
 }
 
 model WorkoutLog {
-  id              String                  @id @default(uuid())
-  assignmentId    String?                 @unique
+  id              String                   @id @default(uuid())
+  assignmentId    String?                  @unique
   assignment      ClientWorkoutAssignment? @relation(fields: [assignmentId], references: [id])
   clientId        String
-  client          ClientProfile           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client          ClientProfile            @relation(fields: [clientId], references: [id], onDelete: Cascade)
   coachId         String?
-  coach           CoachProfile?           @relation(fields: [coachId], references: [id])
-  startedAt       DateTime                @default(now())
+  coach           CoachProfile?            @relation(fields: [coachId], references: [id])
+  startedAt       DateTime                 @default(now())
   completedAt     DateTime?
   durationMinutes Int?
   overallRpe      Int?
   clientFeedback  String?
   coachFeedback   String?
-  isCompleted     Boolean                 @default(false)
+  isCompleted     Boolean                  @default(false)
 
-  exercises       WorkoutExerciseLog[]
+  exercises WorkoutExerciseLog[]
 
   @@map("workout_logs")
 }
 
 model WorkoutExerciseLog {
-  id           String       @id @default(uuid())
+  id           String     @id @default(uuid())
   workoutLogId String
-  workoutLog   WorkoutLog   @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
+  workoutLog   WorkoutLog @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
   exerciseId   String
-  exercise     Exercise     @relation(fields: [exerciseId], references: [id])
+  exercise     Exercise   @relation(fields: [exerciseId], references: [id])
   notes        String?
 
-  sets         SetLog[]
+  sets SetLog[]
 
   @@map("workout_exercise_logs")
 }
@@ -472,22 +474,22 @@ model SetLog {
 }
 
 model ClientMeasurementHistory {
-  id                 String        @id @default(uuid())
-  clientId           String
-  client             ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  recordedByCoachId  String?
-  recordedByCoach    CoachProfile? @relation(fields: [recordedByCoachId], references: [id])
-  date               DateTime      @default(now())
-  weightKg           Float
-  heightCm           Float?
-  bmi                Float?
-  bodyFatPercentage  Float?
-  muscleMassKg       Float?
-  waistCm            Float?
-  chestCm            Float?
-  armsCm             Float?
-  thighCm            Float?
-  notes              String?
+  id                String        @id @default(uuid())
+  clientId          String
+  client            ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  recordedByCoachId String?
+  recordedByCoach   CoachProfile? @relation(fields: [recordedByCoachId], references: [id])
+  date              DateTime      @default(now())
+  weightKg          Float
+  heightCm          Float?
+  bmi               Float?
+  bodyFatPercentage Float?
+  muscleMassKg      Float?
+  waistCm           Float?
+  chestCm           Float?
+  armsCm            Float?
+  thighCm           Float?
+  notes             String?
 
   @@map("client_measurement_histories")
 }
@@ -511,18 +513,18 @@ model ClientGoal {
 }
 
 model ClientMedicalRestriction {
-  id                 String              @id @default(uuid())
-  clientId           String
-  client             ClientProfile       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  conditionName      String
-  bodyPart           BodyPart
-  severity           RestrictionSeverity @default(MEDIUM)
-  description        String?
-  restrictedMuscles  String[]
+  id                  String              @id @default(uuid())
+  clientId            String
+  client              ClientProfile       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  conditionName       String
+  bodyPart            BodyPart
+  severity            RestrictionSeverity @default(MEDIUM)
+  description         String?
+  restrictedMuscles   String[]
   restrictedExercises String[]
-  isActive           Boolean             @default(true)
-  notes              String?
-  createdAt          DateTime            @default(now())
+  isActive            Boolean             @default(true)
+  notes               String?
+  createdAt           DateTime            @default(now())
 
   @@map("client_medical_restrictions")
 }
@@ -561,19 +563,19 @@ model ClientAssessment {
 }
 
 model SessionCalendar {
-  id              String              @id @default(uuid())
+  id              String       @id @default(uuid())
   coachId         String
-  coach           CoachProfile        @relation(fields: [coachId], references: [id])
+  coach           CoachProfile @relation(fields: [coachId], references: [id])
   sportId         String
-  sport           Sport               @relation(fields: [sportId], references: [id])
+  sport           Sport        @relation(fields: [sportId], references: [id])
   title           String
-  sessionType     SessionType         @default(INDIVIDUAL)
+  sessionType     SessionType  @default(INDIVIDUAL)
   startTime       DateTime
   endTime         DateTime
   location        String?
-  maxParticipants Int                 @default(1)
-  
-  attendances     SessionAttendance[]
+  maxParticipants Int          @default(1)
+
+  attendances SessionAttendance[]
 
   @@map("session_calendars")
 }
@@ -674,4 +676,35 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model Session {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime  @default(now())
+  revokedAt  DateTime?
+  userAgent  String?
+  ipAddress  String?
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }

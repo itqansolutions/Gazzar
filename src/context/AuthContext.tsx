@@ -1,28 +1,18 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { SessionUser } from "@/lib/auth";
-import { UserRole } from "@/types";
+import type { SessionUser, UserRole } from "@/types";
 import { db } from "@/lib/db";
 
 interface AuthContextType {
   user: SessionUser | null;
   loading: boolean;
-  login: (email: string, password?: string) => Promise<{ success: boolean; message?: string }>;
-  loginAsRole: (role: UserRole) => void;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   updateCurrentUser: (updates: Partial<SessionUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const defaultAdminUser: SessionUser = {
-  id: "user-admin",
-  email: "admin@gxacademy.com",
-  name: "Abdullah (Admin)",
-  role: "ADMIN",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"
-};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -68,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Listen to DB changes across the app to update currently logged-in user profile immediately
   useEffect(() => {
     const handleDbChange = () => {
-      setUser(prev => {
+      setUser((prev: SessionUser | null) => {
         if (!prev) return null;
         const synced = syncWithDb(prev);
         if (synced) {
@@ -83,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateCurrentUser = (updates: Partial<SessionUser>) => {
-    setUser(prev => {
+    setUser((prev: SessionUser | null) => {
       if (!prev) return null;
       const updated = { ...prev, ...updates };
       localStorage.setItem("gx_session_user", JSON.stringify(updated));
@@ -91,19 +81,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const login = async (email: string, password?: string): Promise<{ success: boolean; message?: string }> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      // Direct local DB check for fast reactive experience
-      const foundUser = db.getUserByEmail(email);
-      if (!foundUser) {
-        return { success: false, message: "البريد الإلكتروني غير مسجل في النظام" };
+      if (!email?.trim() || !password) {
+        return { success: false, message: "البريد الإلكتروني وكلمة المرور مطلوبان" };
       }
 
-      // Check password
-      const inputPass = password || "A@123456";
-      const expectedPass = foundUser.password || "A@123456";
-      if (inputPass !== expectedPass && inputPass !== "A@123456" && inputPass !== "password123") {
-        return { success: false, message: "كلمة المرور غير صحيحة" };
+      // Direct local DB check for reactive prototype experience
+      const foundUser = db.getUserByEmail(email.trim());
+      if (!foundUser) {
+        return { success: false, message: "بيانات الدخول غير صحيحة" };
+      }
+
+      // Client-side prototype verification against stored mock credentials
+      const isValid = Boolean(foundUser.password && password === foundUser.password);
+      if (!isValid) {
+        return { success: false, message: "بيانات الدخول غير صحيحة" };
       }
 
       const sessionUser: SessionUser = {
@@ -125,24 +118,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginAsRole = (role: UserRole) => {
-    const users = db.getUsers();
-    const matching = users.find(u => u.role === role) || defaultAdminUser;
-    const sessionUser: SessionUser = {
-      id: matching.id,
-      email: matching.email,
-      name: matching.name,
-      role: matching.role,
-      avatar: matching.avatar,
-      phone: matching.phone,
-      coachId: role === "HEAD_COACH" ? `coach-${matching.id}` : role === "COACH" ? `coach-${matching.id}` : undefined,
-      clientId: role === "CLIENT" ? `client-${matching.id}` : undefined
-    };
-
-    setUser(sessionUser);
-    localStorage.setItem("gx_session_user", JSON.stringify(sessionUser));
-  };
-
   const logout = () => {
     setUser(null);
     localStorage.removeItem("gx_session_user");
@@ -152,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginAsRole, logout, updateCurrentUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateCurrentUser }}>
       {children}
     </AuthContext.Provider>
   );

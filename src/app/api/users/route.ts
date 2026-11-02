@@ -4,7 +4,8 @@ import { db } from "@/lib/db";
 export async function GET() {
   try {
     const users = db.getUsers();
-    return NextResponse.json({ success: true, data: users });
+    const sanitizedUsers = users.map(({ password, ...u }) => u);
+    return NextResponse.json({ success: true, data: sanitizedUsers });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -18,7 +19,8 @@ export async function POST(request: Request) {
     }
 
     const newUser = db.createUser(body);
-    return NextResponse.json({ success: true, data: newUser }, { status: 201 });
+    const { password, ...sanitizedNewUser } = newUser;
+    return NextResponse.json({ success: true, data: sanitizedNewUser }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 400 });
   }

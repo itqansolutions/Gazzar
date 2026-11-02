@@ -448,3 +448,14 @@ export interface Notification {
   link?: string;
   createdAt: string;
 }
+
+export interface SessionUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  avatar?: string | null;
+  phone?: string | null;
+  coachId?: string | null;
+  clientId?: string | null;
+}

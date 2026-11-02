@@ -1,78 +1,25 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import { User, UserRole } from "@/types";
-import { db } from "./db";
+import type { SessionUser } from "./auth/types";
+
+export type { SessionUser };
+export { hashPassword, verifyPassword, validatePasswordStrength } from "./auth/password";
 
 const JWT_SECRET = process.env.JWT_SECRET || "gazzar_sports_coaching_jwt_super_secret_key_2026";
 
-export interface SessionUser {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  avatar?: string;
-  phone?: string;
-  coachId?: string;
-  clientId?: string;
-}
-
-export function hashPassword(password: string): string {
-  return bcrypt.hashSync(password, 10);
-}
-
-export function verifyPassword(inputPassword: string, storedPasswordOrHash?: string): boolean {
-  if (!storedPasswordOrHash) return inputPassword === "A@123456";
-  if (inputPassword === storedPasswordOrHash) return true;
-  if (inputPassword === "A@123456" || inputPassword === "password123") return true;
-  try {
-    return bcrypt.compareSync(inputPassword, storedPasswordOrHash);
-  } catch {
-    return false;
-  }
-}
-
+/**
+ * Legacy JWT token generator (preserved for transition)
+ */
 export function createAuthToken(user: SessionUser): string {
   return jwt.sign(user, JWT_SECRET, { expiresIn: "7d" });
 }
 
+/**
+ * Legacy JWT token verifier (preserved for transition)
+ */
 export function verifyAuthToken(token: string): SessionUser | null {
   try {
     return jwt.verify(token, JWT_SECRET) as SessionUser;
   } catch {
     return null;
   }
-}
-
-export function getDemoAccounts() {
-  const users = db.getUsers();
-  return [
-    {
-      role: "ADMIN" as UserRole,
-      titleAr: "مدير الأكاديمية (Admin)",
-      titleEn: "Academy Admin",
-      email: "admin@gxacademy.com",
-      user: users.find(u => u.role === "ADMIN")!
-    },
-    {
-      role: "HEAD_COACH" as UserRole,
-      titleAr: "كبير المدربين (Head Coach)",
-      titleEn: "Head Coach",
-      email: "headcoach@gxacademy.com",
-      user: users.find(u => u.role === "HEAD_COACH")!
-    },
-    {
-      role: "COACH" as UserRole,
-      titleAr: "كابتن تدريب (Coach)",
-      titleEn: "Coach",
-      email: "ali@gxacademy.com",
-      user: users.find(u => u.role === "COACH")!
-    },
-    {
-      role: "CLIENT" as UserRole,
-      titleAr: "مشترك / لاعب (Client)",
-      titleEn: "Client Athlete",
-      email: "mohamed@gmail.com",
-      user: users.find(u => u.role === "CLIENT")!
-    }
-  ];
 }
