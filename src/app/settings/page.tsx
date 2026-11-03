@@ -53,11 +53,11 @@ export default function SettingsPage() {
       )}
 
       {/* Settings Form */}
-      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 transition-colors duration-300">
+      <div className="bg-white dark:bg-[#121620] border border-slate-200 dark:border-[#1f2937] rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 transition-colors duration-200">
         {/* Theme Mode Selection */}
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            {theme === "dark" ? <Moon className="w-4 h-4 text-purple-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+            {theme === "dark" ? <Moon className="w-4 h-4 text-red-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
             <span>مظهر النظام (Theme Mode)</span>
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -66,11 +66,11 @@ export default function SettingsPage() {
               onClick={() => setTheme("dark")}
               className={`p-3.5 rounded-2xl border text-xs font-bold text-center flex items-center justify-center space-x-2 rtl:space-x-reverse transition-all ${
                 theme === "dark"
-                  ? "bg-slate-950 border-emerald-500 text-emerald-400 shadow-md ring-1 ring-emerald-500/30"
-                  : "bg-slate-100 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-[#090a0f] border-red-500 text-red-400 shadow-md ring-1 ring-red-500/30 font-extrabold"
+                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <Moon className="w-4 h-4 text-purple-400" />
+              <Moon className="w-4 h-4 text-red-400" />
               <span>الوضع الليلي (Dark Mode) 🌙</span>
             </button>
             <button
@@ -78,8 +78,8 @@ export default function SettingsPage() {
               onClick={() => setTheme("light")}
               className={`p-3.5 rounded-2xl border text-xs font-bold text-center flex items-center justify-center space-x-2 rtl:space-x-reverse transition-all ${
                 theme === "light"
-                  ? "bg-amber-500/10 border-amber-500 text-amber-700 shadow-md ring-1 ring-amber-500/30 font-extrabold"
-                  : "bg-slate-100 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-400 shadow-md ring-1 ring-red-500/30 font-extrabold"
+                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <Sun className="w-4 h-4 text-amber-500" />
@@ -89,9 +89,9 @@ export default function SettingsPage() {
         </div>
 
         {/* Language Selection */}
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1f2937]">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            <Globe className="w-4 h-4 text-emerald-500" />
+            <Globe className="w-4 h-4 text-red-500" />
             <span>لغة النظام (System Language)</span>
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -100,8 +100,8 @@ export default function SettingsPage() {
               onClick={() => setLanguage("ar")}
               className={`p-3.5 rounded-2xl border text-xs font-bold text-center transition-all ${
                 language === "ar"
-                  ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-300 shadow-md ring-1 ring-emerald-500/30"
-                  : "bg-slate-100 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-400 shadow-md ring-1 ring-red-500/30"
+                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               العربية (RTL) 🇪🇬
@@ -111,8 +111,8 @@ export default function SettingsPage() {
               onClick={() => setLanguage("en")}
               className={`p-3.5 rounded-2xl border text-xs font-bold text-center transition-all ${
                 language === "en"
-                  ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-300 shadow-md ring-1 ring-emerald-500/30"
-                  : "bg-slate-100 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-400 shadow-md ring-1 ring-red-500/30"
+                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               English (LTR) 🌐
@@ -121,9 +121,9 @@ export default function SettingsPage() {
         </div>
 
         {/* Units Selection */}
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1f2937]">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            <Scale className="w-4 h-4 text-blue-500" />
+            <Scale className="w-4 h-4 text-red-500" />
             <span>وحدات القياس (Measurement Units)</span>
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -132,8 +132,8 @@ export default function SettingsPage() {
               onClick={() => setUnit("METRIC")}
               className={`p-3.5 rounded-2xl border text-xs font-bold text-center transition-all ${
                 unit === "METRIC"
-                  ? "bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-300 shadow-md"
-                  : "bg-slate-100 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-300 shadow-md"
+                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               النظام المتري: كجم وسم (KG / CM)
@@ -143,8 +143,8 @@ export default function SettingsPage() {
               onClick={() => setUnit("IMPERIAL")}
               className={`p-3.5 rounded-2xl border text-xs font-bold text-center transition-all ${
                 unit === "IMPERIAL"
-                  ? "bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-300 shadow-md"
-                  : "bg-slate-100 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  ? "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-300 shadow-md"
+                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               النظام الإمبراطوري: باوند وبوصة (LBS / IN)
@@ -153,9 +153,9 @@ export default function SettingsPage() {
         </div>
 
         {/* Organization Info */}
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1f2937]">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            <Building className="w-4 h-4 text-amber-500" />
+            <Building className="w-4 h-4 text-red-500" />
             <span>بيانات المنشأة الرياضية (Organization)</span>
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -164,7 +164,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 defaultValue="GX Academy"
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#161c28] border border-slate-300 dark:border-[#1f2937] text-xs text-slate-900 dark:text-white"
               />
             </div>
             <div>
@@ -172,16 +172,16 @@ export default function SettingsPage() {
               <input
                 type="email"
                 defaultValue="contact@gxacademy.com"
-                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#161c28] border border-slate-300 dark:border-[#1f2937] text-xs text-slate-900 dark:text-white"
               />
             </div>
           </div>
         </div>
 
         {/* Data Persistence & Reset Controls */}
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1f2937]">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <Sparkles className="w-4 h-4 text-red-500" />
             <span>إدارة قاعدة البيانات والحفظ المحلي (Database & Persistence)</span>
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -198,7 +198,7 @@ export default function SettingsPage() {
                   setTimeout(() => setSavedMessage(""), 3000);
                 }
               }}
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-300 dark:border-slate-700 transition-all flex items-center justify-center space-x-2 rtl:space-x-reverse"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#161c28] dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-300 dark:border-[#1f2937] transition-all flex items-center justify-center space-x-2 rtl:space-x-reverse"
             >
               <span>🔄 إعادة ضبط البيانات الافتراضية للمصنع</span>
             </button>
@@ -208,7 +208,7 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={handleSave}
-          className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all"
+          className="w-full py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 transition-all cursor-pointer"
         >
           {t("save")}
         </button>

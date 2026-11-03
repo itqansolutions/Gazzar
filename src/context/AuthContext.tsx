@@ -1,15 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import type { SessionUser, UserRole } from "@/types";
-import { db } from "@/lib/db";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import type { SessionUser } from "@/types";
 
 interface AuthContextType {
   user: SessionUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateCurrentUser: (updates: Partial<SessionUser>) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,116 +18,144 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Sync session with live db
-  const syncWithDb = (savedUser: SessionUser | null): SessionUser | null => {
-    if (!savedUser) return null;
-    const liveUser = db.getUserById(savedUser.id) || db.getUserByEmail(savedUser.email);
-    if (liveUser) {
-      return {
-        ...savedUser,
-        id: liveUser.id,
-        email: liveUser.email,
-        name: liveUser.name,
-        role: liveUser.role,
-        avatar: liveUser.avatar,
-        phone: liveUser.phone
-      };
-    }
-    return savedUser;
-  };
-
+  // 1. Session Restoration on Application Startup via /api/auth/me
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("gx_session_user");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const synced = syncWithDb(parsed);
-        setUser(synced);
-        if (synced) {
-          localStorage.setItem("gx_session_user", JSON.stringify(synced));
+    let isMounted = true;
+
+    async function restoreSession() {
+      try {
+        // Remove legacy mock auth from localStorage if present
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("gx_session_user");
+          } catch {
+            // Ignore restricted storage contexts
+          }
         }
-      } else {
-        setUser(null);
+
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            if (data.success && data.user) {
+              setUser(data.user);
+            } else {
+              setUser(null);
+            }
+          }
+        } else {
+          if (isMounted) {
+            setUser(null);
+          }
+        }
+      } catch {
+        if (isMounted) {
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    } catch {
-      setUser(null);
     }
-    setLoading(false);
-  }, []);
 
-  // Listen to DB changes across the app to update currently logged-in user profile immediately
-  useEffect(() => {
-    const handleDbChange = () => {
-      setUser((prev: SessionUser | null) => {
-        if (!prev) return null;
-        const synced = syncWithDb(prev);
-        if (synced) {
-          localStorage.setItem("gx_session_user", JSON.stringify(synced));
-        }
-        return synced;
-      });
+    restoreSession();
+
+    return () => {
+      isMounted = false;
     };
-
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
-  const updateCurrentUser = (updates: Partial<SessionUser>) => {
-    setUser((prev: SessionUser | null) => {
-      if (!prev) return null;
-      const updated = { ...prev, ...updates };
-      localStorage.setItem("gx_session_user", JSON.stringify(updated));
-      return updated;
-    });
-  };
-
+  // 2. Centralized Login via POST /api/auth/login
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
       if (!email?.trim() || !password) {
         return { success: false, message: "البريد الإلكتروني وكلمة المرور مطلوبان" };
       }
 
-      // Direct local DB check for reactive prototype experience
-      const foundUser = db.getUserByEmail(email.trim());
-      if (!foundUser) {
-        return { success: false, message: "بيانات الدخول غير صحيحة" };
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ email: email.trim(), password })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success && data.user) {
+        // HttpOnly gx_session cookie is set by the server response
+        setUser(data.user);
+        return { success: true };
       }
 
-      // Client-side prototype verification against stored mock credentials
-      const isValid = Boolean(foundUser.password && password === foundUser.password);
-      if (!isValid) {
-        return { success: false, message: "بيانات الدخول غير صحيحة" };
-      }
-
-      const sessionUser: SessionUser = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-        role: foundUser.role,
-        avatar: foundUser.avatar,
-        phone: foundUser.phone,
-        coachId: foundUser.role === "COACH" || foundUser.role === "HEAD_COACH" ? `coach-${foundUser.id}` : undefined,
-        clientId: foundUser.role === "CLIENT" ? `client-${foundUser.id}` : undefined
+      setUser(null);
+      return {
+        success: false,
+        message: data.message || "بيانات الدخول غير صحيحة"
       };
-
-      setUser(sessionUser);
-      localStorage.setItem("gx_session_user", JSON.stringify(sessionUser));
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, message: err.message || "حدث خطأ أثناء تسجيل الدخول" };
+    } catch {
+      setUser(null);
+      return { success: false, message: "فشل الاتصال بالخادم. يرجى المحاولة مرة أخرى." };
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("gx_session_user");
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
+  // 3. Centralized Logout via POST /api/auth/logout
+  const logout = async (): Promise<void> => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+    } catch {
+      // Best-effort notification to server
+    } finally {
+      setUser(null);
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
   };
+
+  // 4. Session Refresh via GET /api/auth/me
+  const refreshUser = useCallback(async (): Promise<void> => {
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "GET",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+          return;
+        }
+      }
+      setUser(null);
+    } catch {
+      // Keep existing state on transient failure
+    }
+  }, []);
+
+  // 5. In-Memory User Profile State Update
+  const updateCurrentUser = useCallback((updates: Partial<SessionUser>) => {
+    setUser((prev: SessionUser | null) => (prev ? { ...prev, ...updates } : null));
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateCurrentUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateCurrentUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

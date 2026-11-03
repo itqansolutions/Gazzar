@@ -122,8 +122,13 @@ export class SessionService {
     // Throttled Activity Touch:
     // Update lastUsedAt and extend sliding window ONLY if > 15 minutes elapsed
     const needsTouch = shouldTouchSession(sessionWithUser.lastUsedAt, now);
+    let effectiveExpiresAt = sessionWithUser.expiresAt;
+    let effectiveLastUsedAt = sessionWithUser.lastUsedAt;
+
     if (needsTouch) {
       const newExpiresAt = calculateRenewedExpiration(sessionWithUser.createdAt, now);
+      effectiveExpiresAt = newExpiresAt;
+      effectiveLastUsedAt = now;
       // Execute asynchronously in background to minimize request latency
       this.repository
         .updateSessionActivity(sessionWithUser.id, now, newExpiresAt)
@@ -145,8 +150,8 @@ export class SessionService {
       sessionId: sessionWithUser.id,
       userId: sessionWithUser.userId,
       createdAt: sessionWithUser.createdAt,
-      lastUsedAt: sessionWithUser.lastUsedAt,
-      expiresAt: sessionWithUser.expiresAt,
+      lastUsedAt: effectiveLastUsedAt,
+      expiresAt: effectiveExpiresAt,
       needsTouch
     };
   }

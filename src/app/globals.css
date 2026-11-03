@@ -5,18 +5,42 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
+  --background: #f1f5f9;
   --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+  --muted: #64748b;
+  --muted-foreground: #94a3b8;
+  --accent: #f43f5e;
 }
 
 html.light {
-  --background: #f8fafc;
+  --background: #f1f5f9;
   --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+  --muted: #64748b;
+  --muted-foreground: #94a3b8;
+  --accent: #f43f5e;
 }
 
 html.dark {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #090a0f;
+  --foreground: #f8fafc;
+  --card: #121620;
+  --card-foreground: #f8fafc;
+  --border: #1f2937;
+  --primary: #e11d48;
+  --primary-foreground: #ffffff;
+  --muted: #94a3b8;
+  --muted-foreground: #64748b;
+  --accent: #fb7185;
 }
 
 body {
@@ -34,7 +58,7 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(9, 10, 15, 0.7);
 }
 
 html.light .custom-scrollbar::-webkit-scrollbar-track {
@@ -51,7 +75,7 @@ html.light .custom-scrollbar::-webkit-scrollbar-thumb {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.8);
+  background: rgba(225, 29, 72, 0.85);
 }
 
 /* Safe area padding for mobile notches */
@@ -61,9 +85,9 @@ html.light .custom-scrollbar::-webkit-scrollbar-thumb {
 
 /* Card glassmorphism effect */
 .glass-card {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(18, 22, 32, 0.85);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  border: 1px solid rgba(31, 41, 55, 0.7);
 }
 
 html.light .glass-card {

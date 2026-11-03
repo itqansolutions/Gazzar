@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className="light">
-      <body className="antialiased min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300">
+    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+      <body className="antialiased min-h-screen bg-background text-foreground transition-colors duration-200">
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

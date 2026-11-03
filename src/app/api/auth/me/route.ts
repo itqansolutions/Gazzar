@@ -1,46 +1,73 @@
 import { NextResponse } from "next/server";
-import { verifyAuthToken } from "@/lib/auth";
-import { db } from "@/lib/db";
+import {
+  authService,
+  SESSION_COOKIE_NAME,
+  getClearSessionCookieOptions,
+  getSessionCookieOptions
+} from "@/lib/auth/index";
+
+function extractSessionToken(request: Request): string | null {
+  if ("cookies" in request && typeof (request as { cookies?: { get: (name: string) => { value?: string } | undefined } }).cookies?.get === "function") {
+    return (request as { cookies: { get: (name: string) => { value?: string } | undefined } }).cookies.get(SESSION_COOKIE_NAME)?.value ?? null;
+  }
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 export async function GET(request: Request) {
-  try {
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, message: "Missing or invalid authorization token" },
-        { status: 401 }
-      );
-    }
+  // 1. Read Active Session Token from Cookie
+  const sessionToken = extractSessionToken(request);
 
-    const token = authHeader.substring(7);
-    const session = verifyAuthToken(token);
-    if (!session) {
-      return NextResponse.json(
-        { success: false, message: "Invalid or expired session token" },
-        { status: 401 }
-      );
-    }
-
-    const liveUser = db.getUserById(session.id) || db.getUserByEmail(session.email);
-    if (!liveUser) {
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    const sanitizedUser = {
-      id: liveUser.id,
-      email: liveUser.email,
-      name: liveUser.name,
-      role: liveUser.role,
-      avatar: liveUser.avatar,
-      phone: liveUser.phone,
-      createdAt: liveUser.createdAt
-    };
-
-    return NextResponse.json({ success: true, user: sanitizedUser });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  if (!sessionToken) {
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 }
+    );
   }
+
+  // 2. Validate Session with SessionService
+  const validation = await authService.getCurrentUser(sessionToken);
+
+  if (!validation.valid || !validation.user) {
+    // Session is invalid, expired, revoked, or user was deleted -> Wipe cookie and reject
+    const response = NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 }
+    );
+
+    const clearOpts = getClearSessionCookieOptions();
+    response.cookies.set(clearOpts.name, clearOpts.value, {
+      httpOnly: clearOpts.httpOnly,
+      secure: clearOpts.secure,
+      sameSite: clearOpts.sameSite,
+      path: clearOpts.path,
+      expires: clearOpts.expires,
+      maxAge: clearOpts.maxAge
+    });
+
+    return response;
+  }
+
+  // 3. Valid Session: Return Sanitized User Context
+  const response = NextResponse.json(
+    { success: true, user: validation.user },
+    { status: 200 }
+  );
+
+  // 4. If Activity Was Throttled & Extended, Update Cookie Expiration
+  if (validation.needsTouch && validation.expiresAt) {
+    const updatedCookie = getSessionCookieOptions(sessionToken, validation.expiresAt);
+    response.cookies.set(updatedCookie.name, updatedCookie.value, {
+      httpOnly: updatedCookie.httpOnly,
+      secure: updatedCookie.secure,
+      sameSite: updatedCookie.sameSite,
+      path: updatedCookie.path,
+      expires: updatedCookie.expires,
+      maxAge: updatedCookie.maxAge
+    });
+  }
+
+  return response;
 }

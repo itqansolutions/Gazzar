@@ -67,7 +67,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col justify-center items-center py-10 px-4">
       {/* Brand Header */}
       <div className="max-w-md w-full text-center mb-6">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 via-emerald-600 to-teal-400 flex items-center justify-center shadow-xl shadow-emerald-500/20 mx-auto mb-4 scale-100 hover:scale-105 transition-transform">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-600 to-red-500 flex items-center justify-center shadow-xl shadow-red-600/20 mx-auto mb-4 scale-100 hover:scale-105 transition-transform">
           <Dumbbell className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -80,8 +80,8 @@ export default function LoginPage() {
 
       <div className="max-w-md w-full">
         {/* Email & Password Login Form */}
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-all">
-          <div className="flex items-center justify-between mb-5 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div className="bg-white dark:bg-[#121620] border border-slate-200 dark:border-[#1f2937] rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-all">
+          <div className="flex items-center justify-between mb-5 border-b border-slate-200 dark:border-[#1f2937] pb-3">
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {language === "ar" ? "تسجيل الدخول للنظام" : "Sign In to System"}
@@ -90,7 +90,7 @@ export default function LoginPage() {
                 {language === "ar" ? "أدخل البريد الإلكتروني وكلمة المرور للمتابعة" : "Enter your email & password to continue"}
               </p>
             </div>
-            <Lock className="w-5 h-5 text-emerald-500" />
+            <Lock className="w-5 h-5 text-red-500" />
           </div>
 
           {errorMessage && (
@@ -121,7 +121,7 @@ export default function LoginPage() {
                   placeholder={language === "ar" ? "أدخل بريدك الإلكتروني" : "name@example.com"}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full ps-9 pe-3 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
+                  className="w-full ps-9 pe-3 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-[#161c28] border border-slate-200 dark:border-[#1f2937] text-slate-900 dark:text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all font-mono"
                 />
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full ps-9 pe-10 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
+                  className="w-full ps-9 pe-10 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-[#161c28] border border-slate-200 dark:border-[#1f2937] text-slate-900 dark:text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all font-mono"
                 />
                 <button
                   type="button"
@@ -155,7 +155,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2 rtl:space-x-reverse disabled:opacity-50 cursor-pointer"
+              className="w-full py-3 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 transition-all flex items-center justify-center space-x-2 rtl:space-x-reverse disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <span>{language === "ar" ? "جاري التحقق..." : "Signing in..."}</span>

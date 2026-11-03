@@ -47,7 +47,7 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
   const clientProfileLink = myClient ? `/clients/${myClient.id}` : "/dashboard";
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 transition-colors duration-300">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#121620]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#1f2937] text-slate-800 dark:text-slate-100 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Mobile menu button & Brand */}
@@ -61,14 +61,14 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
             </button>
 
             <Link href="/dashboard" className="flex items-center space-x-3 rtl:space-x-reverse group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 via-rose-600 to-red-500 flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
                 <Dumbbell className="w-5 h-5 text-white" />
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-base sm:text-lg leading-tight tracking-tight text-slate-900 dark:text-white">
                   GX Academy
                 </span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                <span className="text-[11px] text-red-600 dark:text-red-400 font-semibold">
                   {language === "ar" ? "نظام التدريب الاحترافي" : "Sports Coaching Platform"}
                 </span>
               </div>
@@ -86,15 +86,28 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
               <span className="sm:hidden">{user?.role}</span>
             </div>
 
-
             {/* Language Toggle AR / EN */}
             <button
               onClick={toggleLanguage}
               className="flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 transition-colors cursor-pointer"
               title="تغيير اللغة / Change Language"
             >
-              <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <Globe className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
               <span className="font-bold">{language === "ar" ? "EN" : "العربية"}</span>
+            </button>
+
+            {/* Theme Toggle (Dark / Light) */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 transition-colors cursor-pointer"
+              title={theme === "dark" ? (language === "ar" ? "تفعيل الوضع النهاري" : "Switch to Light Mode") : (language === "ar" ? "تفعيل الوضع الليلي" : "Switch to Dark Mode")}
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
             </button>
 
             {/* Notifications */}
@@ -104,14 +117,14 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
               aria-label="Notifications"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+              <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
             </Link>
 
             {/* User Avatar & Menu */}
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center space-x-2 rtl:space-x-reverse p-1 rounded-full hover:ring-2 hover:ring-emerald-500/50 transition-all cursor-pointer"
+                className="flex items-center space-x-2 rtl:space-x-reverse p-1 rounded-full hover:ring-2 hover:ring-red-500/50 transition-all cursor-pointer"
               >
                 <img
                   src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
@@ -122,10 +135,10 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
 
               {userDropdownOpen && (
                 <div
-                  className="absolute top-full mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2"
+                  className="absolute top-full mt-2 w-52 bg-white dark:bg-[#161c28] border border-slate-200 dark:border-[#1f2937] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2"
                   style={{ [dir === "rtl" ? "left" : "right"]: 0 }}
                 >
-                  <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700/60">
+                  <div className="px-4 py-2 border-b border-slate-200 dark:border-[#1f2937]">
                     <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name}</p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
                   </div>

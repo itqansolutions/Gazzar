@@ -46,7 +46,7 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
       ];
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 py-1 px-2 safe-area-pb shadow-2xl transition-colors duration-300">
+    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-[#121620]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#1f2937] text-slate-500 dark:text-slate-400 py-1 px-2 safe-area-pb shadow-2xl transition-colors duration-200">
       <div className="flex items-center justify-around">
         {navItems.map(item => {
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -59,10 +59,10 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
                 href={item.href}
                 className="flex flex-col items-center justify-center -mt-5 group"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/40 group-active:scale-95 transition-transform">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-red-600 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-red-600/35 group-active:scale-95 transition-transform">
                   <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                <span className="text-[10px] font-bold text-red-600 dark:text-red-400 mt-1">
                   {item.label}
                 </span>
               </Link>
@@ -74,10 +74,10 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
-                isActive ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                isActive ? "text-red-600 dark:text-red-500 font-bold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
-              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-400"}`} />
+              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-red-600 dark:text-red-500" : "text-slate-400 dark:text-slate-400"}`} />
               <span className="truncate max-w-[64px]">{item.label}</span>
             </Link>
           );

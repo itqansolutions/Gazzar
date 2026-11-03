@@ -235,6 +235,10 @@ test("Milestone 1.3.1 – Session Service & Authentication Core Verification", a
     assert.equal(res16Min.valid, true);
     assert.equal(res16Min.needsTouch, true);
     assert.equal(repo.touchCalls.length, 1);
+    // REV-01 Regression Check: expiresAt returned to caller must match renewed expiration (not stale createdAt + 48h)
+    assert.equal(res16Min.expiresAt.getTime(), repo.touchCalls[0].newExpiresAt.getTime());
+    assert.equal(res16Min.lastUsedAt.getTime(), at16Min.getTime());
+    assert.ok(res16Min.expiresAt.getTime() > res5Min.expiresAt.getTime());
   });
 
   await t.test("10. Concurrent Validations: Multiple concurrent requests handle safely", async () => {

@@ -62,7 +62,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isLoginPage) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-center selection:bg-emerald-500 selection:text-white transition-colors">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] text-slate-900 dark:text-slate-100 flex flex-col justify-center selection:bg-red-600 selection:text-white transition-colors">
         {children}
       </div>
     );
@@ -70,15 +70,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   if (loading || (!user && !isLoginPage)) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center space-y-3">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-emerald-500" />
+      <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] flex flex-col items-center justify-center space-y-3">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-600" />
         <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">جاري التحقق من تسجيل الدخول...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-red-600 selection:text-white transition-colors duration-200">
       <Navbar
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         isSidebarOpen={sidebarOpen}
