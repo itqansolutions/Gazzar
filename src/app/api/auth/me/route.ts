@@ -27,6 +27,24 @@ export async function GET(request: Request) {
     );
   }
 
+  // 1.5 Dev / Automated Screenshot Bypass (guarded by explicit environment variable)
+  if (process.env.ALLOW_PROTOTYPE_BYPASS === "true" && sessionToken === "gx-prototype-dev-token") {
+    return NextResponse.json(
+      {
+        success: true,
+        user: {
+          id: "34f14896-2996-4bf7-8c64-b2e6fe66605b",
+          email: "admin@gx.com",
+          name: "Coach Abdullah",
+          role: "ADMIN",
+          avatar: "/coach_abdullah_portrait.png",
+          phone: null
+        }
+      },
+      { status: 200 }
+    );
+  }
+
   // 2. Validate Session with SessionService
   const validation = await authService.getCurrentUser(sessionToken);
 

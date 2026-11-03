@@ -9,6 +9,7 @@ import { UserRole } from "@/types";
 import GXLogo from "@/components/brand/GXLogo";
 import {
   Bell,
+  Search,
   Shield,
   Menu,
   X,
@@ -92,10 +93,29 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
               <span>{currentRoleInfo.title}</span>
             </div>
 
+            {/* Search (matching reference circular button) */}
+            <button
+              type="button"
+              className="p-2 sm:p-2.5 rounded-full text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer"
+              aria-label="Search"
+            >
+              <Search className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+            </button>
+
+            {/* Notifications (matching reference circular bell with badge) */}
+            <Link
+              href="/dashboard"
+              className="relative p-2 sm:p-2.5 rounded-full text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-red-600 rounded-full ring-2 ring-white dark:ring-[#0c0f17]" />
+            </Link>
+
             {/* Theme Toggle (Dark / Light) */}
             <button
               onClick={toggleTheme}
-              className="p-2 sm:p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer"
+              className="p-2 sm:p-2.5 rounded-full text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer"
               title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
               aria-label="Toggle theme"
             >
@@ -105,16 +125,6 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
                 <Moon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-slate-700" />
               )}
             </button>
-
-            {/* Notifications */}
-            <Link
-              href="/dashboard"
-              className="relative p-2 sm:p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-              <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-red-600 rounded-full ring-2 ring-white dark:ring-[#0c0f17]" />
-            </Link>
 
             {/* User Account Menu with Dedicated Logout */}
             <div className="relative" ref={dropdownRef}>

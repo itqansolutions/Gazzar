@@ -170,7 +170,18 @@ async function main() {
       withAuth: true
     });
 
-    // 2. Mobile Dark Dashboard
+    // 2. Desktop Light Dashboard
+    await captureScreen({
+      width: 1400,
+      height: 900,
+      theme: "light",
+      filename: "desktop_light_dashboard.png",
+      isMobile: false,
+      pathUrl: "/dashboard",
+      withAuth: true
+    });
+
+    // 3. Mobile Dark Dashboard
     await captureScreen({
       width: 390,
       height: 844,
@@ -181,7 +192,7 @@ async function main() {
       withAuth: true
     });
 
-    // 3. Mobile Light Dashboard
+    // 4. Mobile Light Dashboard
     await captureScreen({
       width: 390,
       height: 844,
@@ -192,7 +203,7 @@ async function main() {
       withAuth: true
     });
 
-    // 4. Login Screen (Desktop Dark)
+    // 5. Login Screen (Desktop Dark)
     await captureScreen({
       width: 1200,
       height: 800,
@@ -203,7 +214,7 @@ async function main() {
       withAuth: false
     });
 
-    console.log("All 4 target screenshots captured successfully!");
+    console.log("All 5 target screenshots captured successfully!");
   } finally {
     edgeProcess.kill();
     serverProcess.kill();

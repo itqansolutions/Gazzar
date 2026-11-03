@@ -57,47 +57,37 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   ];
 
-  const adminCoachNavigationGroups = [
-    {
-      title: "Core Management",
-      items: [
-        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/users", label: "User Management", icon: Users, roles: ["ADMIN", "HEAD_COACH"] },
-        { href: "/clients", label: "Clients Directory", icon: Users, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/coaches", label: "Coaches Directory", icon: UserCheck, roles: ["ADMIN", "HEAD_COACH"] }
-      ]
-    },
-    {
-      title: "Training & Library",
-      items: [
-        { href: "/sports", label: "Sports Catalog", icon: Trophy, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/exercises", label: "Exercise Library", icon: Dumbbell, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/templates", label: "Workout Templates", icon: Layers, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/programs", label: "Training Programs", icon: BookOpen, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/assignments", label: "Assignments", icon: ClipboardList, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
-      ]
-    },
-    {
-      title: "Operations & Health",
-      items: [
-        { href: "/calendar", label: "Calendar & Schedule", icon: Calendar, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/attendance", label: "Attendance Tracking", icon: CheckCircle2, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/assessments", label: "Fitness Assessments", icon: Activity, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/nutrition", label: "Nutrition Plans", icon: Apple, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
-        { href: "/memberships", label: "Memberships & Billing", icon: CreditCard, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
-      ]
-    },
-    {
-      title: "Reports & Governance",
-      items: [
-        { href: "/reports", label: "Analytics & Reports", icon: BarChart3, roles: ["ADMIN", "HEAD_COACH"] },
-        { href: "/audit-logs", label: "Audit Trail", icon: ShieldAlert, roles: ["ADMIN"] },
-        { href: "/settings", label: "System Settings", icon: Settings, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
-      ]
-    }
+  // Primary 9-item navigation matching reference
+  const primaryAdminNav = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/clients", label: "Members", icon: Users },
+    { href: "/programs", label: "Programs", icon: BookOpen },
+    { href: "/assignments", label: "Workouts", icon: Dumbbell },
+    { href: "/calendar", label: "Classes", icon: Calendar },
+    { href: "/coaches", label: "Coaches", icon: UserCheck },
+    { href: "/nutrition", label: "Nutrition", icon: Apple },
+    { href: "/reports", label: "Reports", icon: BarChart3 },
+    { href: "/settings", label: "Settings", icon: Settings }
   ];
 
-  const activeGroups = isClient ? clientNavigationGroups : adminCoachNavigationGroups;
+  const secondaryAdminNav = [
+    { href: "/users", label: "Users", icon: Users, roles: ["ADMIN", "HEAD_COACH"] },
+    { href: "/exercises", label: "Exercises", icon: Layers, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+    { href: "/attendance", label: "Attendance", icon: CheckCircle2, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+    { href: "/memberships", label: "Memberships", icon: CreditCard, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+    { href: "/audit-logs", label: "Audit Logs", icon: ShieldAlert, roles: ["ADMIN"] }
+  ];
+
+  const clientNav = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: myProfileHref, label: "My Profile", icon: User },
+    { href: "/assignments", label: "Workouts", icon: Dumbbell },
+    { href: "/calendar", label: "Classes", icon: Calendar },
+    { href: "/nutrition", label: "Nutrition", icon: Apple },
+    { href: "/assessments", label: "Assessments", icon: Activity },
+    { href: "/memberships", label: "Memberships", icon: CreditCard },
+    { href: "/settings", label: "Settings", icon: Settings }
+  ];
 
   return (
     <>
@@ -112,38 +102,79 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed top-0 lg:top-20 bottom-0 left-0 z-50 lg:z-30 w-72 lg:w-64 bg-white dark:bg-[#121620] border-r border-slate-200 dark:border-[#1a1f2e] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 lg:z-30 w-72 lg:w-64 bg-white dark:bg-[#121620] border-r border-slate-200 dark:border-[#1a1f2e] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Mobile Sidebar Header with Logo and Close button */}
-        <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-[#1a1f2e]">
-          <GXLogo size="sm" priority />
+        {/* Brand Header with Official GX Logo (Both Desktop & Mobile) */}
+        <div className="flex items-center justify-between p-4 lg:p-5 border-b border-slate-200 dark:border-[#1a1f2e] bg-slate-50/60 dark:bg-[#0c0f17]/60">
+          <Link href="/dashboard" onClick={onClose} className="focus:outline-none">
+            <GXLogo size="md" priority />
+          </Link>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
             aria-label="Close navigation"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation Items */}
-        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6 custom-scrollbar">
-          {activeGroups.map((group, groupIdx) => {
-            const visibleItems = isClient
-              ? group.items
-              : (group.items as any[]).filter(item => !user || item.roles.includes(user.role));
+        {/* Navigation Items Matching Reference */}
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-1 custom-scrollbar">
+          {isClient ? (
+            clientNav.map((item) => {
+              const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+              const Icon = item.icon;
 
-            if (visibleItems.length === 0) return null;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                    isActive
+                      ? "bg-red-600 text-white shadow-lg shadow-red-600/30"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-red-500"}`} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })
+          ) : (
+            <>
+              {/* Reference 9 Primary Nav Links */}
+              {primaryAdminNav.map((item) => {
+                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                const Icon = item.icon;
 
-            return (
-              <div key={groupIdx} className="space-y-1.5">
-                <h3 className="px-3 text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
-                  {group.title}
-                </h3>
-                <div className="space-y-1">
-                  {visibleItems.map(item => {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    className={`flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                      isActive
+                        ? "bg-red-600 text-white shadow-lg shadow-red-600/30"
+                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-red-500"}`} />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+
+              {/* Secondary Tools Section */}
+              <div className="pt-4 mt-3 border-t border-slate-200 dark:border-[#1a1f2e]/80">
+                <p className="px-3 text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-1.5">
+                  Management Tools
+                </p>
+                {secondaryAdminNav
+                  .filter((item) => !user || item.roles.includes(user.role))
+                  .map((item) => {
                     const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                     const Icon = item.icon;
 
@@ -152,21 +183,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         key={item.href}
                         href={item.href}
                         onClick={onClose}
-                        className={`flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        className={`flex items-center space-x-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                           isActive
                             ? "bg-red-600 text-white shadow-md shadow-red-600/25"
-                            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                            : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
-                        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-red-500"}`} />
+                        <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
                         <span>{item.label}</span>
                       </Link>
                     );
                   })}
-                </div>
               </div>
-            );
-          })}
+            </>
+          )}
         </div>
 
         {/* Sidebar Footer with Accessible Red Logout Button */}
@@ -176,7 +206,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClose();
               logout();
             }}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-800/40 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-2xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-800/40 transition-all cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>Log out</span>

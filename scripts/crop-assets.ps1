@@ -30,3 +30,7 @@ Crop-Image "D:\Gazzar Project\public\design-reference\gx-theme\dark_branding_pan
 
 # 5. Coach Abdullah hero (full head and athletic torso)
 Crop-Image "D:\Gazzar Project\public\design-reference\gx-theme\light_desktop_dashboard.png" "D:\Gazzar Project\public\coach_abdullah_hero.png" 690 36 130 288
+
+# 6. Coach Abdullah light hero with brush strokes
+Crop-Image "D:\Gazzar Project\public\design-reference\gx-theme\light_desktop_dashboard.png" "D:\Gazzar Project\public\coach_abdullah_light_hero.png" 620 10 200 317
+
