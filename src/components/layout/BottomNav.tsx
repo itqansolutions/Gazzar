@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/db";
 import {
@@ -11,7 +10,6 @@ import {
   Users,
   Dumbbell,
   Calendar,
-  Layers,
   Activity,
   Menu,
   User
@@ -23,7 +21,6 @@ interface BottomNavProps {
 
 export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
   const pathname = usePathname();
-  const { t, language } = useLanguage();
   const { user } = useAuth();
 
   const isClient = user?.role === "CLIENT";
@@ -33,20 +30,20 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
 
   const navItems = isClient
     ? [
-        { href: "/dashboard", label: language === "ar" ? "الرئيسية" : "Overview", icon: LayoutDashboard },
-        { href: myProfileHref, label: language === "ar" ? "ملفي" : "Profile", icon: User },
-        { href: "/assignments", label: language === "ar" ? "تماريني" : "Workouts", icon: Dumbbell, highlight: true },
-        { href: "/assessments", label: language === "ar" ? "تقييماتي" : "Assessments", icon: Activity }
+        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+        { href: myProfileHref, label: "Profile", icon: User },
+        { href: "/assignments", label: "Workouts", icon: Dumbbell, highlight: true },
+        { href: "/assessments", label: "Assessments", icon: Activity }
       ]
     : [
-        { href: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard },
-        { href: "/clients", label: t("navClients"), icon: Users },
-        { href: "/assignments", label: t("navAssignments"), icon: Dumbbell },
-        { href: "/calendar", label: t("navCalendar"), icon: Calendar }
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/clients", label: "Clients", icon: Users },
+        { href: "/assignments", label: "Workouts", icon: Dumbbell },
+        { href: "/calendar", label: "Calendar", icon: Calendar }
       ];
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-[#121620]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#1f2937] text-slate-500 dark:text-slate-400 py-1 px-2 safe-area-pb shadow-2xl transition-colors duration-200">
+    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-[#121620]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#1a1f2e] text-slate-500 dark:text-slate-400 py-1.5 px-3 safe-area-pb shadow-2xl transition-colors duration-200">
       <div className="flex items-center justify-around">
         {navItems.map(item => {
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -57,7 +54,7 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center justify-center -mt-5 group"
+                className="flex flex-col items-center justify-center -mt-6 group"
               >
                 <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-red-600 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-red-600/35 group-active:scale-95 transition-transform">
                   <Icon className="w-6 h-6" />
@@ -73,11 +70,11 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-semibold transition-colors ${
                 isActive ? "text-red-600 dark:text-red-500 font-bold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
-              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-red-600 dark:text-red-500" : "text-slate-400 dark:text-slate-400"}`} />
+              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-red-600 dark:text-red-500" : "text-slate-400 dark:text-slate-500"}`} />
               <span className="truncate max-w-[64px]">{item.label}</span>
             </Link>
           );
@@ -86,10 +83,11 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
         {/* More Menu Drawer Trigger */}
         <button
           onClick={onOpenSidebar}
-          className="flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer"
+          className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer focus:outline-none"
+          aria-label="More navigation options"
         >
           <Menu className="w-5 h-5 mb-0.5" />
-          <span>{language === "ar" ? "المزيد" : "More"}</span>
+          <span>More</span>
         </button>
       </div>
     </nav>

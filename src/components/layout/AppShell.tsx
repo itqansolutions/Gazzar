@@ -72,7 +72,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] flex flex-col items-center justify-center space-y-3">
         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-600" />
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">جاري التحقق من تسجيل الدخول...</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">Verifying session...</p>
       </div>
     );
   }

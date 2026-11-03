@@ -14,41 +14,25 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("ar");
+  const [language] = useState<Language>("en");
 
   useEffect(() => {
-    const saved = localStorage.getItem("gx_lang") as Language;
-    if (saved && (saved === "ar" || saved === "en")) {
-      setLanguageState(saved);
-      document.documentElement.dir = saved === "ar" ? "rtl" : "ltr";
-      document.documentElement.lang = saved;
-    } else {
-      document.documentElement.dir = "rtl";
-      document.documentElement.lang = "ar";
-    }
+    document.documentElement.dir = "ltr";
+    document.documentElement.lang = "en";
   }, []);
 
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem("gx_lang", lang);
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    document.documentElement.lang = lang;
-  };
+  const setLanguage = () => {};
+  const toggleLanguage = () => {};
 
-  const toggleLanguage = () => {
-    const next = language === "ar" ? "en" : "ar";
-    setLanguage(next);
-  };
-
-  const t = (key: keyof typeof translations.ar): string => {
-    const dict = translations[language] || translations.ar;
+  const t = (key: keyof typeof translations.en): string => {
+    const dict = translations.en || translations.ar;
     return (dict as any)[key] || key;
   };
 
-  const dir = language === "ar" ? "rtl" : "ltr";
+  const dir = "ltr";
 
   return (
-    <LanguageContext.Provider value={{ language, dir, t, setLanguage, toggleLanguage }}>
+    <LanguageContext.Provider value={{ language: "en", dir, t, setLanguage, toggleLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
