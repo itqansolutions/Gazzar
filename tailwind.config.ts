@@ -46,10 +46,36 @@ const config: Config = {
           800: "#1e40af",
           900: "#1e3a8a",
           950: "#172554",
-        }
+        },
+        // DESIGN.md Semantic Design Tokens (Single Source of Truth)
+        brand: {
+          DEFAULT: "var(--brand)",
+          hover: "var(--brand-hover)",
+          soft: "var(--brand-soft)",
+          text: "var(--brand-text)",
+          contrast: "var(--brand-contrast)"
+        },
+        app: "var(--bg)",
+        card: "var(--surface)",
+        raised: "var(--surface-raised)",
+        line: "var(--border-subtle)",
+        fg: "var(--text)",
+        muted: "var(--text-muted)"
       },
       fontFamily: {
-        sans: ["var(--font-cairo)", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "var(--font-cairo)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Impact", "sans-serif"],
+        brand: ["var(--font-brand)", "sans-serif"],
+        script: ["var(--font-script)", "cursive"]
+      },
+      borderRadius: {
+        card: "var(--r-card)",
+        control: "var(--r-control)",
+        chip: "var(--r-chip)"
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+        glow: "var(--shadow-glow)"
       }
     },
   },

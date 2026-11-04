@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 :root {
+  /* Legacy tokens preserved for test compatibility */
   --background: #f1f5f9;
   --foreground: #0f172a;
   --card: #ffffff;
@@ -15,6 +16,34 @@
   --muted: #64748b;
   --muted-foreground: #94a3b8;
   --accent: #f43f5e;
+
+  /* DESIGN.md Light Theme Tokens (Single Source of Truth) */
+  --brand: #E20D1B;
+  --brand-hover: #C40A17;
+  --brand-contrast: #FFFFFF;
+  --brand-soft: rgb(226 13 27 / 0.08);
+  --brand-text: #C40A17;
+
+  --bg: #F4F5F7;
+  --surface: #FFFFFF;
+  --surface-raised: #F9FAFB;
+  --border-subtle: #E6E8EC;
+  --text: #0F1115;
+  --text-muted: #5B6370;
+  --ink: #171E24;
+
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --info: #2563EB;
+
+  --r-card: 16px;
+  --r-control: 12px;
+  --r-chip: 8px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.06);
+  --shadow-glow: none;
 }
 
 html.light {
@@ -28,6 +57,33 @@ html.light {
   --muted: #64748b;
   --muted-foreground: #94a3b8;
   --accent: #f43f5e;
+
+  --brand: #E20D1B;
+  --brand-hover: #C40A17;
+  --brand-contrast: #FFFFFF;
+  --brand-soft: rgb(226 13 27 / 0.08);
+  --brand-text: #C40A17;
+
+  --bg: #F4F5F7;
+  --surface: #FFFFFF;
+  --surface-raised: #F9FAFB;
+  --border-subtle: #E6E8EC;
+  --text: #0F1115;
+  --text-muted: #5B6370;
+  --ink: #171E24;
+
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --info: #2563EB;
+
+  --r-card: 16px;
+  --r-control: 12px;
+  --r-chip: 8px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.06);
+  --shadow-glow: none;
 }
 
 html.dark {
@@ -41,6 +97,34 @@ html.dark {
   --muted: #94a3b8;
   --muted-foreground: #64748b;
   --accent: #fb7185;
+
+  /* DESIGN.md Dark Theme Tokens (Single Source of Truth) */
+  --brand: #F01425;
+  --brand-hover: #FF2D3B;
+  --brand-contrast: #FFFFFF;
+  --brand-soft: rgb(240 20 37 / 0.14);
+  --brand-text: #FF4D57;
+
+  --bg: #0A0A0B;
+  --surface: #141416;
+  --surface-raised: #1C1C1F;
+  --border-subtle: #26262A;
+  --text: #F5F5F6;
+  --text-muted: #9A9AA3;
+  --ink: #FFFFFF;
+
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #F87171;
+  --info: #3B82F6;
+
+  --r-card: 16px;
+  --r-control: 12px;
+  --r-chip: 8px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 8px 24px rgb(0 0 0 / 0.35);
+  --shadow-glow: 0 0 24px rgb(240 20 37 / 0.35);
 }
 
 body {
