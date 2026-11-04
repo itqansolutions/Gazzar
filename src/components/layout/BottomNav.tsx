@@ -43,8 +43,8 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
       ];
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-[#121620]/95 backdrop-blur-md border-t border-slate-200 dark:border-[#1a1f2e] text-slate-500 dark:text-slate-400 py-1.5 px-3 safe-area-pb shadow-2xl transition-colors duration-200">
-      <div className="flex items-center justify-around">
+    <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-card/95 dark:bg-[#121620]/95 backdrop-blur-md border-t border-line dark:border-[#1a1f2e] text-muted h-16 px-2 safe-area-pb shadow-2xl transition-colors duration-200">
+      <div className="flex items-center justify-around h-full">
         {navItems.map(item => {
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           const Icon = item.icon;
@@ -54,12 +54,12 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center justify-center -mt-6 group"
+                className="flex flex-col items-center justify-center -mt-5 group min-w-[44px] min-h-[44px]"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-red-600 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-red-600/35 group-active:scale-95 transition-transform">
-                  <Icon className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-red-600 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-brand/35 group-active:scale-95 transition-transform">
+                  <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold text-red-600 dark:text-red-400 mt-1">
+                <span className="text-[10px] font-bold text-red-600 dark:text-red-500 mt-0.5">
                   {item.label}
                 </span>
               </Link>
@@ -70,11 +70,11 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-semibold transition-colors ${
-                isActive ? "text-red-600 dark:text-red-500 font-bold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              className={`flex flex-col items-center justify-center py-1 px-2 rounded-control text-[10px] font-medium transition-colors min-w-[48px] min-h-[44px] ${
+                isActive ? "text-red-600 dark:text-red-500 font-bold" : "text-muted hover:text-fg"
               }`}
             >
-              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-red-600 dark:text-red-500" : "text-slate-400 dark:text-slate-500"}`} />
+              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-red-600 dark:text-red-500" : "text-muted"}`} />
               <span className="truncate max-w-[64px]">{item.label}</span>
             </Link>
           );
@@ -83,7 +83,7 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
         {/* More Menu Drawer Trigger */}
         <button
           onClick={onOpenSidebar}
-          className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer focus:outline-none"
+          className="flex flex-col items-center justify-center py-1 px-2 rounded-control text-[10px] font-medium text-muted hover:text-fg cursor-pointer focus:outline-none min-w-[48px] min-h-[44px]"
           aria-label="More navigation options"
         >
           <Menu className="w-5 h-5 mb-0.5" />

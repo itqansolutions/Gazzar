@@ -102,18 +102,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 lg:z-30 w-72 lg:w-64 bg-white dark:bg-[#121620] border-r border-slate-200 dark:border-[#1a1f2e] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 lg:z-30 w-[240px] bg-card dark:bg-[#121620] border-r border-line dark:border-[#1a1f2e] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header with Official GX Logo (Both Desktop & Mobile) */}
-        <div className="flex items-center justify-between p-4 lg:p-5 border-b border-slate-200 dark:border-[#1a1f2e] bg-slate-50/60 dark:bg-[#0c0f17]/60">
-          <Link href="/dashboard" onClick={onClose} className="focus:outline-none">
+        <div className="flex items-center justify-between p-4 lg:px-5 lg:py-4 border-b border-line dark:border-[#1a1f2e]">
+          <Link href="/dashboard" onClick={onClose} className="focus:outline-none flex items-center">
             <GXLogo size="md" priority />
           </Link>
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="lg:hidden p-2 rounded-control text-muted hover:text-fg hover:bg-raised transition-colors"
             aria-label="Close navigation"
           >
             <X className="w-5 h-5" />
@@ -121,7 +121,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation Items Matching Reference */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-1 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
           {isClient ? (
             clientNav.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -132,14 +132,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   key={item.href}
                   href={item.href}
                   onClick={onClose}
-                  className={`flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                  className={`flex items-center space-x-3 px-3 h-11 rounded-control text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-red-600 text-white shadow-lg shadow-red-600/30"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                      ? "bg-red-600 text-white bg-brand text-brand-contrast shadow-lg shadow-brand/25"
+                      : "text-muted hover:bg-raised hover:text-fg"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-red-500"}`} />
-                  <span>{item.label}</span>
+                  <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-white" : "text-muted"}`} />
+                  <span className="flex-1 truncate">{item.label}</span>
+                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
                 </Link>
               );
             })
@@ -155,21 +156,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className={`flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                    className={`flex items-center space-x-3 px-3 h-11 rounded-control text-sm font-medium transition-all ${
                       isActive
-                        ? "bg-red-600 text-white shadow-lg shadow-red-600/30"
-                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
+                        ? "bg-red-600 text-white bg-brand text-brand-contrast shadow-lg shadow-brand/25"
+                        : "text-muted hover:bg-raised hover:text-fg"
                     }`}
                   >
-                    <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-red-500"}`} />
-                    <span>{item.label}</span>
+                    <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-white" : "text-muted"}`} />
+                    <span className="flex-1 truncate">{item.label}</span>
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
                   </Link>
                 );
               })}
 
               {/* Secondary Tools Section */}
-              <div className="pt-4 mt-3 border-t border-slate-200 dark:border-[#1a1f2e]/80">
-                <p className="px-3 text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-1.5">
+              <div className="pt-3 mt-3 border-t border-line dark:border-[#1a1f2e]/80">
+                <p className="px-3 text-[10px] font-bold tracking-wider text-muted uppercase mb-1">
                   Management Tools
                 </p>
                 {secondaryAdminNav
@@ -183,14 +185,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         key={item.href}
                         href={item.href}
                         onClick={onClose}
-                        className={`flex items-center space-x-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                        className={`flex items-center space-x-3 px-3 h-9 rounded-control text-xs font-medium transition-all ${
                           isActive
-                            ? "bg-red-600 text-white shadow-md shadow-red-600/25"
-                            : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                            ? "bg-red-600 text-white bg-brand text-brand-contrast shadow-md"
+                            : "text-muted hover:bg-raised hover:text-fg"
                         }`}
                       >
-                        <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
-                        <span>{item.label}</span>
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-muted"}`} />
+                        <span className="truncate">{item.label}</span>
                       </Link>
                     );
                   })}
@@ -200,13 +202,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Sidebar Footer with Accessible Red Logout Button */}
-        <div className="p-4 border-t border-slate-200 dark:border-[#1a1f2e] bg-slate-50/50 dark:bg-[#07090e]/50">
+        <div className="p-3 border-t border-line dark:border-[#1a1f2e] bg-raised/40">
           <button
             onClick={() => {
               onClose();
               logout();
             }}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-2xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-800/40 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center space-x-2 px-3 h-11 rounded-control text-sm font-bold text-brand hover:bg-brand-soft border border-transparent hover:border-brand/20 transition-all cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>Log out</span>

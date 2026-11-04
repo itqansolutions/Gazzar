@@ -59,7 +59,7 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
   const clientProfileLink = myClient ? `/clients/${myClient.id}` : "/dashboard";
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0c0f17]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#1a1f2e] text-slate-800 dark:text-slate-100 transition-colors duration-200">
+    <header className="sticky top-0 z-40 bg-card/95 dark:bg-[#0c0f17]/95 backdrop-blur-md border-b border-line dark:border-[#1a1f2e] text-fg transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Left: Mobile hamburger & Official GX Logo */}
