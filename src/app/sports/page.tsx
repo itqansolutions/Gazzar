@@ -9,19 +9,15 @@ import {
   Trophy,
   PlusCircle,
   CheckCircle,
-  Activity,
   X,
   Edit2,
   Trash2,
   Search,
-  Image as ImageIcon,
-  Sparkles,
-  Layers,
-  Dumbbell
+  Image as ImageIcon
 } from "lucide-react";
 
 export default function SportsPage() {
-  const { t, language, dir } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
 
   const [sports, setSports] = useState<Sport[]>([]);
@@ -35,12 +31,10 @@ export default function SportsPage() {
   const [deleteConfirmSport, setDeleteConfirmSport] = useState<Sport | null>(null);
 
   // Form states
-  const [formNameAr, setFormNameAr] = useState("");
-  const [formNameEn, setFormNameEn] = useState("");
+  const [formName, setFormName] = useState("");
   const [formIcon, setFormIcon] = useState("🏆");
   const [formImageUrl, setFormImageUrl] = useState("");
-  const [formDescriptionAr, setFormDescriptionAr] = useState("");
-  const [formDescriptionEn, setFormDescriptionEn] = useState("");
+  const [formDescription, setFormDescription] = useState("");
   const [formCategories, setFormCategories] = useState("");
 
   const refreshSports = () => {
@@ -64,31 +58,29 @@ export default function SportsPage() {
     e.preventDefault();
     try {
       const cats = formCategories
-        .split(/[،,]/)
+        .split(",")
         .map(c => c.trim())
         .filter(Boolean);
 
       db.createSport({
-        nameAr: formNameAr.trim(),
-        nameEn: formNameEn.trim() || formNameAr.trim(),
+        nameAr: formName.trim(),
+        nameEn: formName.trim(),
         icon: formIcon.trim() || "🏆",
         imageUrl: formImageUrl.trim() || undefined,
-        descriptionAr: formDescriptionAr.trim() || "رياضة وتخصص تدريبي معتمد",
-        descriptionEn: formDescriptionEn.trim() || "Certified athletic discipline",
-        categories: cats.length > 0 ? cats : ["تدريب عام", "لياقة بدنية"]
+        descriptionAr: formDescription.trim() || "Certified athletic discipline",
+        descriptionEn: formDescription.trim() || "Certified athletic discipline",
+        categories: cats.length > 0 ? cats : ["Training", "Fitness"]
       });
 
       refreshSports();
       setIsAddModalOpen(false);
-      setFormNameAr("");
-      setFormNameEn("");
+      setFormName("");
       setFormImageUrl("");
-      setFormDescriptionAr("");
-      setFormDescriptionEn("");
+      setFormDescription("");
       setFormCategories("");
-      showNotification(language === "ar" ? "تمت إضافة الرياضة بنجاح! ✓" : "Sport added successfully!");
+      showNotification("Sport added successfully! ✓");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء إضافة الرياضة", "error");
+      showNotification(err.message || "Error adding sport", "error");
     }
   };
 
@@ -99,26 +91,26 @@ export default function SportsPage() {
 
     try {
       const cats = formCategories
-        .split(/[،,]/)
+        .split(",")
         .map(c => c.trim())
         .filter(Boolean);
 
       db.updateSport(editingSport.id, {
-        nameAr: formNameAr.trim(),
-        nameEn: formNameEn.trim() || formNameAr.trim(),
+        nameAr: formName.trim(),
+        nameEn: formName.trim(),
         icon: formIcon.trim() || "🏆",
         imageUrl: formImageUrl.trim() || undefined,
-        descriptionAr: formDescriptionAr.trim(),
-        descriptionEn: formDescriptionEn.trim(),
+        descriptionAr: formDescription.trim(),
+        descriptionEn: formDescription.trim(),
         categories: cats
       });
 
       refreshSports();
       setIsEditModalOpen(false);
       setEditingSport(null);
-      showNotification(language === "ar" ? "تم تحديث بيانات الرياضة بنجاح! ✓" : "Sport updated successfully!");
+      showNotification("Sport updated successfully! ✓");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء التحديث", "error");
+      showNotification(err.message || "Error updating sport", "error");
     }
   };
 
@@ -129,28 +121,26 @@ export default function SportsPage() {
       db.deleteSport(deleteConfirmSport.id);
       refreshSports();
       setDeleteConfirmSport(null);
-      showNotification(language === "ar" ? "تم حذف الرياضة بنجاح" : "Sport deleted successfully");
+      showNotification("Sport deleted successfully");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء الحذف", "error");
+      showNotification(err.message || "Error deleting sport", "error");
     }
   };
 
   const openEditModal = (sp: Sport) => {
     setEditingSport(sp);
-    setFormNameAr(sp.nameAr);
-    setFormNameEn(sp.nameEn);
+    setFormName(sp.nameEn || sp.nameAr);
     setFormIcon(sp.icon || "🏆");
     setFormImageUrl(sp.imageUrl || "");
-    setFormDescriptionAr(sp.descriptionAr || "");
-    setFormDescriptionEn(sp.descriptionEn || "");
-    setFormCategories(sp.categories?.join("، ") || "");
+    setFormDescription(sp.descriptionEn || sp.descriptionAr || "");
+    setFormCategories(sp.categories?.join(", ") || "");
     setIsEditModalOpen(true);
   };
 
   const filteredSports = sports.filter(sp =>
-    sp.nameAr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sp.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sp.descriptionAr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sp.nameAr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sp.nameEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sp.descriptionEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     sp.categories?.some(c => c.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
@@ -159,7 +149,7 @@ export default function SportsPage() {
       {/* Toast Notification */}
       {notification && (
         <div
-          className={`fixed bottom-5 end-5 z-50 flex items-center space-x-2.5 rtl:space-x-reverse px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold animate-in slide-in-from-bottom-5 duration-200 ${
+          className={`fixed bottom-5 end-5 z-50 flex items-center space-x-2.5 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold animate-in slide-in-from-bottom-5 duration-200 ${
             notification.type === "success"
               ? "bg-brand-crimson text-white border-brand-crimson shadow-[0_0_20px_rgba(240,20,37,0.38)]"
               : "bg-red-600 text-white border-red-500 shadow-red-600/30"
@@ -173,35 +163,31 @@ export default function SportsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5">
             <Trophy className="w-6 h-6 text-brand-crimson" />
             <span>{t("navSports")}</span>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
-              {filteredSports.length} {language === "ar" ? "رياضات وتخصصات" : "sports"}
+              {filteredSports.length} sports
             </span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {language === "ar"
-              ? "دليل الرياضات المعتمدة، التخصصات، مقاييس التدريب، والصور التوضيحية"
-              : "Supported sports catalog, athletic disciplines, visual covers, and performance categories"}
+            Supported sports catalog, athletic disciplines, visual covers, and performance categories
           </p>
         </div>
 
         <button
           onClick={() => {
-            setFormNameAr("");
-            setFormNameEn("");
+            setFormName("");
             setFormIcon("🏆");
             setFormImageUrl("");
-            setFormDescriptionAr("");
-            setFormDescriptionEn("");
-            setFormCategories("بناء أجسام، قوة بدنية، فتنس");
+            setFormDescription("");
+            setFormCategories("Bodybuilding, Strength, Fitness");
             setIsAddModalOpen(true);
           }}
-          className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
+          className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>{language === "ar" ? "إضافة رياضة جديدة +" : "Create New Sport +"}</span>
+          <span>Create New Sport +</span>
         </button>
       </div>
 
@@ -210,7 +196,7 @@ export default function SportsPage() {
         <Search className="w-4 h-4 text-slate-400 absolute top-3 start-3" />
         <input
           type="text"
-          placeholder={language === "ar" ? "بحث باسم الرياضة، التصنيف، أو الوصف..." : "Search sport name, discipline, description..."}
+          placeholder="Search sport name, discipline, description..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           className="w-full ps-9 pe-3 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson shadow-sm"
@@ -225,20 +211,18 @@ export default function SportsPage() {
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {language === "ar" ? "لا توجد رياضات مسجلة حالياً" : "No sports registered yet"}
+              No sports registered yet
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-              {language === "ar"
-                ? "ابدأ بتعريف الرياضات والتخصصات التي تقدمها الأكاديمية (مثل: كمال الأجسام، الملاكمة، السباحة، الكروس فيت) مع إضافة صورها التوضيحية."
-                : "Define sports and athletic disciplines offered by your academy with custom cover images."}
+              Define sports and athletic disciplines offered by your academy with custom cover images.
             </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all inline-flex items-center space-x-2 rtl:space-x-reverse"
+            className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all inline-flex items-center space-x-2"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>{language === "ar" ? "إضافة أول رياضة الآن" : "Add First Sport Now"}</span>
+            <span>Add First Sport Now</span>
           </button>
         </div>
       ) : (
@@ -253,7 +237,7 @@ export default function SportsPage() {
                 <div className="w-full h-36 -mx-6 -mt-6 mb-2 overflow-hidden bg-slate-950 relative">
                   <img
                     src={sp.imageUrl}
-                    alt={sp.nameAr}
+                    alt={sp.nameEn || sp.nameAr}
                     onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -263,27 +247,26 @@ export default function SportsPage() {
 
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                    <div className="w-12 h-12 rounded-2xl bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30 flex items-center justify-center text-white text-2xl shadow-lg shadow-[0_0_15px_rgba(240,20,37,0.3)] flex-shrink-0">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 rounded-2xl bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30 flex items-center justify-center text-2xl shadow-lg shadow-[0_0_15px_rgba(240,20,37,0.3)] flex-shrink-0">
                       {sp.icon || "🏆"}
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">{sp.nameAr}</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{sp.nameEn}</p>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">{sp.nameEn || sp.nameAr}</h3>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-1 rtl:space-x-reverse">
+                  <div className="flex items-center space-x-1">
                     <button
                       onClick={() => openEditModal(sp)}
-                      title={language === "ar" ? "تعديل الرياضة" : "Edit sport"}
+                      title="Edit sport"
                       className="p-1.5 rounded-lg text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => setDeleteConfirmSport(sp)}
-                      title={language === "ar" ? "حذف الرياضة" : "Delete sport"}
+                      title="Delete sport"
                       className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -291,15 +274,15 @@ export default function SportsPage() {
                   </div>
                 </div>
 
-                {sp.descriptionAr && (
+                {(sp.descriptionEn || sp.descriptionAr) && (
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
-                    {sp.descriptionAr}
+                    {sp.descriptionEn || sp.descriptionAr}
                   </p>
                 )}
 
                 {sp.categories && sp.categories.length > 0 && (
                   <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-xs space-y-1.5">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">التصنيفات والأنواع:</span>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Categories:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {sp.categories.map((c, idx) => (
                         <span key={idx} className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[10px]">
@@ -321,12 +304,12 @@ export default function SportsPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                   <PlusCircle className="w-5 h-5 text-brand-crimson" />
-                  <span>{language === "ar" ? "إضافة رياضة وتخصص جديد" : "Create New Sport"}</span>
+                  <span>Create New Sport</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {language === "ar" ? "أدخل اسم الرياضة، التصنيفات، ورابط الصورة" : "Enter sport details and cover image"}
+                  Enter sport name, categories, and cover image
                 </p>
               </div>
               <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
@@ -337,21 +320,21 @@ export default function SportsPage() {
             <form onSubmit={handleAddSport} className="space-y-3.5">
               <div className="grid grid-cols-3 gap-2.5">
                 <div className="col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم الرياضة بالعربي *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sport Name *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. كمال الأجسام واللياقة"
-                    value={formNameAr}
-                    onChange={e => setFormNameAr(e.target.value)}
+                    placeholder="e.g. Bodybuilding & Fitness"
+                    value={formName}
+                    onChange={e => setFormName(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الأيقونة (Emoji)</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Icon (Emoji)</label>
                   <input
                     type="text"
-                    placeholder="🏋️ أو 🥊"
+                    placeholder="🏋️ or 🥊"
                     value={formIcon}
                     onChange={e => setFormIcon(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white text-center text-lg"
@@ -360,20 +343,9 @@ export default function SportsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم الرياضة بالإنجليزي</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Bodybuilding & Fitness"
-                  value={formNameEn}
-                  onChange={e => setFormNameEn(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center space-x-1.5 rtl:space-x-reverse">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center space-x-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-brand-crimson" />
-                  <span>رابط صورة الرياضة (Image URL)</span>
+                  <span>Cover Image URL</span>
                 </label>
                 <input
                   type="url"
@@ -390,10 +362,10 @@ export default function SportsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">التصنيفات والأنواع (مفصولة بفواصل)</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categories (comma separated)</label>
                 <input
                   type="text"
-                  placeholder="تضخيم، تنشيف، قوة، تحمل"
+                  placeholder="Strength, Hypertrophy, Endurance"
                   value={formCategories}
                   onChange={e => setFormCategories(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
@@ -401,17 +373,17 @@ export default function SportsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">وصف الرياضة</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Description</label>
                 <textarea
                   rows={2}
-                  placeholder="وصف تفصيلي لأهداف الرياضة ومميزاتها..."
-                  value={formDescriptionAr}
-                  onChange={e => setFormDescriptionAr(e.target.value)}
+                  placeholder="Goals, training methods, and overview..."
+                  value={formDescription}
+                  onChange={e => setFormDescription(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 rtl:space-x-reverse pt-2">
+              <div className="flex justify-end space-x-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
@@ -423,7 +395,7 @@ export default function SportsPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)]"
                 >
-                  {language === "ar" ? "حفظ الرياضة ✓" : "Save Sport"}
+                  Save Sport ✓
                 </button>
               </div>
             </form>
@@ -437,9 +409,9 @@ export default function SportsPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                   <Edit2 className="w-5 h-5 text-brand-crimson" />
-                  <span>{language === "ar" ? "تعديل بيانات الرياضة" : "Edit Sport"}</span>
+                  <span>Edit Sport</span>
                 </h3>
               </div>
               <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
@@ -450,17 +422,17 @@ export default function SportsPage() {
             <form onSubmit={handleUpdateSport} className="space-y-3.5">
               <div className="grid grid-cols-3 gap-2.5">
                 <div className="col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم الرياضة بالعربي *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sport Name *</label>
                   <input
                     type="text"
                     required
-                    value={formNameAr}
-                    onChange={e => setFormNameAr(e.target.value)}
+                    value={formName}
+                    onChange={e => setFormName(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الأيقونة (Emoji)</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Icon (Emoji)</label>
                   <input
                     type="text"
                     value={formIcon}
@@ -471,19 +443,9 @@ export default function SportsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم الرياضة بالإنجليزي</label>
-                <input
-                  type="text"
-                  value={formNameEn}
-                  onChange={e => setFormNameEn(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center space-x-1.5 rtl:space-x-reverse">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center space-x-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-brand-crimson" />
-                  <span>رابط صورة الرياضة (Image URL)</span>
+                  <span>Cover Image URL</span>
                 </label>
                 <input
                   type="url"
@@ -495,7 +457,7 @@ export default function SportsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">التصنيفات والأنواع</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categories (comma separated)</label>
                 <input
                   type="text"
                   value={formCategories}
@@ -505,16 +467,16 @@ export default function SportsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الوصف</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Description</label>
                 <textarea
                   rows={2}
-                  value={formDescriptionAr}
-                  onChange={e => setFormDescriptionAr(e.target.value)}
+                  value={formDescription}
+                  onChange={e => setFormDescription(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 rtl:space-x-reverse pt-2">
+              <div className="flex justify-end space-x-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
@@ -526,7 +488,7 @@ export default function SportsPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)]"
                 >
-                  {language === "ar" ? "حفظ التعديلات ✓" : "Update Sport"}
+                  Update Sport ✓
                 </button>
               </div>
             </form>
@@ -543,15 +505,13 @@ export default function SportsPage() {
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {language === "ar" ? "تأكيد حذف الرياضة" : "Confirm Sport Deletion"}
+                Confirm Sport Deletion
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {language === "ar"
-                  ? `هل أنت متأكد من حذف رياضة "${deleteConfirmSport.nameAr}" نهائياً؟`
-                  : `Are you sure you want to delete sport "${deleteConfirmSport.nameAr}"?`}
+                {`Are you sure you want to delete sport "${deleteConfirmSport.nameEn || deleteConfirmSport.nameAr}"?`}
               </p>
             </div>
-            <div className="flex justify-center space-x-3 rtl:space-x-reverse pt-2">
+            <div className="flex justify-center space-x-3 pt-2">
               <button
                 type="button"
                 onClick={() => setDeleteConfirmSport(null)}
@@ -564,7 +524,7 @@ export default function SportsPage() {
                 onClick={handleDeleteSport}
                 className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/30"
               >
-                {language === "ar" ? "نعم، احذف الرياضة" : "Yes, Delete"}
+                Yes, Delete
               </button>
             </div>
           </div>

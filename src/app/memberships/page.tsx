@@ -4,18 +4,10 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { db } from "@/lib/db";
 import { MembershipPackage, Membership } from "@/types";
-import {
-  CreditCard,
-  CheckCircle2,
-  AlertTriangle,
-  Calendar,
-  DollarSign,
-  PlusCircle,
-  Sparkles
-} from "lucide-react";
+import { CreditCard } from "lucide-react";
 
 export default function MembershipsPage() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [plans, setPlans] = useState<MembershipPackage[]>([]);
   const [memberships, setMemberships] = useState<Membership[]>([]);
 
@@ -28,14 +20,12 @@ export default function MembershipsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5">
           <CreditCard className="w-6 h-6 text-brand-crimson" />
           <span>{t("navMemberships")}</span>
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          {language === "ar"
-            ? "باقات الاشتراكات، الحصص الفردية، المدفوعات وتواريخ انتهاء العضوية"
-            : "Subscription packages, session packages, payment history & renewal tracking"}
+          Subscription packages, session packages, payment history & renewal tracking
         </p>
       </div>
 
@@ -48,24 +38,23 @@ export default function MembershipsPage() {
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{p.nameAr}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{p.nameEn || p.nameAr}</h3>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-brand-crimson/20 text-brand-crimson">
                   {p.currency} {p.price}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">{p.nameEn}</p>
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{p.description}</p>
             </div>
 
             <div className="pt-3 border-t border-slate-800 space-y-1 text-xs text-slate-400">
               <div className="flex justify-between">
-                <span>المدة:</span>
-                <span className="font-bold text-white">{p.durationDays} يوم</span>
+                <span>Duration:</span>
+                <span className="font-bold text-white">{p.durationDays} Days</span>
               </div>
               {p.sessionsCount && (
                 <div className="flex justify-between">
-                  <span>عدد الحصص الفردية:</span>
-                  <span className="font-bold text-brand-crimson">{p.sessionsCount} حصة</span>
+                  <span>1-on-1 Sessions:</span>
+                  <span className="font-bold text-brand-crimson">{p.sessionsCount} Sessions</span>
                 </div>
               )}
             </div>
@@ -75,26 +64,26 @@ export default function MembershipsPage() {
 
       {/* Client Subscriptions Table */}
       <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white">سجل اشتراكات المتدربين النشطة والمدفوعات</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">Active Client Memberships & Payments</h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-start text-xs">
             <thead className="bg-slate-950/60 text-slate-400 border-b border-slate-800">
               <tr>
-                <th className="p-3 text-start">المشترك</th>
-                <th className="p-3 text-start">الباقة</th>
-                <th className="p-3 text-center">تاريخ البدء</th>
-                <th className="p-3 text-center">تاريخ الانتهاء</th>
-                <th className="p-3 text-center">المدفوع</th>
-                <th className="p-3 text-center">المتبقي</th>
-                <th className="p-3 text-center">الحالة</th>
+                <th className="p-3 text-start">Client</th>
+                <th className="p-3 text-start">Package</th>
+                <th className="p-3 text-center">Start Date</th>
+                <th className="p-3 text-center">End Date</th>
+                <th className="p-3 text-center">Paid</th>
+                <th className="p-3 text-center">Remaining</th>
+                <th className="p-3 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-100 dark:divide-slate-800/60 text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-700 dark:text-slate-300">
               {memberships.map(m => (
                 <tr key={m.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="p-3 font-bold text-white">{m.client?.user?.name || "مشترك"}</td>
-                  <td className="p-3 font-medium text-slate-700 dark:text-slate-300">{(m as any).plan?.nameAr || "باقة تدريب"}</td>
+                  <td className="p-3 font-bold text-white">{m.client?.user?.name || "Client"}</td>
+                  <td className="p-3 font-medium text-slate-700 dark:text-slate-300">{(m as any).plan?.nameEn || (m as any).plan?.nameAr || "Training Package"}</td>
                   <td className="p-3 text-center text-slate-400">{m.startDate}</td>
                   <td className="p-3 text-center font-semibold text-brand-crimson">{m.endDate}</td>
                   <td className="p-3 text-center font-bold text-white">{m.paidAmount} EGP</td>

@@ -2,22 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/db";
 import { SessionCalendar } from "@/types";
 import {
   Calendar as CalendarIcon,
   Clock,
-  MapPin,
-  Users,
-  PlusCircle,
-  CheckCircle2,
-  AlertCircle
+  MapPin
 } from "lucide-react";
 
 export default function CalendarPage() {
-  const { t, language } = useLanguage();
-  const { user } = useAuth();
+  const { t } = useLanguage();
   const [sessions, setSessions] = useState<SessionCalendar[]>([]);
 
   useEffect(() => {
@@ -29,14 +23,12 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5">
             <CalendarIcon className="w-6 h-6 text-brand-crimson" />
             <span>{t("navCalendar")}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {language === "ar"
-              ? "جدول حصص التدريب الفردية (PT) والتدريب الجماعي (CrossFit & Classes)"
-              : "Individual PT sessions and Group Class schedule"}
+            Individual PT sessions and Group Class schedule
           </p>
         </div>
       </div>
@@ -55,10 +47,10 @@ export default function CalendarPage() {
                     ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
                     : "bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/40"
                 }`}>
-                  {sess.sessionType === "GROUP" ? "تدريب جماعي (Group Class)" : "تدريب فردي (Personal Training)"}
+                  {sess.sessionType === "GROUP" ? "Group Class" : "Personal Training"}
                 </span>
                 <h3 className="text-sm sm:text-base font-bold text-white pt-1">{sess.title}</h3>
-                <p className="text-xs text-slate-400">الكابتن: {sess.coach?.user?.name}</p>
+                <p className="text-xs text-slate-400">Coach: {sess.coach?.user?.name}</p>
               </div>
 
               <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-brand-crimson">
@@ -67,20 +59,20 @@ export default function CalendarPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
-              <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-700 dark:text-slate-300">
+              <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-300">
                 <Clock className="w-4 h-4 text-brand-crimson" />
                 <span>{new Date(sess.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
-              <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-700 dark:text-slate-300">
+              <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-300">
                 <MapPin className="w-4 h-4 text-blue-400" />
-                <span className="truncate">{sess.location || "صالة التدريب"}</span>
+                <span className="truncate">{sess.location || "Gym Floor"}</span>
               </div>
             </div>
 
             {/* Attendance list in session */}
             <div className="space-y-2 pt-2 border-t border-slate-800">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                المشتركون المسجلون ({sess.attendances?.length || 0} / {sess.maxParticipants}):
+                Registered Clients ({sess.attendances?.length || 0} / {sess.maxParticipants}):
               </span>
               <div className="space-y-1.5">
                 {sess.attendances?.map(att => (

@@ -41,7 +41,7 @@ export default function AssessmentsPage() {
 
   // Form states
   const [targetClientId, setTargetClientId] = useState("");
-  const [title, setTitle] = useState("تقييم الأداء البدني واختبارات القوة والتحمل");
+  const [title, setTitle] = useState("Physical Performance & Strength Assessment");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [pushups, setPushups] = useState(30);
   const [pullups, setPullups] = useState(10);
@@ -49,7 +49,7 @@ export default function AssessmentsPage() {
   const [runningSec, setRunningSec] = useState(270);
   const [flexibility, setFlexibility] = useState(8);
   const [vo2, setVo2] = useState(46.5);
-  const [notes, setNotes] = useState("أداء ممتاز، زيادة ملحوظة في قوة الصدر والأكتاف وتحسن ثبات الكور.");
+  const [notes, setNotes] = useState("Great performance, noticeable increase in upper body strength and core stability.");
 
   const loadData = () => {
     const allClients = db.getClients();
@@ -75,7 +75,7 @@ export default function AssessmentsPage() {
     if (!initial || !current) return null;
     if (lowerIsBetter) {
       const diff = ((initial - current) / initial) * 100;
-      return diff > 0 ? `-${diff.toFixed(0)}% (أسرع)` : `+${Math.abs(diff).toFixed(0)}%`;
+      return diff > 0 ? `-${diff.toFixed(0)}% (faster)` : `+${Math.abs(diff).toFixed(0)}%`;
     }
     const diff = ((current - initial) / initial) * 100;
     return diff > 0 ? `+${diff.toFixed(0)}%` : `${diff.toFixed(0)}%`;
@@ -83,7 +83,7 @@ export default function AssessmentsPage() {
 
   const openAddModal = () => {
     if (clients.length > 0) setTargetClientId(selectedClientId !== "ALL" ? selectedClientId : clients[0].id);
-    setTitle("تقييم الأداء البدني الدوري");
+    setTitle("Regular Fitness Assessment");
     setDate(new Date().toISOString().slice(0, 10));
     setPushups(30);
     setPullups(10);
@@ -91,7 +91,7 @@ export default function AssessmentsPage() {
     setRunningSec(270);
     setFlexibility(8);
     setVo2(46.5);
-    setNotes("أداء بدني ممتاز وثبات ملحوظ.");
+    setNotes("Excellent performance and stability.");
     setIsAddModalOpen(true);
   };
 
@@ -172,15 +172,15 @@ export default function AssessmentsPage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
             <Activity className="w-6 h-6 text-brand-crimson" />
-            <span>{isClient ? (language === "ar" ? "تقييماتي واختباراتي البدنية" : "My Physical Assessments") : t("navAssessments")}</span>
+            <span>{isClient ? "My Physical Assessments" : t("navAssessments")}</span>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
               {assessments.length}
             </span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {isClient
-              ? (language === "ar" ? "متابعة نتائج اختبارات القوة والتحمل والبلانك ومقارنة التطور مع نقطة البداية" : "Track your strength, endurance benchmarks and compare improvements over baseline")
-              : (language === "ar" ? "إجراء وتقييم الاختبارات البدنية للمشتركين، تسجيل النتائج، ومقارنة نسب التطور" : "Conduct physical assessments, track strength & endurance benchmarks and compare improvements")}
+              ? "Track your strength, endurance benchmarks and compare improvements over baseline"
+              : "Conduct physical assessments, track strength & endurance benchmarks and compare improvements"}
           </p>
         </div>
 
@@ -190,7 +190,7 @@ export default function AssessmentsPage() {
             className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all self-start sm:self-auto cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>{language === "ar" ? "تسجيل تقييم بدني جديد لمشترك +" : "Record Assessment +"}</span>
+            <span>Record Assessment +</span>
           </button>
         )}
       </div>
@@ -199,16 +199,16 @@ export default function AssessmentsPage() {
       {!isClient && (
         <div className="flex items-center space-x-3 rtl:space-x-reverse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl max-w-md shadow-sm">
           <User className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">تصفية بحسب المشترك:</span>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">Filter by client:</span>
           <select
             value={selectedClientId}
             onChange={e => setSelectedClientId(e.target.value)}
             className="w-full px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-bold"
           >
-            <option value="ALL">جميع المشتركين</option>
+            <option value="ALL">All Clients</option>
             {clients.map(c => (
               <option key={c.id} value={c.id}>
-                {c.user?.name} ({c.sport?.nameAr || "متدرب"})
+                {c.user?.name} ({c.sport?.nameEn || c.sport?.nameAr || "Client"})
               </option>
             ))}
           </select>
@@ -223,15 +223,15 @@ export default function AssessmentsPage() {
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <Sparkles className="w-5 h-5 text-amber-500" />
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                  {language === "ar" ? "مقارنة التطور البدني الفعلي: أحدث تقييم vs نقطة البداية (Baseline)" : "Physical Progress Comparison: Latest vs Baseline"}
+                  Physical Progress Comparison: Latest vs Baseline
                 </h2>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {language === "ar" ? `الفترة بين ${aBaseline.date} إلى ${aLatest.date}` : `Between ${aBaseline.date} and ${aLatest.date}`}
+                Between {aBaseline.date} and {aLatest.date}
               </p>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-black bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/40 self-start sm:self-auto">
-              🏆 {language === "ar" ? "تطور بدني ممتاز" : "Excellent Progress"}
+              🏆 Excellent Progress
             </span>
           </div>
 
@@ -245,7 +245,7 @@ export default function AssessmentsPage() {
                 <span className="text-xs text-slate-400 line-through">{aBaseline.pushupsCount}</span>
               </div>
               <span className="text-[11px] font-bold text-brand-crimson block">
-                {calcImprovement(aBaseline.pushupsCount, aLatest.pushupsCount)} {language === "ar" ? "زيادة قوة" : "Gain"}
+                {calcImprovement(aBaseline.pushupsCount, aLatest.pushupsCount)} Gain
               </span>
             </div>
 
@@ -257,7 +257,7 @@ export default function AssessmentsPage() {
                 <span className="text-xs text-slate-400 line-through">{aBaseline.pullupsCount}</span>
               </div>
               <span className="text-[11px] font-bold text-brand-crimson block">
-                {calcImprovement(aBaseline.pullupsCount, aLatest.pullupsCount)} {language === "ar" ? "تطور ملحوظ" : "Improvement"}
+                {calcImprovement(aBaseline.pullupsCount, aLatest.pullupsCount)} Improvement
               </span>
             </div>
 
@@ -265,11 +265,11 @@ export default function AssessmentsPage() {
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-2">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{t("plank")}</span>
               <div className="flex items-baseline space-x-2 rtl:space-x-reverse">
-                <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{aLatest.plankSeconds}ث</span>
-                <span className="text-xs text-slate-400 line-through">{aBaseline.plankSeconds}ث</span>
+                <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{aLatest.plankSeconds}s</span>
+                <span className="text-xs text-slate-400 line-through">{aBaseline.plankSeconds}s</span>
               </div>
               <span className="text-[11px] font-bold text-brand-crimson block">
-                {calcImprovement(aBaseline.plankSeconds, aLatest.plankSeconds)} {language === "ar" ? "ثبات كور" : "Core endurance"}
+                {calcImprovement(aBaseline.plankSeconds, aLatest.plankSeconds)} Core endurance
               </span>
             </div>
 
@@ -281,14 +281,14 @@ export default function AssessmentsPage() {
                 <span className="text-xs text-slate-400 line-through">{aBaseline.vo2Max}</span>
               </div>
               <span className="text-[11px] font-bold text-brand-crimson block">
-                {calcImprovement(aBaseline.vo2Max, aLatest.vo2Max)} {language === "ar" ? "لياقة قلبية" : "Cardio capacity"}
+                {calcImprovement(aBaseline.vo2Max, aLatest.vo2Max)} Cardio capacity
               </span>
             </div>
           </div>
 
           {aLatest.coachNotes && (
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
-              <span className="font-bold text-brand-crimson">تقييم الكابتن المشرف:</span> {aLatest.coachNotes}
+              <span className="font-bold text-brand-crimson">Coach Assessment:</span> {aLatest.coachNotes}
             </div>
           )}
         </div>
@@ -297,7 +297,7 @@ export default function AssessmentsPage() {
       {/* Historical Assessments List */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-          {isClient ? (language === "ar" ? "سجل جميع تقييماتي البدنية المكتملة" : "Completed Assessments Log") : "سجل التقييمات والاختبارات البدنية"}
+          {isClient ? "Completed Assessments Log" : "Physical Assessments Log"}
         </h3>
 
         {assessments.length === 0 ? (
@@ -305,13 +305,13 @@ export default function AssessmentsPage() {
             <Activity className="w-10 h-10 mx-auto text-slate-400 opacity-60" />
             <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">
               {isClient
-                ? (language === "ar" ? "لم يتم إجراء تقييم بدني لك حتى الآن." : "No physical assessments recorded yet.")
-                : (language === "ar" ? "لا توجد تقييمات مسجلة لهذا المشترك." : "No assessments found.")}
+                ? "No physical assessments recorded yet."
+                : "No assessments found."}
             </p>
             <p className="text-xs">
               {isClient
-                ? (language === "ar" ? "سيقوم الكابتن المشرف بجدولة أول تقييم لقوتك وتحملك قريباً لمتابعة تقدمك." : "Your coach will conduct your initial fitness test soon.")
-                : (language === "ar" ? "اضغط على زر تسجيل تقييم بدني جديد لإجراء اختبار للمتدرب." : "Click Record Assessment to add one.")}
+                ? "Your coach will conduct your initial fitness test soon."
+                : "Click Record Assessment to add one."}
             </p>
           </div>
         ) : (
@@ -330,7 +330,7 @@ export default function AssessmentsPage() {
                         <h4 className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</h4>
                         {!isClient && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">
-                            المتدرب: {clientObj?.user?.name || "متدرب"}
+                            Client: {clientObj?.user?.name || "Client"}
                           </p>
                         )}
                       </div>
@@ -361,34 +361,34 @@ export default function AssessmentsPage() {
 
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center text-xs">
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "ضغط" : "Pushups"}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Pushups</span>
                       <span className="font-bold text-slate-900 dark:text-white text-sm">{item.pushupsCount}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "عقلة" : "Pullups"}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Pullups</span>
                       <span className="font-bold text-slate-900 dark:text-white text-sm">{item.pullupsCount}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "بلانك" : "Plank"}</span>
-                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.plankSeconds} {language === "ar" ? "ث" : "s"}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Plank</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.plankSeconds} s</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "جري 1كم" : "1km Run"}</span>
-                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.runningKmTimeSec} {language === "ar" ? "ث" : "s"}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">1km Run</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{item.runningKmTimeSec} s</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "المرونة" : "Flexibility"}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Flexibility</span>
                       <span className="font-bold text-slate-900 dark:text-white text-sm">{item.flexibilityScore}/10</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "اللياقة القلبية" : "VO2 Max"}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">VO2 Max</span>
                       <span className="font-bold text-brand-crimson text-sm">{item.vo2Max}</span>
                     </div>
                   </div>
 
                   {item.coachNotes && (
                     <p className="text-xs text-slate-600 dark:text-slate-300 pt-1">
-                      💡 <span className="font-bold">ملاحظات الكابتن:</span> {item.coachNotes}
+                      💡 <span className="font-bold">Coach Notes:</span> {item.coachNotes}
                     </p>
                   )}
                 </div>
@@ -405,7 +405,7 @@ export default function AssessmentsPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Activity className="w-5 h-5 text-brand-crimson" />
-                <span>{isAddModalOpen ? "تسجيل تقييم واختبار بدني جديد" : "تعديل التقييم البدني"}</span>
+                <span>{isAddModalOpen ? "Record New Physical Assessment" : "Edit Physical Assessment"}</span>
               </h3>
               <button
                 onClick={() => {
@@ -420,7 +420,7 @@ export default function AssessmentsPage() {
 
             <form onSubmit={isAddModalOpen ? handleCreateAssessment : handleUpdateAssessment} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اختر المشترك *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Client *</label>
                 <select
                   value={targetClientId}
                   onChange={e => setTargetClientId(e.target.value)}
@@ -428,7 +428,7 @@ export default function AssessmentsPage() {
                 >
                   {clients.map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.user?.name} ({c.sport?.nameAr || "متدرب"})
+                      {c.user?.name} ({c.sport?.nameEn || c.sport?.nameAr || "Client"})
                     </option>
                   ))}
                 </select>
@@ -436,7 +436,7 @@ export default function AssessmentsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">عنوان التقييم *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Assessment Title *</label>
                   <input
                     type="text"
                     required
@@ -446,7 +446,7 @@ export default function AssessmentsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تاريخ الاختبار *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Assessment Date *</label>
                   <input
                     type="date"
                     required
@@ -459,7 +459,7 @@ export default function AssessmentsPage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">عدد الضغط (Pushups)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Pushups Count</label>
                   <input
                     type="number"
                     value={pushups}
@@ -468,7 +468,7 @@ export default function AssessmentsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">عدد العقلة (Pullups)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Pullups Count</label>
                   <input
                     type="number"
                     value={pullups}
@@ -477,7 +477,7 @@ export default function AssessmentsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">بلانك (ثواني)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Plank (Seconds)</label>
                   <input
                     type="number"
                     value={plankSec}
@@ -489,7 +489,7 @@ export default function AssessmentsPage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">جري 1كم (ثواني)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">1km Run (Seconds)</label>
                   <input
                     type="number"
                     value={runningSec}
@@ -498,7 +498,7 @@ export default function AssessmentsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">المرونة (من 10)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Flexibility (out of 10)</label>
                   <input
                     type="number"
                     max={10}
@@ -520,7 +520,7 @@ export default function AssessmentsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">ملاحظات وتوجيهات الكابتن</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Coach Notes & Guidance</label>
                 <textarea
                   rows={2}
                   value={notes}
@@ -544,7 +544,7 @@ export default function AssessmentsPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] cursor-pointer"
                 >
-                  {isAddModalOpen ? "حفظ التقييم البدني ✓" : "تحديث التقييم البدني ✓"}
+                  {isAddModalOpen ? "Save Assessment ✓" : "Update Assessment ✓"}
                 </button>
               </div>
             </form>
@@ -560,9 +560,9 @@ export default function AssessmentsPage() {
               <Trash2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">تأكيد حذف التقييم</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Confirm Assessment Deletion</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                هل أنت متأكد من حذف هذا التقييم البدني؟
+                Are you sure you want to delete this physical assessment?
               </p>
             </div>
             <div className="flex justify-center space-x-3 rtl:space-x-reverse pt-2">
@@ -578,7 +578,7 @@ export default function AssessmentsPage() {
                 onClick={handleDeleteAssessment}
                 className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/30 cursor-pointer"
               >
-                نعم، احذف التقييم
+                Yes, Delete Assessment
               </button>
             </div>
           </div>

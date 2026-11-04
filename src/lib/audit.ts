@@ -15,7 +15,7 @@ export function logAuditEvent(params: {
   const newLog: AuditLog = {
     id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
     userId: params.user?.id || "system",
-    userName: params.user?.name || "النظام / System",
+    userName: params.user?.name || "System",
     userRole: params.user?.role || "SYSTEM",
     action: params.action,
     entityType: params.entityType,

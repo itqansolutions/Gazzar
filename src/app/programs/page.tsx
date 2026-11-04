@@ -66,7 +66,7 @@ export default function ProgramsPage() {
   const [activeWeekTab, setActiveWeekTab] = useState(1);
   const [programWeeks, setProgramWeeks] = useState<ProgramWeek[]>([]);
 
-  const dayNamesAr = ["السبت (Day 1)", "الأحد (Day 2)", "الاثنين (Day 3)", "الثلاثاء (Day 4)", "الأربعاء (Day 5)", "الخميس (Day 6)", "الجمعة (Day 7)"];
+  const dayNamesAr = ["Saturday (Day 1)", "Sunday (Day 2)", "Monday (Day 3)", "Tuesday (Day 4)", "Wednesday (Day 5)", "Thursday (Day 6)", "Friday (Day 7)"];
   const dayNamesEn = ["Saturday (Day 1)", "Sunday (Day 2)", "Monday (Day 3)", "Tuesday (Day 4)", "Wednesday (Day 5)", "Thursday (Day 6)", "Friday (Day 7)"];
 
   const loadData = () => {
@@ -101,7 +101,7 @@ export default function ProgramsPage() {
           id: `day-${w}-${d}-${Date.now()}`,
           weekId: `week-${w}`,
           dayNumber: d,
-          titleAr: isRest ? "يوم راحة واستشفاء" : `حصة تدريبية - يوم ${d}`,
+          titleAr: isRest ? "Rest & Recovery" : `Workout Session Day ${d}`,
           titleEn: isRest ? "Rest & Recovery" : `Workout Session Day ${d}`,
           isRestDay: isRest,
           workouts: isRest || !defaultTemplateId ? [] : [
@@ -120,7 +120,7 @@ export default function ProgramsPage() {
         id: `week-${w}-${Date.now()}`,
         programId: "",
         weekNumber: w,
-        focusAr: `تركيز الأسبوع ${w}`,
+        focusAr: `Week ${w} Focus`,
         focusEn: `Week ${w} Focus`,
         days
       });
@@ -165,7 +165,7 @@ export default function ProgramsPage() {
     });
 
     setProgramWeeks(updatedWeeks);
-    showNotification(language === "ar" ? "تم نسخ جدول الأسبوع الأول لجميع أسابيع الشهر بنجاح! ⚡" : "Week 1 schedule copied to all weeks!");
+    showNotification("Week 1 schedule copied to all weeks successfully! ⚡");
   };
 
   // Update a specific day in the current active week
@@ -209,7 +209,7 @@ export default function ProgramsPage() {
   const handleCreateProgram = (e: React.FormEvent) => {
     e.preventDefault();
     if (!titleAr) {
-      showNotification("يرجى إدخال اسم البرنامج بالعربي", "error");
+      showNotification("Please enter program title", "error");
       return;
     }
 
@@ -217,7 +217,7 @@ export default function ProgramsPage() {
       db.createProgram({
         titleAr: titleAr.trim(),
         titleEn: titleEn.trim() || titleAr.trim(),
-        descriptionAr: descriptionAr.trim() || "برنامج تدريبي شامل ومخصص",
+        descriptionAr: descriptionAr.trim() || "Comprehensive custom training program",
         descriptionEn: descriptionAr.trim() || "Comprehensive custom training program",
         durationWeeks: Number(durationWeeks) || 4,
         sportId: sportId || sports[0]?.id || "sport-1",
@@ -229,9 +229,9 @@ export default function ProgramsPage() {
 
       loadData();
       setIsAddModalOpen(false);
-      showNotification(language === "ar" ? "تم إنشاء البرنامج التدريبي وجدول الشهر بنجاح! ✓" : "Training program created successfully!");
+      showNotification("Training program created successfully! ✓");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء إنشاء البرنامج", "error");
+      showNotification(err.message || "An error occurred while creating the program", "error");
     }
   };
 
@@ -268,9 +268,9 @@ export default function ProgramsPage() {
       loadData();
       setIsEditModalOpen(false);
       setEditingProgram(null);
-      showNotification(language === "ar" ? "تم تحديث البرنامج التدريبي بنجاح! ✓" : "Program updated successfully!");
+      showNotification("Program updated successfully! ✓");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء التحديث", "error");
+      showNotification(err.message || "An error occurred while updating the program", "error");
     }
   };
 
@@ -280,9 +280,9 @@ export default function ProgramsPage() {
       db.deleteProgram(deleteConfirmProgram.id);
       setDeleteConfirmProgram(null);
       loadData();
-      showNotification(language === "ar" ? "تم حذف البرنامج التدريبي" : "Program deleted");
+      showNotification("Program deleted successfully");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء الحذف", "error");
+      showNotification(err.message || "An error occurred while deleting the program", "error");
     }
   };
 
@@ -290,7 +290,7 @@ export default function ProgramsPage() {
   const handleApplyProgramSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!applyProgram || !selectedClientId) {
-      showNotification("يرجى اختيار المشترك وتاريخ البدء", "error");
+      showNotification("Please select a client and start date", "error");
       return;
     }
 
@@ -304,37 +304,33 @@ export default function ProgramsPage() {
 
       setApplyProgram(null);
       loadData();
-      showNotification(
-        language === "ar"
-          ? `تم تطبيق البرنامج لشهر كامل وتوزيع ${assignedCount} حصة تدريبية بنجاح! 🎯`
-          : `Full program applied! Scheduled ${assignedCount} workouts for client!`
-      );
+      showNotification(`Program applied for a full month with ${assignedCount} workouts scheduled! 🎯`);
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء تطبيق البرنامج", "error");
+      showNotification(err.message || "An error occurred while applying the program", "error");
     }
   };
 
   const getGoalBadge = (g: GoalType) => {
     switch (g) {
       case "MUSCLE_GAIN":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">{language === "ar" ? "بناء عضلات" : "Hypertrophy"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">Muscle Gain</span>;
       case "WEIGHT_LOSS":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">{language === "ar" ? "خسارة وزن" : "Weight Loss"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Weight Loss</span>;
       case "STRENGTH":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">{language === "ar" ? "زيادة قوة" : "Strength"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">Strength</span>;
       default:
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">{language === "ar" ? "لياقة عامة" : "Fitness"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">Fitness</span>;
     }
   };
 
   const getDifficultyBadge = (d: Difficulty) => {
     switch (d) {
       case "BEGINNER":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">{language === "ar" ? "مبتدئ" : "Beginner"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">Beginner</span>;
       case "INTERMEDIATE":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">{language === "ar" ? "متوسط" : "Intermediate"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">Intermediate</span>;
       case "ADVANCED":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/40">{language === "ar" ? "متقدم" : "Advanced"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/40">Advanced</span>;
       default:
         return null;
     }
@@ -363,13 +359,11 @@ export default function ProgramsPage() {
             <BookOpen className="w-6 h-6 text-brand-crimson" />
             <span>{t("navPrograms")}</span>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
-              {programs.length} {language === "ar" ? "برنامج معتمد" : "programs"}
+              {programs.length} programs
             </span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {language === "ar"
-              ? "تصميم البرامج التدريبية الممتدة لعدة أسابيع، تحديد جدول كل يوم، وتطبيق شهر كامل للمتدرب بضغطة واحدة"
-              : "Design multi-week training programs, configure daily workout schedules, and apply 1-month programs to athletes in 1 click"}
+            Design multi-week training programs, configure daily workout schedules, and apply 1-month programs to athletes in 1 click
           </p>
         </div>
 
@@ -378,7 +372,7 @@ export default function ProgramsPage() {
           className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>{language === "ar" ? "إنشاء برنامج تدريبي جديد +" : "Create Training Program +"}</span>
+          <span>Create Training Program +</span>
         </button>
       </div>
 
@@ -390,12 +384,10 @@ export default function ProgramsPage() {
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {language === "ar" ? "لا توجد برامج تدريبية مسجلة حالياً" : "No training programs yet"}
+              No training programs yet
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-              {language === "ar"
-                ? "ابدأ بتصميم أول برنامج تدريبي شامل لمدة شهر (4 أسابيع) أو أكثر، وحدد جدول أيام الأسبوع وتطبيقها للمتدربين دفعة واحدة."
-                : "Create multi-week programs and assign whole-month schedules to athletes effortlessly."}
+              Start designing your first multi-week program (4 weeks or more), set the daily schedule, and apply to clients easily.
             </p>
           </div>
           <button
@@ -403,7 +395,7 @@ export default function ProgramsPage() {
             className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all inline-flex items-center space-x-2 rtl:space-x-reverse cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>{language === "ar" ? "إنشاء أول برنامج تدريبي الآن" : "Create First Program"}</span>
+            <span>Create First Program</span>
           </button>
         </div>
       ) : (
@@ -431,18 +423,20 @@ export default function ProgramsPage() {
                     </div>
                     <div>
                       <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">{prog.titleAr}</h3>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">{prog.titleEn || prog.titleAr}</h3>
                         {getGoalBadge(prog.goalType)}
                         {getDifficultyBadge(prog.difficulty)}
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">{prog.titleEn}</p>
+                      {prog.titleEn && prog.titleAr && prog.titleEn !== prog.titleAr && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">{prog.titleAr}</p>
+                      )}
                       <div className="flex items-center space-x-3 rtl:space-x-reverse text-xs text-slate-600 dark:text-slate-300 mt-1">
                         <span className="flex items-center space-x-1 rtl:space-x-reverse font-bold text-brand-crimson">
                           <Clock className="w-3.5 h-3.5" />
-                          <span>{prog.durationWeeks} {language === "ar" ? "أسابيع تدريبية" : "weeks"}</span>
+                          <span>{prog.durationWeeks} weeks</span>
                         </span>
                         <span>•</span>
-                        <span>{totalWorkouts} {language === "ar" ? "حصة تدريبية مجدولة" : "scheduled sessions"}</span>
+                        <span>{totalWorkouts} scheduled sessions</span>
                       </div>
                     </div>
                   </div>
@@ -454,15 +448,15 @@ export default function ProgramsPage() {
                         setApplyProgram(prog);
                         if (clients.length > 0) setSelectedClientId(clients[0].id);
                       }}
-                      className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] hover:bg-[#FF2D3B]  text-white font-bold text-xs shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer scale-100 hover:scale-105"
+                      className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer scale-100 hover:scale-105"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>{language === "ar" ? "تطبيق البرنامج للمتدرب 🎯" : "Apply Program to Client 🎯"}</span>
+                      <span>Apply Program to Client 🎯</span>
                     </button>
 
                     <button
                       onClick={() => openEditModal(prog)}
-                      title={language === "ar" ? "تعديل البرنامج" : "Edit program"}
+                      title="Edit program"
                       className="p-2 rounded-xl text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -470,7 +464,7 @@ export default function ProgramsPage() {
 
                     <button
                       onClick={() => setDeleteConfirmProgram(prog)}
-                      title={language === "ar" ? "حذف البرنامج" : "Delete program"}
+                      title="Delete program"
                       className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -489,7 +483,7 @@ export default function ProgramsPage() {
                 {isExpanded && (
                   <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/40 space-y-4">
                     <p className="text-xs font-bold text-slate-500 dark:text-slate-400 pt-2">
-                      {language === "ar" ? "تفاصيل الجدول الزمني للبرنامج عبر الأسابيع:" : "Weekly schedule breakdown:"}
+                      Weekly schedule breakdown:
                     </p>
 
                     <div className="space-y-3">
@@ -497,10 +491,10 @@ export default function ProgramsPage() {
                         <div key={week.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
                           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                             <span className="text-xs font-bold text-brand-crimson">
-                              الأسبوع #{week.weekNumber} - {week.focusAr || "جدول تدريبي مكثف"}
+                              Week #{week.weekNumber} - {week.focusEn || week.focusAr || "Intensive Training Schedule"}
                             </span>
                             <span className="text-[11px] text-slate-400">
-                              {(week.days || []).filter(d => !d.isRestDay).length} أيام تدريب / {(week.days || []).filter(d => d.isRestDay).length} أيام راحة
+                              {(week.days || []).filter(d => !d.isRestDay).length} workout days / {(week.days || []).filter(d => d.isRestDay).length} rest days
                             </span>
                           </div>
 
@@ -516,17 +510,17 @@ export default function ProgramsPage() {
                               >
                                 <div>
                                   <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">
-                                    {language === "ar" ? dayNamesAr[dIdx] : dayNamesEn[dIdx]}
+                                    {dayNamesEn[dIdx]}
                                   </span>
                                   <p className="font-bold text-xs mt-0.5 line-clamp-1">
-                                    {day.isRestDay ? "راحة واستشفاء 💤" : (day.titleAr || "حصة تدريب")}
+                                    {day.isRestDay ? "Rest & Recovery 💤" : (day.titleEn || day.titleAr || "Workout Session")}
                                   </p>
                                 </div>
 
                                 {!day.isRestDay && day.workouts && day.workouts.length > 0 && (
                                   <div className="pt-1 border-t border-[#26262A]/50 dark:border-brand-crimson/30">
                                     <span className="text-[10px] text-brand-crimson dark:text-brand-crimson font-bold block truncate">
-                                      {day.workouts[0]?.template?.titleAr || "قالب تمرين"}
+                                      {day.workouts[0]?.template?.titleEn || day.workouts[0]?.template?.titleAr || "Workout Template"}
                                     </span>
                                   </div>
                                 )}
@@ -552,10 +546,10 @@ export default function ProgramsPage() {
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                   <BookOpen className="w-5 h-5 text-brand-crimson" />
-                  <span>{isAddModalOpen ? "تصميم برنامج تدريبي شامل وجدول الشهر" : "تعديل البرنامج التدريبي"}</span>
+                  <span>{isAddModalOpen ? "Design Training Program & Schedule" : "Edit Training Program"}</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  حدد بيانات البرنامج، ثم حدد القوالب التدريبية لكل يوم من أيام الأسابيع
+                  Configure program info, then select workout templates or rest days for each week
                 </p>
               </div>
               <button
@@ -572,18 +566,18 @@ export default function ProgramsPage() {
             <form onSubmit={isAddModalOpen ? handleCreateProgram : handleUpdateProgram} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم البرنامج بالعربي *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Program Title *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. برنامج كمال الأجسام والتضخيم - شهر 1"
+                    placeholder="e.g. Muscle Building & Hypertrophy - Month 1"
                     value={titleAr}
                     onChange={e => setTitleAr(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الاسم بالإنجليزي</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">English Title / Subtitle</label>
                   <input
                     type="text"
                     placeholder="e.g. Hypertrophy Mastery - Month 1"
@@ -596,7 +590,7 @@ export default function ProgramsPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">المدة بالأسابيع</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Duration (Weeks)</label>
                   <select
                     value={durationWeeks}
                     onChange={e => {
@@ -607,45 +601,45 @@ export default function ProgramsPage() {
                     }}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-bold"
                   >
-                    <option value={4}>4 أسابيع (شهر كامل 🗓️)</option>
-                    <option value={8}>8 أسابيع (شهران)</option>
-                    <option value={12}>12 أسبوع (3 أشهر)</option>
+                    <option value={4}>4 Weeks (Full Month 🗓️)</option>
+                    <option value={8}>8 Weeks (2 Months)</option>
+                    <option value={12}>12 Weeks (3 Months)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">هدف البرنامج</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Program Goal</label>
                   <select
                     value={goalType}
                     onChange={e => setGoalType(e.target.value as GoalType)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value="MUSCLE_GAIN">بناء عضلات (Hypertrophy)</option>
-                    <option value="WEIGHT_LOSS">خسارة وزن (Weight Loss)</option>
-                    <option value="STRENGTH">زيادة القوة (Strength)</option>
-                    <option value="GENERAL_FITNESS">لياقة وتحمل عام</option>
+                    <option value="MUSCLE_GAIN">Muscle Gain (Hypertrophy)</option>
+                    <option value="WEIGHT_LOSS">Weight Loss</option>
+                    <option value="STRENGTH">Strength</option>
+                    <option value="GENERAL_FITNESS">General Fitness</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">مستوى الصعوبة</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Difficulty Level</label>
                   <select
                     value={difficulty}
                     onChange={e => setDifficulty(e.target.value as Difficulty)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value="BEGINNER">مبتدئ</option>
-                    <option value="INTERMEDIATE">متوسط</option>
-                    <option value="ADVANCED">متقدم</option>
+                    <option value="BEGINNER">Beginner</option>
+                    <option value="INTERMEDIATE">Intermediate</option>
+                    <option value="ADVANCED">Advanced</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">وصف البرنامج وإرشادات المشترك</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Description & Guidelines</label>
                 <textarea
                   rows={2}
-                  placeholder="إرشادات عامة للمتدرب بخصوص الالتزام، التغذية، وأيام الراحة..."
+                  placeholder="General instructions for the athlete regarding consistency, nutrition, and rest..."
                   value={descriptionAr}
                   onChange={e => setDescriptionAr(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
@@ -658,10 +652,10 @@ export default function ProgramsPage() {
                   <div>
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5 rtl:space-x-reverse">
                       <Sparkles className="w-4 h-4 text-brand-crimson" />
-                      <span>جدول أيام الأسبوع وتوزيع التمارين</span>
+                      <span>Weekly Schedule & Workout Distribution</span>
                     </h4>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      حدد قالب التمرين لكل يوم، أو حدده كـ يوم راحة واستشفاء
+                      Select workout template for each day, or mark as rest day
                     </p>
                   </div>
 
@@ -671,7 +665,7 @@ export default function ProgramsPage() {
                     className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md flex items-center space-x-1.5 rtl:space-x-reverse cursor-pointer self-start sm:self-auto"
                   >
                     <Copy className="w-3.5 h-3.5" />
-                    <span>نسخ جدول الأسبوع 1 لكل الأسابيع ⚡</span>
+                    <span>Copy Week 1 Schedule to All Weeks ⚡</span>
                   </button>
                 </div>
 
@@ -688,7 +682,7 @@ export default function ProgramsPage() {
                           : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100"
                       }`}
                     >
-                      الأسبوع #{idx + 1}
+                      Week #{idx + 1}
                     </button>
                   ))}
                 </div>
@@ -715,11 +709,11 @@ export default function ProgramsPage() {
                               </span>
                               <div>
                                 <span className="text-xs font-bold text-slate-900 dark:text-white">
-                                  {language === "ar" ? dayNamesAr[dayIdx] : dayNamesEn[dayIdx]}
+                                  {dayNamesEn[dayIdx]}
                                 </span>
                                 <input
                                   type="text"
-                                  placeholder="عنوان الحصة (e.g. صدر وتراي / راحة)"
+                                  placeholder="Session title (e.g. Chest & Triceps / Rest)"
                                   value={day.titleAr}
                                   onChange={e => handleUpdateDay(dayIdx, { titleAr: e.target.value })}
                                   className="block mt-0.5 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white w-48"
@@ -739,21 +733,21 @@ export default function ProgramsPage() {
                                       dayIdx,
                                       {
                                         isRestDay: isRest,
-                                        titleAr: isRest ? "يوم راحة واستشفاء" : `حصة تدريبية - يوم ${dayIdx + 1}`
+                                        titleAr: isRest ? "Rest & Recovery" : `Workout Session Day ${dayIdx + 1}`
                                       },
                                       isRest ? "" : (templates[0]?.id || "")
                                     );
                                   }}
                                   className="rounded border-slate-300 text-brand-crimson focus:ring-brand-crimson w-4 h-4"
                                 />
-                                <span>يوم راحة واستشفاء 💤</span>
+                                <span>Rest & Recovery 💤</span>
                               </label>
 
                               {/* Workout Template Select */}
                               {!day.isRestDay && (
                                 <div className="min-w-[200px]">
                                   {templates.length === 0 ? (
-                                    <span className="text-[11px] text-amber-500">لا توجد قوالب! أضف قالب من شاشة القوالب.</span>
+                                    <span className="text-[11px] text-amber-500">No templates found! Add templates from the Templates screen.</span>
                                   ) : (
                                     <select
                                       value={curTemplateId || templates[0]?.id}
@@ -762,7 +756,7 @@ export default function ProgramsPage() {
                                     >
                                       {templates.map(tpl => (
                                         <option key={tpl.id} value={tpl.id}>
-                                          🏋️ {tpl.titleAr} ({tpl.exercises?.length || 0} تمارين)
+                                          🏋️ {tpl.titleEn || tpl.titleAr} ({tpl.exercises?.length || 0} exercises)
                                         </option>
                                       ))}
                                     </select>
@@ -793,7 +787,7 @@ export default function ProgramsPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] cursor-pointer"
                 >
-                  {isAddModalOpen ? "حفظ البرنامج وجدول الشهر ✓" : "تحديث البرنامج ✓"}
+                  {isAddModalOpen ? "Save Program & Schedule ✓" : "Update Program ✓"}
                 </button>
               </div>
             </form>
@@ -809,7 +803,7 @@ export default function ProgramsPage() {
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <Send className="w-5 h-5 text-brand-crimson" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  {language === "ar" ? "تطبيق البرنامج التدريبي للمتدرب (شهر كامل)" : "Apply Program to Athlete"}
+                  Apply Program to Athlete (Full Month)
                 </h3>
               </div>
               <button onClick={() => setApplyProgram(null)} className="text-slate-400 hover:text-white cursor-pointer">
@@ -819,29 +813,29 @@ export default function ProgramsPage() {
 
             <form onSubmit={handleApplyProgramSubmit} className="space-y-4">
               <div className="p-4 rounded-2xl bg-[#141416] border border-[#26262A] dark:border-brand-crimson/30 text-xs space-y-1.5">
-                <p className="font-bold text-white dark:text-brand-crimson">البرنامج المختار للتطبيق:</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">{applyProgram.titleAr}</p>
+                <p className="font-bold text-white dark:text-brand-crimson">Selected Program:</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">{applyProgram.titleEn || applyProgram.titleAr}</p>
                 <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-600 dark:text-slate-300 pt-1">
-                  <span>🗓️ المدة: <strong>{applyProgram.durationWeeks} أسابيع</strong></span>
+                  <span>🗓️ Duration: <strong>{applyProgram.durationWeeks} weeks</strong></span>
                   <span>•</span>
-                  <span>🏋️ الحصص: <strong>{(applyProgram.weeks || []).reduce((acc, w) => acc + (w.days || []).filter(d => !d.isRestDay).length, 0)} يوم تدريب</strong></span>
+                  <span>🏋️ Sessions: <strong>{(applyProgram.weeks || []).reduce((acc, w) => acc + (w.days || []).filter(d => !d.isRestDay).length, 0)} workout days</strong></span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اختر المشترك *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Client *</label>
                 {clients.length === 0 ? (
-                  <p className="text-xs text-red-500 font-bold">لا يوجد مشتركون مسجلون حالياً. أضف مشتركين أولاً من شاشة المشتركين.</p>
+                  <p className="text-xs text-red-500 font-bold">No registered clients found. Please add clients first from the Clients screen.</p>
                 ) : (
                   <select
                     value={selectedClientId}
                     onChange={e => setSelectedClientId(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-bold"
                   >
-                    <option value="">-- اضغط لاختيار المتدرب --</option>
+                    <option value="">-- Click to select client --</option>
                     {clients.map(c => (
                       <option key={c.id} value={c.id}>
-                        {c.user?.name} ({c.sport?.nameAr || "متدرب"})
+                        {c.user?.name} ({c.sport?.nameEn || c.sport?.nameAr || "Athlete"})
                       </option>
                     ))}
                   </select>
@@ -849,7 +843,7 @@ export default function ProgramsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تاريخ بدء البرنامج *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Program Start Date *</label>
                 <input
                   type="date"
                   required
@@ -858,7 +852,7 @@ export default function ProgramsPage() {
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-mono"
                 />
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                  💡 سيتم توزيع وتوليد جميع حصص الشهر بالكامل تلقائياً في تقويم المتدرب ابتداءً من هذا التاريخ.
+                  💡 All monthly sessions will be automatically scheduled in the client's calendar starting from this date.
                 </p>
               </div>
 
@@ -873,9 +867,9 @@ export default function ProgramsPage() {
                 <button
                   type="submit"
                   disabled={!selectedClientId}
-                  className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] hover:bg-[#FF2D3B]  text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] disabled:opacity-50 cursor-pointer"
                 >
-                  تأكيد تطبيق البرنامج لشهر كامل 🎯
+                  Confirm Full Month Program 🎯
                 </button>
               </div>
             </form>
@@ -891,9 +885,9 @@ export default function ProgramsPage() {
               <Trash2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">تأكيد حذف البرنامج</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Confirm Delete Program</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                هل أنت متأكد من حذف البرنامج التدريبي "{deleteConfirmProgram.titleAr}"؟
+                Are you sure you want to delete the program "{deleteConfirmProgram.titleEn || deleteConfirmProgram.titleAr}"?
               </p>
             </div>
             <div className="flex justify-center space-x-3 rtl:space-x-reverse pt-2">
@@ -909,7 +903,7 @@ export default function ProgramsPage() {
                 onClick={handleDeleteProgram}
                 className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/30 cursor-pointer"
               >
-                نعم، احذف البرنامج
+                Yes, Delete Program
               </button>
             </div>
           </div>

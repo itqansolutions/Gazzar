@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/db";
 import { SessionCalendar, AttendanceStatus } from "@/types";
 import {
@@ -16,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function AttendancePage() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [sessions, setSessions] = useState<SessionCalendar[]>([]);
 
   useEffect(() => {
@@ -36,14 +35,12 @@ export default function AttendancePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5">
           <CheckCircle2 className="w-6 h-6 text-brand-crimson" />
           <span>{t("navAttendance")}</span>
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          {language === "ar"
-            ? "تسجيل حضور وغياب المشتركين للحصص الفردية والجماعية وحساب نسب الالتزام"
-            : "Record session check-in, late arrivals, excused absences & adherence rates"}
+          Record session check-in, late arrivals, excused absences and adherence rates
         </p>
       </div>
 
@@ -58,11 +55,11 @@ export default function AttendancePage() {
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-white">{sess.title}</h3>
                 <p className="text-xs text-slate-400">
-                  {new Date(sess.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} • الكابتن: {sess.coach?.user?.name}
+                  {new Date(sess.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} • Coach: {sess.coach?.user?.name}
                 </p>
               </div>
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-brand-crimson border border-slate-700 self-start sm:self-auto">
-                {sess.attendances?.length || 0} مشتركون مسجلون
+                {sess.attendances?.length || 0} Registered Clients
               </span>
             </div>
 
@@ -73,7 +70,7 @@ export default function AttendancePage() {
                   key={att.id}
                   className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
-                  <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                  <div className="flex items-center space-x-3">
                     <img
                       src={att.client?.user.avatar}
                       alt={att.client?.user.name}
@@ -81,7 +78,7 @@ export default function AttendancePage() {
                     />
                     <div>
                       <h4 className="text-xs font-bold text-white">{att.client?.user.name}</h4>
-                      <p className="text-[10px] text-slate-400">الوزن: {att.client?.weightKg} KG</p>
+                      <p className="text-[10px] text-slate-400">Weight: {att.client?.weightKg} KG</p>
                     </div>
                   </div>
 

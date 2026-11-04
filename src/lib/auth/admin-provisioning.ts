@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { prisma as defaultPrisma } from "../prisma";
+import { prisma as defaultPrisma } from "../prisma.ts";
 import { hashPassword, validatePasswordStrength } from "./password";
 
 export interface AdminProvisioningInput {

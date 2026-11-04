@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/db";
-import { ClientProfile, BodyPart, RestrictionSeverity } from "@/types";
+import { ClientProfile, BodyPart, RestrictionSeverity, CoachProfile } from "@/types";
 import {
   Scale,
   AlertTriangle,
@@ -72,34 +72,43 @@ export default function ClientProfilePage() {
 
   const isClient = user?.role === "CLIENT";
 
-  useEffect(() => {
-    loadClientData();
-    const handleDbChange = () => loadClientData();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
-  }, [clientId]);
+  const [coachesList, setCoachesList] = useState<CoachProfile[]>([]);
 
-  const loadClientData = () => {
-    const data = db.getClient360(clientId);
-    if (data) {
-      // Permission check: if client user is trying to view another client profile, redirect to their own
-      if (user?.role === "CLIENT" && data.userId !== user.id) {
-        const myClient = db.getClients().find(c => c.userId === user.id);
-        if (myClient && myClient.id !== clientId) {
-          router.replace(`/clients/${myClient.id}`);
-          return;
+  const loadClientData = async () => {
+    try {
+      const res = await fetch(`/api/clients/${clientId}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          // Permission check: if client user is trying to view another client profile, redirect to their own
+          if (user?.role === "CLIENT" && json.data.userId !== user.id) {
+            router.replace("/dashboard");
+            return;
+          }
+          setClient(json.data);
         }
       }
-      setClient(data);
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading client 360:", err);
     }
   };
+
+  useEffect(() => {
+    loadClientData();
+    fetch("/api/coaches")
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.success && Array.isArray(j.data)) setCoachesList(j.data);
+      })
+      .catch((err) => console.error(err));
+  }, [clientId]);
 
   if (!client) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-brand-crimson" />
         <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">
-          {language === "ar" ? "جاري تحميل ملف المتدرب..." : "Loading client profile..."}
+          Loading client profile...
         </p>
       </div>
     );
@@ -108,7 +117,6 @@ export default function ClientProfilePage() {
   const measurements = client.measurements || [];
   const goals = client.goals || [];
   const restrictions = client.medicalRestrictions || [];
-  const coachesList = db.getCoaches();
 
   const heightM = (client.heightCm || 178) / 100;
   const currentBmi = ((client.weightKg || 80) / (heightM * heightM)).toFixed(1);
@@ -149,12 +157,22 @@ export default function ClientProfilePage() {
     loadClientData();
   };
 
-  const handleAssignCoach = (e: React.FormEvent) => {
+  const handleAssignCoach = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isClient) return; // Disallow client
-    db.assignCoachToClient(client.id, selectedCoachId, coachRole);
-    setCoachAssignModalOpen(false);
-    loadClientData();
+    if (isClient || !selectedCoachId) return; // Disallow client
+    try {
+      const res = await fetch(`/api/clients/${client.id}/coaches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coachId: selectedCoachId, role: coachRole })
+      });
+      if (res.ok) {
+        setCoachAssignModalOpen(false);
+        await loadClientData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error assigning coach:", err);
+    }
   };
 
   const handleAddNote = (e: React.FormEvent) => {
@@ -167,13 +185,13 @@ export default function ClientProfilePage() {
   };
 
   const tabs = [
-    { id: "measurements", label: language === "ar" ? "سجل القياسات والوزن" : "Measurements & Weight Log", icon: Scale },
-    { id: "medical", label: language === "ar" ? "السجل الطبي ومحاذير الإصابات" : "Medical Restrictions & Cues", icon: AlertTriangle, badge: restrictions.length },
-    { id: "goals", label: language === "ar" ? "الأهداف التدريبية" : "Training Goals", icon: Award },
-    { id: "coaches", label: language === "ar" ? "الكباتن المشرفون" : "Assigned Coaches", icon: Users },
-    { id: "workouts", label: language === "ar" ? "التمارين المخصصة" : "Assigned Workouts", icon: Dumbbell },
-    { id: "photos", label: language === "ar" ? "معرض صور التطور" : "Progress Gallery", icon: Camera },
-    ...(isClient ? [] : [{ id: "notes", label: language === "ar" ? "ملاحظات المتابعة" : "Coach Notes", icon: FileText }])
+    { id: "measurements", label: "Measurements & Weight Log", icon: Scale },
+    { id: "medical", label: "Medical Restrictions & Cues", icon: AlertTriangle, badge: restrictions.length },
+    { id: "goals", label: "Training Goals", icon: Award },
+    { id: "coaches", label: "Assigned Coaches", icon: Users },
+    { id: "workouts", label: "Assigned Workouts", icon: Dumbbell },
+    { id: "photos", label: "Progress Gallery", icon: Camera },
+    ...(isClient ? [] : [{ id: "notes", label: "Coach Notes", icon: FileText }])
   ];
 
   return (
@@ -191,7 +209,7 @@ export default function ClientProfilePage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{client.user?.name}</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {language === "ar" ? "ملف المتدرب الشخصي والبيانات البدنية" : "Client Profile & Physical Stats"} • {client.sport?.nameAr || "كمال أجسام"}
+            Client Profile & Physical Stats • {client.sport?.nameEn || client.sport?.nameAr || "Bodybuilding"}
           </p>
         </div>
       </div>
@@ -210,13 +228,13 @@ export default function ClientProfilePage() {
               <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{client.user?.name}</h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">
-                  {client.status === "ACTIVE" ? (language === "ar" ? "نشط" : "Active") : client.status}
+                  {client.status === "ACTIVE" ? "Active" : client.status}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                 {client.user?.email} {client.user?.phone ? `• ${client.user.phone}` : ''}
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{client.address || "القاهرة، مصر"}</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{client.address || "Cairo, Egypt"}</p>
             </div>
           </div>
 
@@ -224,18 +242,18 @@ export default function ClientProfilePage() {
           <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div className="px-2">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{t("weight")}</span>
-              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.weightKg} <span className="text-[10px] text-slate-400">{language === "ar" ? "كجم" : "KG"}</span></span>
+              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.weightKg} <span className="text-[10px] text-slate-400">KG</span></span>
             </div>
             <div className="px-2 border-s border-slate-200 dark:border-slate-800">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{t("height")}</span>
-              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.heightCm} <span className="text-[10px] text-slate-400">{language === "ar" ? "سم" : "CM"}</span></span>
+              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.heightCm} <span className="text-[10px] text-slate-400">CM</span></span>
             </div>
             <div className="px-2 border-s border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "الكتلة" : "BMI"}</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">BMI</span>
               <span className="text-sm sm:text-base font-black text-brand-crimson">{currentBmi}</span>
             </div>
             <div className="px-2 border-s border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "الاشتراك" : "Expiry"}</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Expiry</span>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate block">{client.membershipExpiry?.slice(0, 7) || "2026-12"}</span>
             </div>
           </div>
@@ -267,7 +285,7 @@ export default function ClientProfilePage() {
                   className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer"
                 >
                   <Users className="w-3.5 h-3.5 text-blue-500" />
-                  <span>{language === "ar" ? "تعيين كابتن / مساعد" : "Assign Coach / Assistant"}</span>
+                  <span>Assign Coach / Assistant</span>
                 </button>
               )}
 
@@ -276,7 +294,7 @@ export default function ClientProfilePage() {
                 className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer"
               >
                 <FileText className="w-3.5 h-3.5 text-purple-500" />
-                <span>{language === "ar" ? "إضافة ملاحظة" : "Add Note"}</span>
+                <span>Add Note</span>
               </button>
             </>
           )}
@@ -290,7 +308,7 @@ export default function ClientProfilePage() {
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">
-                {t("medicalAlert")} - {language === "ar" ? "محاذير وإصابات نشطة تتطلب الانتباه ⚠" : "Active Medical Restrictions"}
+                {t("medicalAlert")} - Active Medical Restrictions ⚠
               </h3>
               <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
                 {restrictions[0].severity}
@@ -301,7 +319,7 @@ export default function ClientProfilePage() {
             </p>
             {restrictions[0].restrictedExercises && restrictions[0].restrictedExercises.length > 0 && (
               <p className="text-[11px] text-red-600 dark:text-red-400 mt-1 font-semibold">
-                🚫 {language === "ar" ? "تمارين محظورة وممنوعة:" : "Contraindicated Exercises:"} {restrictions[0].restrictedExercises.join(", ")}
+                🚫 Contraindicated Exercises: {restrictions[0].restrictedExercises.join(", ")}
               </p>
             )}
           </div>
@@ -365,10 +383,14 @@ export default function ClientProfilePage() {
           <CoachesTab
             assignments={client.coaches || []}
             onOpenModal={() => setCoachAssignModalOpen(true)}
-            onUnassign={(coachId) => {
-              if (confirm(language === "ar" ? "هل أنت متأكد من إلغاء تعيين هذا الكابتن؟" : "Unassign this coach?")) {
-                db.removeCoachFromClient(client.id, coachId);
-                loadClientData();
+            onUnassign={async (coachId) => {
+              if (confirm("Are you sure you want to unassign this coach?")) {
+                try {
+                  await fetch(`/api/clients/${client.id}/coaches?coachId=${coachId}`, { method: "DELETE" });
+                  await loadClientData();
+                } catch (err) {
+                  console.error(err);
+                }
               }
             }}
             isClient={isClient}
@@ -403,7 +425,7 @@ export default function ClientProfilePage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Scale className="w-5 h-5 text-brand-crimson" />
-                <span>{language === "ar" ? "تسجيل قياسات بدنية جديدة" : "Log New Measurements"}</span>
+                <span>Log New Measurements</span>
               </h3>
               <button onClick={() => setMeasurementModalOpen(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -413,7 +435,7 @@ export default function ClientProfilePage() {
             <form onSubmit={handleAddMeasurement} className="space-y-3.5">
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "الوزن (كجم)" : "Weight (KG)"} *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Weight (KG) *</label>
                   <input
                     type="number"
                     step="0.1"
@@ -424,7 +446,7 @@ export default function ClientProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "نسبة الدهون %" : "Body Fat %"}</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Body Fat %</label>
                   <input
                     type="number"
                     step="0.1"
@@ -434,7 +456,7 @@ export default function ClientProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "الكتلة العضلية" : "Muscle Mass"}</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Muscle Mass (KG)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -447,7 +469,7 @@ export default function ClientProfilePage() {
 
               <div className="grid grid-cols-4 gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "الخصر سم" : "Waist"}</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Waist (cm)</label>
                   <input
                     type="number"
                     value={newWaist}
@@ -456,7 +478,7 @@ export default function ClientProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "الصدر سم" : "Chest"}</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Chest (cm)</label>
                   <input
                     type="number"
                     value={newChest}
@@ -465,7 +487,7 @@ export default function ClientProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "الذراع سم" : "Arms"}</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Arms (cm)</label>
                   <input
                     type="number"
                     value={newArms}
@@ -474,7 +496,7 @@ export default function ClientProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "الفخذ سم" : "Thigh"}</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Thigh (cm)</label>
                   <input
                     type="number"
                     value={newThigh}
@@ -485,7 +507,7 @@ export default function ClientProfilePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{language === "ar" ? "ملاحظات إضافية" : "Notes"}</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Additional Notes</label>
                 <textarea
                   rows={2}
                   value={measurementNotes}
@@ -506,7 +528,7 @@ export default function ClientProfilePage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)]"
                 >
-                  {language === "ar" ? "حفظ القياسات ✓" : "Save Measurements"}
+                  Save Measurements ✓
                 </button>
               </div>
             </form>
@@ -521,7 +543,7 @@ export default function ClientProfilePage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <AlertTriangle className="w-5 h-5 text-amber-500" />
-                <span>إضافة تقرير طبي ومحاذير إصابة</span>
+                <span>Add Medical Restriction & Injury Report</span>
               </h3>
               <button onClick={() => setMedicalModalOpen(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -530,11 +552,11 @@ export default function ClientProfilePage() {
 
             <form onSubmit={handleAddMedical} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم الإصابة / التقرير الطبي *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Condition / Injury Name *</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. تمزق غضروف الركبة اليمنى"
+                  placeholder="e.g. Right Knee Meniscus Tear"
                   value={conditionName}
                   onChange={e => setConditionName(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
@@ -543,37 +565,37 @@ export default function ClientProfilePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">المنطقة المتأثرة</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Affected Body Part</label>
                   <select
                     value={bodyPart}
                     onChange={e => setBodyPart(e.target.value as BodyPart)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value="KNEE">الركبة (Knee)</option>
-                    <option value="LOWER_BACK">أسفل الظهر (Lower Back)</option>
-                    <option value="SHOULDER">الكتف (Shoulder)</option>
-                    <option value="NECK">الرقبة (Neck)</option>
-                    <option value="ANKLE">الكاحل (Ankle)</option>
-                    <option value="WRIST">المعصم (Wrist)</option>
+                    <option value="KNEE">Knee</option>
+                    <option value="LOWER_BACK">Lower Back</option>
+                    <option value="SHOULDER">Shoulder</option>
+                    <option value="NECK">Neck</option>
+                    <option value="ANKLE">Ankle</option>
+                    <option value="WRIST">Wrist</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">مستوى الخطورة</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Severity Level</label>
                   <select
                     value={severity}
                     onChange={e => setSeverity(e.target.value as RestrictionSeverity)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value="LOW">منخفض (Low)</option>
-                    <option value="MEDIUM">متوسط (Medium)</option>
-                    <option value="HIGH">عالي (High)</option>
-                    <option value="CRITICAL">حرج (Critical)</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="CRITICAL">Critical</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">التمارين الممنوعة والمحظورة</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Contraindicated & Restricted Exercises</label>
                 <input
                   type="text"
                   placeholder="e.g. Barbell Squat, Leg Extension"
@@ -584,7 +606,7 @@ export default function ClientProfilePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الوصف والإرشادات للكباتن</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Description & Coaching Guidelines</label>
                 <textarea
                   rows={2}
                   value={conditionDesc}
@@ -605,7 +627,7 @@ export default function ClientProfilePage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-lg shadow-amber-600/30"
                 >
-                  حفظ التقرير الطبي ✓
+                  Save Medical Report ✓
                 </button>
               </div>
             </form>
@@ -620,7 +642,7 @@ export default function ClientProfilePage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Users className="w-5 h-5 text-brand-crimson" />
-                <span>{language === "ar" ? "تعيين كابتن / أخصائي للمتدرب" : "Assign Coach / Specialist to Athlete"}</span>
+                <span>Assign Coach / Specialist to Athlete</span>
               </h3>
               <button onClick={() => setCoachAssignModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
@@ -630,7 +652,7 @@ export default function ClientProfilePage() {
             <form onSubmit={handleAssignCoach} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  {language === "ar" ? "اختر الكابتن *" : "Select Coach *"}
+                  Select Coach *
                 </label>
                 <select
                   value={selectedCoachId}
@@ -639,7 +661,7 @@ export default function ClientProfilePage() {
                 >
                   {coachesList.map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.user?.name} ({c.specialties?.slice(0, 2).join(", ") || (language === "ar" ? "كابتن تدريب" : "Coach")})
+                      {c.user?.name} ({c.specialties?.slice(0, 2).join(", ") || "Coach"})
                     </option>
                   ))}
                 </select>
@@ -647,17 +669,17 @@ export default function ClientProfilePage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  {language === "ar" ? "الدور التدريبي *" : "Coaching Role *"}
+                  Coaching Role *
                 </label>
                 <select
                   value={coachRole}
                   onChange={e => setCoachRole(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium"
                 >
-                  <option value="PRIMARY">{language === "ar" ? "كابتن رئيسي (Primary Coach)" : "Primary Coach"}</option>
-                  <option value="ASSISTANT">{language === "ar" ? "كابتن مساعد (Assistant Coach)" : "Assistant Coach"}</option>
-                  <option value="NUTRITIONIST">{language === "ar" ? "أخصائي تغذية (Nutritionist)" : "Nutritionist"}</option>
-                  <option value="PHYSIOTHERAPIST">{language === "ar" ? "أخصائي علاج طبيعي (Physiotherapist)" : "Physiotherapist"}</option>
+                  <option value="PRIMARY">Primary Coach</option>
+                  <option value="ASSISTANT">Assistant Coach</option>
+                  <option value="NUTRITIONIST">Nutritionist</option>
+                  <option value="PHYSIOTHERAPIST">Physiotherapist</option>
                 </select>
               </div>
 
@@ -673,7 +695,7 @@ export default function ClientProfilePage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] cursor-pointer"
                 >
-                  {language === "ar" ? "تأكيد التعيين ✓" : "Confirm Assignment ✓"}
+                  Confirm Assignment ✓
                 </button>
               </div>
             </form>

@@ -53,11 +53,11 @@ export default function NutritionPage() {
   const [carbsGrams, setCarbsGrams] = useState(240);
   const [fatsGrams, setFatsGrams] = useState(65);
   const [waterLiters, setWaterLiters] = useState(3.5);
-  const [breakfast, setBreakfast] = useState("4 بياض بيض + 1 بيضة كاملة + 80جم شوفان مع حليب لوز وموزة");
-  const [lunch, setLunch] = useState("200جم صدور دجاج مشوية + 150جم أرز بسمتي مسلوق + طبق سلطة خضراء وزيت زيتون");
-  const [dinner, setDinner] = useState("150جم سمك فيليه مشوي أو تونة مصفاة + بطاطا حلوة مشوية + خضار سوتيه");
-  const [snacks, setSnacks] = useState("سكوب واي بروتين بعد التمرين + 30جم لوز ني + تفاحة خضراء");
-  const [notes, setNotes] = useState("شرب كوب ماء قبل كل وجبة بنصف ساعة، والابتعاد عن السكريات المكررة.");
+  const [breakfast, setBreakfast] = useState("4 egg whites + 1 whole egg + 80g oats with almond milk and banana");
+  const [lunch, setLunch] = useState("200g grilled chicken breast + 150g steamed basmati rice + green salad with olive oil");
+  const [dinner, setDinner] = useState("150g grilled fish fillet or tuna + baked sweet potato + steamed vegetables");
+  const [snacks, setSnacks] = useState("1 scoop whey protein post workout + 30g raw almonds + green apple");
+  const [notes, setNotes] = useState("Drink a glass of water 30 minutes before each meal, avoid refined sugars.");
   const [isActive, setIsActive] = useState(true);
 
   const loadData = () => {
@@ -82,17 +82,17 @@ export default function NutritionPage() {
 
   const openAddModal = () => {
     if (clients.length > 0) setTargetClientId(clients[0].id);
-    setTitle("خطة التغذية المتوازنة والمخصصة");
+    setTitle("Balanced Nutrition & Meal Plan");
     setDailyCalories(2400);
     setProteinGrams(160);
     setCarbsGrams(240);
     setFatsGrams(65);
     setWaterLiters(3.5);
-    setBreakfast("4 بياض بيض + 1 بيضة كاملة + 80جم شوفان مع حليب لوز وموزة");
-    setLunch("200جم صدور دجاج مشوية + 150جم أرز بسمتي مسلوق + طبق سلطة خضراء وزيت زيتون");
-    setDinner("150جم سمك فيليه مشوي أو تونة مصفاة + بطاطا حلوة مشوية + خضار سوتيه");
-    setSnacks("سكوب واي بروتين بعد التمرين + 30جم مكسرات نية + تفاحة");
-    setNotes("الالتزام بمواعيد الوجبات وشرب الماء الكافي.");
+    setBreakfast("4 egg whites + 1 whole egg + 80g oats with almond milk and banana");
+    setLunch("200g grilled chicken breast + 150g steamed basmati rice + green salad with olive oil");
+    setDinner("150g grilled fish fillet or tuna + baked sweet potato + steamed vegetables");
+    setSnacks("1 scoop whey protein post workout + 30g raw nuts + apple");
+    setNotes("Adhere to meal timings and maintain adequate hydration.");
     setIsActive(true);
     setIsAddModalOpen(true);
   };
@@ -187,15 +187,15 @@ export default function NutritionPage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
             <Apple className="w-6 h-6 text-brand-crimson" />
-            <span>{isClient ? (language === "ar" ? "خطتي الغذائية والماكروز" : "My Nutrition & Meal Plan") : t("navNutrition")}</span>
+            <span>{isClient ? "My Nutrition & Meal Plan" : t("navNutrition")}</span>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
               {mealPlans.length}
             </span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {isClient
-              ? (language === "ar" ? "جدول وجباتك اليومية المعتمدة، توزيع السعرات والماكروز، ومتابعة شرب الماء" : "Your customized daily meals, macronutrient targets & hydration tracker")
-              : (language === "ar" ? "تصميم وتعديل الأنظمة الغذائية لكل مشترك، حساب السعرات والماكروز، وتوزيع الوجبات" : "Design, manage and assign custom meal plans, calorie targets and macronutrients per client")}
+              ? "Your customized daily meals, macronutrient targets & hydration tracker"
+              : "Design, manage and assign custom meal plans, calorie targets and macronutrients per client"}
           </p>
         </div>
 
@@ -205,7 +205,7 @@ export default function NutritionPage() {
             className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all self-start sm:self-auto cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>{language === "ar" ? "تصميم خطة غذائية جديدة لمشترك +" : "Create Meal Plan +"}</span>
+            <span>Create Meal Plan +</span>
           </button>
         )}
       </div>
@@ -214,16 +214,16 @@ export default function NutritionPage() {
       {!isClient && (
         <div className="flex items-center space-x-3 rtl:space-x-reverse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl max-w-md shadow-sm">
           <User className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">تصفية بحسب المتدرب:</span>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">Filter by client:</span>
           <select
             value={selectedClientId}
             onChange={e => setSelectedClientId(e.target.value)}
             className="w-full px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-bold"
           >
-            <option value="ALL">جميع المشتركين</option>
+            <option value="ALL">All Clients</option>
             {clients.map(c => (
               <option key={c.id} value={c.id}>
-                {c.user?.name} ({c.sport?.nameAr || "متدرب"})
+                {c.user?.name} ({c.sport?.nameEn || c.sport?.nameAr || "Client"})
               </option>
             ))}
           </select>
@@ -237,12 +237,10 @@ export default function NutritionPage() {
             <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
               <Apple className="w-10 h-10 mx-auto text-slate-400 opacity-60" />
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {language === "ar" ? "لم يتم تعيين خطة غذائية لك بعد" : "No active meal plan assigned yet"}
+                No active meal plan assigned yet
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                {language === "ar"
-                  ? "سيقوم الكابتن أو أخصائي التغذية المشرف بتصميم جدولك الغذائي المخصص وحساب سعراتك وتوزيعه هنا قريباً."
-                  : "Your coach or sports nutritionist will assign your customized nutrition plan soon."}
+                Your coach or sports nutritionist will assign your customized nutrition plan soon.
               </p>
             </div>
           ) : (
@@ -256,33 +254,33 @@ export default function NutritionPage() {
                       <span>{clientActivePlan.title}</span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      {language === "ar" ? "خطة معتمدة ومخصصة لأهدافك التدريبية" : "Custom nutrition plan tailored for your goals"}
+                      Custom nutrition plan tailored for your goals
                     </p>
                   </div>
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30 self-start sm:self-auto">
-                    ✓ {language === "ar" ? "خطة نشطة" : "Active Plan"}
+                    ✓ Active Plan
                   </span>
                 </div>
 
                 {/* Macros Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
-                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">السعرات اليومية</span>
+                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">Daily Calories</span>
                     <p className="text-2xl font-black text-amber-600 dark:text-amber-400">{clientActivePlan.dailyCalories} <span className="text-xs font-normal text-slate-500">Kcal</span></p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-brand-crimson/15 border border-brand-crimson/30 space-y-1">
-                    <span className="text-[11px] font-bold text-brand-crimson dark:text-brand-crimson">البروتين (Protein)</span>
+                    <span className="text-[11px] font-bold text-brand-crimson dark:text-brand-crimson">Protein</span>
                     <p className="text-2xl font-black text-brand-crimson">{clientActivePlan.proteinGrams} <span className="text-xs font-normal text-slate-500">g</span></p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 space-y-1">
-                    <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300">الكاربوهيدرات (Carbs)</span>
+                    <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300">Carbohydrates</span>
                     <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{clientActivePlan.carbsGrams} <span className="text-xs font-normal text-slate-500">g</span></p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-1">
-                    <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300">الدهون الصحية (Fats)</span>
+                    <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300">Healthy Fats</span>
                     <p className="text-2xl font-black text-purple-600 dark:text-purple-400">{clientActivePlan.fatsGrams} <span className="text-xs font-normal text-slate-500">g</span></p>
                   </div>
                 </div>
@@ -293,10 +291,10 @@ export default function NutritionPage() {
                     <Droplets className="w-6 h-6 text-blue-500 animate-pulse" />
                     <div>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                        تتبع شرب الماء اليومي ({clientActivePlan.waterLiters} لتر مستهدف)
+                        Daily Hydration Tracker ({clientActivePlan.waterLiters}L Target)
                       </h4>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        تم شرب {(waterGlasses * 0.35).toFixed(1)} لتر حتى الآن ({waterGlasses} أكواب)
+                        Logged {(waterGlasses * 0.35).toFixed(1)}L so far ({waterGlasses} glasses)
                       </p>
                     </div>
                   </div>
@@ -308,7 +306,7 @@ export default function NutritionPage() {
                     >
                       -
                     </button>
-                    <span className="font-black text-sm text-blue-600 dark:text-blue-400 px-2">{waterGlasses} أكواب</span>
+                    <span className="font-black text-sm text-blue-600 dark:text-blue-400 px-2">{waterGlasses} glasses</span>
                     <button
                       onClick={() => setWaterGlasses(waterGlasses + 1)}
                       className="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 shadow-sm cursor-pointer"
@@ -325,7 +323,7 @@ export default function NutritionPage() {
                 <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
                   <div className="flex items-center space-x-2 rtl:space-x-reverse text-amber-600 dark:text-amber-400 font-bold text-xs">
                     <Coffee className="w-4 h-4" />
-                    <span>وجبة الإفطار (Breakfast)</span>
+                    <span>Breakfast</span>
                   </div>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
                     {clientActivePlan.breakfast}
@@ -336,7 +334,7 @@ export default function NutritionPage() {
                 <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
                   <div className="flex items-center space-x-2 rtl:space-x-reverse text-brand-crimson font-bold text-xs">
                     <Sun className="w-4 h-4" />
-                    <span>وجبة الغداء الأساسية (Lunch)</span>
+                    <span>Lunch</span>
                   </div>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
                     {clientActivePlan.lunch}
@@ -347,7 +345,7 @@ export default function NutritionPage() {
                 <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
                   <div className="flex items-center space-x-2 rtl:space-x-reverse text-indigo-600 dark:text-indigo-400 font-bold text-xs">
                     <Moon className="w-4 h-4" />
-                    <span>وجبة العشاء (Dinner)</span>
+                    <span>Dinner</span>
                   </div>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
                     {clientActivePlan.dinner}
@@ -358,7 +356,7 @@ export default function NutritionPage() {
                 <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-2">
                   <div className="flex items-center space-x-2 rtl:space-x-reverse text-teal-600 dark:text-teal-400 font-bold text-xs">
                     <Cookie className="w-4 h-4" />
-                    <span>السناكس وقبل التمرين (Snacks)</span>
+                    <span>Snacks & Pre-Workout</span>
                   </div>
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
                     {clientActivePlan.snacks}
@@ -368,7 +366,7 @@ export default function NutritionPage() {
 
               {clientActivePlan.notes && (
                 <div className="p-4 rounded-2xl bg-[#141416] border border-[#26262A] dark:border-brand-crimson/30 text-xs text-slate-800 dark:text-slate-200">
-                  <span className="font-bold text-brand-crimson dark:text-brand-crimson">💡 تعليمات وتوجيهات أخصائي التغذية:</span> {clientActivePlan.notes}
+                  <span className="font-bold text-brand-crimson dark:text-brand-crimson">💡 Nutritionist Guidance & Notes:</span> {clientActivePlan.notes}
                 </div>
               )}
             </div>
@@ -382,16 +380,16 @@ export default function NutritionPage() {
           {mealPlans.length === 0 ? (
             <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
               <Apple className="w-10 h-10 mx-auto text-slate-400 opacity-60" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">لا توجد خطط غذائية مسجلة حالياً</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">No meal plans registered yet</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                ابدأ بتصميم أول نظام غذائي مخصص لمشترك وحدد سعراته وماكروزه ووجباته اليومية.
+                Start by designing a customized meal plan for a client with calories, macros, and meals.
               </p>
               <button
                 onClick={openAddModal}
                 className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all inline-flex items-center space-x-2 rtl:space-x-reverse cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>تصميم خطة غذائية الآن</span>
+                <span>Create Meal Plan Now</span>
               </button>
             </div>
           ) : (
@@ -422,22 +420,22 @@ export default function NutritionPage() {
                                 ? "bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30"
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                             }`}>
-                              {plan.isActive ? "نشطة (Active)" : "غير نشطة"}
+                              {plan.isActive ? "Active" : "Inactive"}
                             </span>
                           </div>
 
                           <div className="flex items-center space-x-3 rtl:space-x-reverse text-xs text-slate-500 dark:text-slate-400 mt-1">
                             <span className="font-bold text-slate-800 dark:text-slate-200">
-                              👤 المتدرب: {clientObj?.user?.name || "متدرب"}
+                              👤 Client: {clientObj?.user?.name || "Client"}
                             </span>
                             <span>•</span>
                             <span className="text-amber-600 dark:text-amber-400 font-bold">{plan.dailyCalories} Kcal</span>
                             <span>•</span>
-                            <span>بروتين: {plan.proteinGrams}g</span>
+                            <span>Protein: {plan.proteinGrams}g</span>
                             <span>•</span>
-                            <span>كارب: {plan.carbsGrams}g</span>
+                            <span>Carbs: {plan.carbsGrams}g</span>
                             <span>•</span>
-                            <span>دهون: {plan.fatsGrams}g</span>
+                            <span>Fats: {plan.fatsGrams}g</span>
                           </div>
                         </div>
                       </div>
@@ -452,7 +450,7 @@ export default function NutritionPage() {
                               : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                           }`}
                         >
-                          {plan.isActive ? "الخطة النشطة ✓" : "تعيين كنشطة 🎯"}
+                          {plan.isActive ? "Active Plan ✓" : "Set as Active 🎯"}
                         </button>
 
                         <button
@@ -485,39 +483,39 @@ export default function NutritionPage() {
                           <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
                             <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center space-x-1 rtl:space-x-reverse">
                               <Coffee className="w-3.5 h-3.5" />
-                              <span>الإفطار:</span>
+                              <span>Breakfast:</span>
                             </span>
-                            <p className="text-slate-700 dark:text-slate-300">{plan.breakfast || "غير محدد"}</p>
+                            <p className="text-slate-700 dark:text-slate-300">{plan.breakfast || "Not specified"}</p>
                           </div>
 
                           <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
                             <span className="font-bold text-brand-crimson flex items-center space-x-1 rtl:space-x-reverse">
                               <Sun className="w-3.5 h-3.5" />
-                              <span>الغداء الأساسي:</span>
+                              <span>Main Lunch:</span>
                             </span>
-                            <p className="text-slate-700 dark:text-slate-300">{plan.lunch || "غير محدد"}</p>
+                            <p className="text-slate-700 dark:text-slate-300">{plan.lunch || "Not specified"}</p>
                           </div>
 
                           <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
                             <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center space-x-1 rtl:space-x-reverse">
                               <Moon className="w-3.5 h-3.5" />
-                              <span>العشاء:</span>
+                              <span>Dinner:</span>
                             </span>
-                            <p className="text-slate-700 dark:text-slate-300">{plan.dinner || "غير محدد"}</p>
+                            <p className="text-slate-700 dark:text-slate-300">{plan.dinner || "Not specified"}</p>
                           </div>
 
                           <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
                             <span className="font-bold text-teal-600 dark:text-teal-400 flex items-center space-x-1 rtl:space-x-reverse">
                               <Cookie className="w-3.5 h-3.5" />
-                              <span>السناكس والمكملات:</span>
+                              <span>Snacks & Supplements:</span>
                             </span>
-                            <p className="text-slate-700 dark:text-slate-300">{plan.snacks || "غير محدد"}</p>
+                            <p className="text-slate-700 dark:text-slate-300">{plan.snacks || "Not specified"}</p>
                           </div>
                         </div>
 
                         {plan.notes && (
                           <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
-                            💡 <span className="font-bold">ملاحظات:</span> {plan.notes}
+                            💡 <span className="font-bold">Notes:</span> {plan.notes}
                           </div>
                         )}
                       </div>
@@ -537,7 +535,7 @@ export default function NutritionPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
                 <Apple className="w-5 h-5 text-brand-crimson" />
-                <span>{isAddModalOpen ? "تصميم نظام وخطة غذائية جديدة" : "تعديل الخطة الغذائية"}</span>
+                <span>{isAddModalOpen ? "Design New Meal Plan" : "Edit Meal Plan"}</span>
               </h3>
               <button
                 onClick={() => {
@@ -553,7 +551,7 @@ export default function NutritionPage() {
             <form onSubmit={isAddModalOpen ? handleCreatePlan : handleUpdatePlan} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">المشترك المستهدف *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Client *</label>
                   <select
                     value={targetClientId}
                     onChange={e => setTargetClientId(e.target.value)}
@@ -561,18 +559,18 @@ export default function NutritionPage() {
                   >
                     {clients.map(c => (
                       <option key={c.id} value={c.id}>
-                        {c.user?.name} ({c.sport?.nameAr || "متدرب"})
+                        {c.user?.name} ({c.sport?.nameEn || c.sport?.nameAr || "Client"})
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">عنوان الخطة الغذائية *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Meal Plan Title *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. خطة التضخيم النظيف - 2600 سعرة"
+                    placeholder="e.g. Lean Bulk Nutrition Plan - 2600 Kcal"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
@@ -583,7 +581,7 @@ export default function NutritionPage() {
               {/* Macros Input */}
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">السعرات (Kcal)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Calories (Kcal)</label>
                   <input
                     type="number"
                     required
@@ -593,7 +591,7 @@ export default function NutritionPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">البروتين (جم)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Protein (g)</label>
                   <input
                     type="number"
                     required
@@ -603,7 +601,7 @@ export default function NutritionPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">الكارب (جم)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Carbs (g)</label>
                   <input
                     type="number"
                     required
@@ -613,7 +611,7 @@ export default function NutritionPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">الدهون (جم)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Fats (g)</label>
                   <input
                     type="number"
                     required
@@ -623,7 +621,7 @@ export default function NutritionPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">الماء (لتر)</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Water (L)</label>
                   <input
                     type="number"
                     step="0.5"
@@ -637,7 +635,7 @@ export default function NutritionPage() {
               {/* Meals Input */}
               <div className="space-y-3 pt-1">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🍳 تفاصيل وجبة الإفطار</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🍳 Breakfast Details</label>
                   <textarea
                     rows={2}
                     value={breakfast}
@@ -647,7 +645,7 @@ export default function NutritionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🥗 تفاصيل وجبة الغداء الأساسية</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🥗 Main Lunch Details</label>
                   <textarea
                     rows={2}
                     value={lunch}
@@ -657,7 +655,7 @@ export default function NutritionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🍲 تفاصيل وجبة العشاء</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🍲 Dinner Details</label>
                   <textarea
                     rows={2}
                     value={dinner}
@@ -667,7 +665,7 @@ export default function NutritionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🥜 السناكس وقبل/بعد التمرين</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">🥜 Snacks & Pre/Post Workout</label>
                   <textarea
                     rows={2}
                     value={snacks}
@@ -677,7 +675,7 @@ export default function NutritionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">💡 تعليمات وإرشادات عامة</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">💡 General Guidance & Rules</label>
                   <textarea
                     rows={2}
                     value={notes}
@@ -695,7 +693,7 @@ export default function NutritionPage() {
                     onChange={e => setIsActive(e.target.checked)}
                     className="rounded text-brand-crimson w-4 h-4"
                   />
-                  <span>تعيين كخطة نشطة للمتدرب حالياً ✓</span>
+                  <span>Set as active plan for this client currently ✓</span>
                 </label>
 
                 <div className="flex space-x-2 rtl:space-x-reverse">
@@ -713,7 +711,7 @@ export default function NutritionPage() {
                     type="submit"
                     className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] cursor-pointer"
                   >
-                    {isAddModalOpen ? "حفظ وتعيين الخطة الغذائية ✓" : "تحديث الخطة الغذائية ✓"}
+                    {isAddModalOpen ? "Save & Assign Meal Plan ✓" : "Update Meal Plan ✓"}
                   </button>
                 </div>
               </div>
@@ -730,9 +728,9 @@ export default function NutritionPage() {
               <Trash2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">تأكيد حذف الخطة الغذائية</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Confirm Meal Plan Deletion</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                هل أنت متأكد من حذف الخطة الغذائية "{deleteConfirmPlan.title}"؟
+                Are you sure you want to delete meal plan "{deleteConfirmPlan.title}"?
               </p>
             </div>
             <div className="flex justify-center space-x-3 rtl:space-x-reverse pt-2">
@@ -748,7 +746,7 @@ export default function NutritionPage() {
                 onClick={handleDeletePlan}
                 className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/30 cursor-pointer"
               >
-                نعم، احذف الخطة
+                Yes, Delete Meal Plan
               </button>
             </div>
           </div>

@@ -22,14 +22,14 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { success: false, message: "البيانات المرسلة غير صالحة" },
+      { success: false, message: "Invalid request data" },
       { status: 400 }
     );
   }
 
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json(
-      { success: false, message: "البريد الإلكتروني وكلمة المرور مطلوبان" },
+      { success: false, message: "Email and password are required" },
       { status: 400 }
     );
   }

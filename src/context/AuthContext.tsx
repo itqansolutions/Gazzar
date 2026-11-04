@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
       if (!email?.trim() || !password) {
-        return { success: false, message: "البريد الإلكتروني وكلمة المرور مطلوبان" };
+        return { success: false, message: "Email and password are required" };
       }
 
       const res = await fetch("/api/auth/login", {
@@ -99,11 +99,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       return {
         success: false,
-        message: data.message || "بيانات الدخول غير صحيحة"
+        message: data.message || "Invalid login credentials"
       };
     } catch {
       setUser(null);
-      return { success: false, message: "فشل الاتصال بالخادم. يرجى المحاولة مرة أخرى." };
+      return { success: false, message: "Connection error. Please try again." };
     }
   };
 

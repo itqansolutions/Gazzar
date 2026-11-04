@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   // 4. Wipe Cookie on Response (Matches all cookie attributes)
   const response = NextResponse.json(
-    { success: true, message: "تم تسجيل الخروج بنجاح" },
+    { success: true, message: "Logged out successfully" },
     { status: 200 }
   );
 

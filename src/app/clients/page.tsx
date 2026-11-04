@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { db } from "@/lib/db";
-import { ClientProfile, ClientStatus } from "@/types";
+import { ClientProfile, ClientStatus, CoachProfile, Sport } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import {
   Users,
@@ -25,6 +24,9 @@ import {
 export default function ClientsPage() {
   const { user } = useAuth();
   const [clients, setClients] = useState<ClientProfile[]>([]);
+  const [coaches, setCoaches] = useState<CoachProfile[]>([]);
+  const [sports, setSports] = useState<Sport[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [coachFilter, setCoachFilter] = useState<string>("ALL");
@@ -56,72 +58,132 @@ export default function ClientsPage() {
   const [modalCoachNotes, setModalCoachNotes] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const coaches = db.getCoaches();
-  const sports = db.getSports();
-
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const loadClients = () => {
-    setClients(db.getClients());
+  const loadClients = async () => {
+    try {
+      const res = await fetch("/api/clients");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setClients(json.data);
+        }
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading clients:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadAuxiliaryData = async () => {
+    try {
+      const [coachesRes, sportsRes] = await Promise.all([
+        fetch("/api/coaches"),
+        fetch("/api/sports")
+      ]);
+
+      if (coachesRes.ok) {
+        const cJson = await coachesRes.json();
+        if (cJson.success && Array.isArray(cJson.data)) {
+          setCoaches(cJson.data);
+        }
+      }
+
+      if (sportsRes.ok) {
+        const sJson = await sportsRes.json();
+        if (sJson.success && Array.isArray(sJson.data)) {
+          setSports(sJson.data);
+        }
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading auxiliary data:", err);
+    }
   };
 
   useEffect(() => {
     loadClients();
-    const handleDbChange = () => loadClients();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
+    loadAuxiliaryData();
   }, []);
 
-  const handleCreateClient = (e: React.FormEvent) => {
+  const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newEmail) return;
 
-    db.createClient({
-      name: newName,
-      email: newEmail,
-      phone: newPhone,
-      gender: newGender,
-      heightCm: Number(newHeight),
-      weightKg: Number(newWeight),
-      preferredSportId: newSportId,
-      status: newStatus,
-      coachId: newCoachId || undefined,
-      coachRole: newCoachRole
-    });
+    try {
+      const res = await fetch("/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newName,
+          email: newEmail,
+          phone: newPhone,
+          gender: newGender,
+          heightCm: Number(newHeight),
+          weightKg: Number(newWeight),
+          preferredSportId: newSportId,
+          status: newStatus,
+          coachId: newCoachId || undefined,
+          coachRole: newCoachRole
+        })
+      });
 
-    setIsAddModalOpen(false);
-    setNewName("");
-    setNewEmail("");
-    setNewPhone("");
-    setNewCoachId("");
-    setNewCoachRole("PRIMARY");
-    loadClients();
-    showToast("Athlete profile created successfully!");
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        alert(json.error || "Failed to create athlete in PostgreSQL");
+        return;
+      }
+
+      setIsAddModalOpen(false);
+      setNewName("");
+      setNewEmail("");
+      setNewPhone("");
+      setNewCoachId("");
+      setNewCoachRole("PRIMARY");
+      await loadClients();
+      showToast("Athlete profile saved to PostgreSQL database!");
+    } catch (err: any) {
+      alert(err.message || "Network error");
+    }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClient) return;
 
-    db.updateClient(selectedClient.id, {
-      name: selectedClient.user?.name,
-      email: selectedClient.user?.email,
-      phone: selectedClient.user?.phone,
-      status: selectedClient.status,
-      weightKg: Number(selectedClient.weightKg),
-      heightCm: Number(selectedClient.heightCm),
-      preferredSportId: selectedClient.preferredSportId,
-      coachId: editCoachId || "NONE",
-      coachRole: editCoachRole
-    });
+    try {
+      const res = await fetch(`/api/clients/${selectedClient.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: selectedClient.user?.name,
+          email: selectedClient.user?.email,
+          phone: selectedClient.user?.phone,
+          status: selectedClient.status,
+          weightKg: Number(selectedClient.weightKg),
+          heightCm: Number(selectedClient.heightCm),
+          preferredSportId: selectedClient.preferredSportId,
+          coachId: editCoachId || undefined,
+          coachRole: editCoachRole
+        })
+      });
 
-    setIsEditModalOpen(false);
-    setSelectedClient(null);
-    loadClients();
-    showToast("Athlete profile updated!");
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        alert(json.error || "Failed to update athlete in PostgreSQL");
+        return;
+      }
+
+      setIsEditModalOpen(false);
+      setSelectedClient(null);
+      await loadClients();
+      showToast("Athlete profile updated in PostgreSQL!");
+    } catch (err: any) {
+      alert(err.message || "Network error");
+    }
   };
 
   const openAssignModal = (client: ClientProfile) => {
@@ -133,32 +195,70 @@ export default function ClientsPage() {
     setIsAssignModalOpen(true);
   };
 
-  const handleQuickAssignSubmit = (e: React.FormEvent) => {
+  const handleQuickAssignSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignModalClient || !modalCoachId) return;
 
-    db.assignCoachToClient(assignModalClient.id, modalCoachId, modalCoachRole, modalCoachNotes);
-    setIsAssignModalOpen(false);
-    setAssignModalClient(null);
-    loadClients();
-    showToast("Supervising coach assigned successfully!");
-  };
+    try {
+      const res = await fetch(`/api/clients/${assignModalClient.id}/coaches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          coachId: modalCoachId,
+          role: modalCoachRole,
+          notes: modalCoachNotes
+        })
+      });
 
-  const handleUnassignCoach = (clientId: string, coachId: string) => {
-    if (confirm("Unassign this coach from athlete?")) {
-      db.removeCoachFromClient(clientId, coachId);
-      const updated = db.getClient360(clientId);
-      if (updated) setAssignModalClient(updated);
-      loadClients();
-      showToast("Coach unassigned successfully");
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        alert(json.error || "Failed to assign coach");
+        return;
+      }
+
+      setIsAssignModalOpen(false);
+      setAssignModalClient(null);
+      await loadClients();
+      showToast("Supervising coach assigned in PostgreSQL!");
+    } catch (err: any) {
+      alert(err.message || "Network error");
     }
   };
 
-  const handleDeleteClient = (id: string, name: string) => {
+  const handleUnassignCoach = async (clientId: string, coachId: string) => {
+    if (confirm("Unassign this coach from athlete?")) {
+      try {
+        const res = await fetch(`/api/clients/${clientId}/coaches?coachId=${coachId}`, {
+          method: "DELETE"
+        });
+        if (res.ok) {
+          setIsAssignModalOpen(false);
+          setAssignModalClient(null);
+          await loadClients();
+          showToast("Coach unassigned successfully");
+        }
+      } catch (err: any) {
+        alert(err.message || "Network error");
+      }
+    }
+  };
+
+  const handleDeleteClient = async (id: string, name: string) => {
     if (confirm(`Delete athlete ${name} permanently?`)) {
-      db.deleteClient(id);
-      loadClients();
-      showToast("Athlete deleted");
+      try {
+        const res = await fetch(`/api/clients/${id}`, {
+          method: "DELETE"
+        });
+        if (res.ok) {
+          await loadClients();
+          showToast("Athlete deleted permanently from PostgreSQL");
+        } else {
+          const json = await res.json();
+          alert(json.error || "Failed to delete client");
+        }
+      } catch (err: any) {
+        alert(err.message || "Network error");
+      }
     }
   };
 

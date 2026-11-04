@@ -178,7 +178,7 @@ test("Milestone 1.3.2 – Centralized Authentication APIs Verification Suite", a
     });
     assert.equal(res.success, false);
     assert.equal(res.reason, "INVALID_CREDENTIALS");
-    assert.equal(res.message, "بيانات الدخول غير صحيحة");
+    assert.equal(res.message, "Invalid login credentials");
   });
 
   // 3. Wrong Password
@@ -189,7 +189,7 @@ test("Milestone 1.3.2 – Centralized Authentication APIs Verification Suite", a
     });
     assert.equal(res.success, false);
     assert.equal(res.reason, "INVALID_CREDENTIALS");
-    assert.equal(res.message, "بيانات الدخول غير صحيحة");
+    assert.equal(res.message, "Invalid login credentials");
   });
 
   // 4. Successful Login

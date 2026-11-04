@@ -233,7 +233,7 @@ class CoachingStore {
     this.loadFromStorage();
     const existing = this.getUserByEmail(data.email);
     if (existing) {
-      throw new Error(`البريد الإلكتروني ${data.email} مسجل بالفعل لمستخدم آخر`);
+      throw new Error(`Email ${data.email} is already registered to another user`);
     }
 
     const newUser: User = {
@@ -254,8 +254,8 @@ class CoachingStore {
         id: `coach-${Date.now()}`,
         userId: newUser.id,
         user: newUser,
-        specialties: data.specialties && data.specialties.length > 0 ? data.specialties : ["لياقة بدنية", "كمال أجسام"],
-        bio: data.bio || "كابتن معتمد في الأكاديمية",
+        specialties: data.specialties && data.specialties.length > 0 ? data.specialties : ["Fitness", "Bodybuilding"],
+        bio: data.bio || "Certified Academy Coach",
         yearsOfExperience: data.yearsOfExperience || 3,
         assignedClientsCount: 0,
         attendanceRate: 98,
@@ -329,7 +329,7 @@ class CoachingStore {
     const user = this.getUserById(id);
     if (!user) return false;
     if (user.role === "ADMIN" && this.users.filter(u => u.role === "ADMIN").length <= 1) {
-      throw new Error("لا يمكن حذف حساب الأدمن الوحيد في النظام");
+      throw new Error("Cannot delete the only admin account in the system");
     }
     this.users = this.users.filter(u => u.id !== id);
     this.clients = this.clients.filter(c => c.userId !== id);
@@ -494,7 +494,7 @@ class CoachingStore {
       gender: data.gender || "MALE",
       heightCm: data.heightCm || 175,
       weightKg: data.weightKg || 80,
-      address: data.address || "القاهرة، مصر",
+      address: data.address || "Cairo, Egypt",
       emergencyContact: data.emergencyContact || "+20 100 999 8888",
       status: data.status || "ACTIVE",
       preferredSportId: data.preferredSportId || "sport-bodybuilding",
@@ -863,7 +863,7 @@ class CoachingStore {
         ...te,
         exercise: this.getExerciseById(te.exerciseId) || te.exercise || {
           id: te.exerciseId,
-          nameAr: "تمرين تدريبي",
+          nameAr: "Exercise",
           nameEn: "Exercise",
           difficulty: "BEGINNER",
           metricType: "SETS_REPS_WEIGHT",
@@ -994,7 +994,7 @@ class CoachingStore {
               id: `cal-${Date.now()}-${createdCount}`,
               coachId: coachId || "user-admin",
               sportId: program.sportId || "sport-1",
-              title: `${program.titleAr} - ${day.titleAr || "حصة تدريبية"}`,
+              title: `${program.titleEn || program.titleAr} - ${day.titleEn || day.titleAr || "Training Session"}`,
               sessionType: "INDIVIDUAL",
               startTime: `${dateString}T10:00:00.000Z`,
               endTime: `${dateString}T11:00:00.000Z`,
@@ -1006,7 +1006,7 @@ class CoachingStore {
                   sessionId: `cal-${Date.now()}-${createdCount}`,
                   clientId,
                   status: "PRESENT",
-                  notes: "حصة مجدولة ضمن البرنامج التدريبي"
+                  notes: "Scheduled session from training program"
                 }
               ]
             });
@@ -1020,8 +1020,8 @@ class CoachingStore {
     this.notifications.unshift({
       id: `notif-${Date.now()}`,
       userId: client.userId,
-      title: "تم تعيين برنامج تدريبي شامل لك! 🏆",
-      message: `تم جدولة برنامج "${program.titleAr}" لمدة ${program.durationWeeks} أسابيع بنجاح في تقويمك.`,
+      title: "New training program assigned! 🏆",
+      message: `Program "${program.titleEn || program.titleAr}" (${program.durationWeeks} weeks) has been scheduled in your calendar.`,
       type: "WORKOUT",
       read: false,
       link: "/assignments",
@@ -1067,8 +1067,8 @@ class CoachingStore {
       this.notifications.unshift({
         id: `notif-${Date.now()}`,
         userId: client.userId,
-        title: "تمرين جديد مخصص لك! 🏋️‍♂️",
-        message: `تم تعيين تمرين جديد لك بتاريخ ${data.scheduledDate}`,
+        title: "New workout assigned! 🏋️‍♂️",
+        message: `A new workout has been scheduled for you on ${data.scheduledDate}`,
         type: "WORKOUT",
         read: false,
         link: `/workout/${newAssign.id}/execute`,
@@ -1292,9 +1292,9 @@ class CoachingStore {
     return [
       {
         id: "plan-vip-36",
-        nameAr: "باقة التدريب الفردي VIP (36 حصة)",
+        nameAr: "VIP 1-on-1 PT (36 Sessions)",
         nameEn: "VIP 1-on-1 PT (36 Sessions)",
-        description: "متابعة تدريبية وتغذية كاملة مع كابتن أساسي ومساعد",
+        description: "Full training and nutrition coaching with primary and assistant coach",
         price: 8500,
         currency: "EGP",
         durationDays: 90,
@@ -1302,18 +1302,18 @@ class CoachingStore {
       },
       {
         id: "plan-crossfit-unlimited",
-        nameAr: "اشتراك كروس فيت غير محدود",
+        nameAr: "CrossFit Unlimited Monthly",
         nameEn: "CrossFit Unlimited Monthly",
-        description: "حضور كافة كلاسات الـ WOD والتحمل يومياً",
+        description: "Access to all daily WOD and conditioning classes",
         price: 2200,
         currency: "EGP",
         durationDays: 30
       },
       {
         id: "plan-academy-monthly",
-        nameAr: "اشتراك الأكاديمية العام (شهري)",
+        nameAr: "Standard Academy Membership",
         nameEn: "Standard Academy Membership",
-        description: "استخدام الصالة وجداول التمارين العامة",
+        description: "Full gym access and general workout routines",
         price: 1500,
         currency: "EGP",
         durationDays: 30

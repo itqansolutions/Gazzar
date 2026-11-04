@@ -59,7 +59,7 @@ export class AuthService {
       return {
         success: false,
         reason: "INVALID_INPUT",
-        message: "البريد الإلكتروني وكلمة المرور مطلوبان"
+        message: "Email and password are required"
       };
     }
 
@@ -75,7 +75,7 @@ export class AuthService {
       return {
         success: false,
         reason: "INVALID_INPUT",
-        message: "البريد الإلكتروني أو كلمة المرور غير صالحة"
+        message: "Invalid email or password"
       };
     }
 
@@ -87,7 +87,7 @@ export class AuthService {
       return {
         success: false,
         reason: "SERVER_ERROR",
-        message: "حدث خطأ غير متوقع، يرجى المحاولة لاحقاً"
+        message: "An unexpected error occurred. Please try again later."
       };
     }
 
@@ -99,7 +99,7 @@ export class AuthService {
       return {
         success: false,
         reason: "INVALID_CREDENTIALS",
-        message: "بيانات الدخول غير صحيحة"
+        message: "Invalid login credentials"
       };
     }
 
@@ -115,7 +115,7 @@ export class AuthService {
       return {
         success: false,
         reason: "SERVER_ERROR",
-        message: "فشل في إنشاء الجلسة، يرجى المحاولة لاحقاً"
+        message: "Failed to create session. Please try again later."
       };
     }
 

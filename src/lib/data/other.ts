@@ -15,7 +15,7 @@ export const initialAuditLogs: AuditLog[] = [
   {
     id: "audit-init",
     userId: "user-admin",
-    userName: "أحمد - المدير العام",
+    userName: "Ahmed - General Manager",
     userRole: "ADMIN",
     action: "SYSTEM_INITIALIZATION",
     entityType: "System",

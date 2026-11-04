@@ -10,10 +10,7 @@ import {
   Users,
   UserPlus,
   Shield,
-  UserCheck,
-  Dumbbell,
   Search,
-  Filter,
   Trash2,
   Edit,
   Key,
@@ -21,14 +18,12 @@ import {
   AlertTriangle,
   X,
   Phone,
-  Mail,
-  Calendar,
-  Sparkles
+  Mail
 } from "lucide-react";
 
 export default function UsersPage() {
   const router = useRouter();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { user: currentUser, updateCurrentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,7 +68,7 @@ export default function UsersPage() {
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim()) {
-      showNotification(language === "ar" ? "يرجى إدخال الاسم والبريد الإلكتروني" : "Please enter name and email", "error");
+      showNotification("Please enter name and email", "error");
       return;
     }
 
@@ -105,9 +100,9 @@ export default function UsersPage() {
         weightKg: 80,
         heightCm: 175
       });
-      showNotification(language === "ar" ? "تم إنشاء المستخدم بنجاح! ✓" : "User created successfully!");
+      showNotification("User created successfully! ✓");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء إنشاء المستخدم", "error");
+      showNotification(err.message || "Error creating user", "error");
     }
   };
 
@@ -137,9 +132,9 @@ export default function UsersPage() {
       refreshUsers();
       setIsEditModalOpen(false);
       setSelectedUser(null);
-      showNotification(language === "ar" ? "تم تحديث بيانات المستخدم بنجاح! ✓" : "User updated successfully!");
+      showNotification("User updated successfully! ✓");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء التحديث", "error");
+      showNotification(err.message || "Error updating user", "error");
     }
   };
 
@@ -156,23 +151,23 @@ export default function UsersPage() {
       setIsPasswordModalOpen(false);
       setSelectedUser(null);
       setNewPassword("A@123456");
-      showNotification(language === "ar" ? "تم تغيير كلمة المرور بنجاح! ✓" : "Password updated successfully!");
+      showNotification("Password updated successfully! ✓");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء تغيير كلمة المرور", "error");
+      showNotification(err.message || "Error resetting password", "error");
     }
   };
 
   const handleDeleteUser = (id: string, name: string) => {
-    if (!confirm(language === "ar" ? `هل أنت متأكد من حذف المستخدم "${name}" نهائياً؟` : `Are you sure you want to delete "${name}"?`)) {
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) {
       return;
     }
 
     try {
       db.deleteUser(id);
       refreshUsers();
-      showNotification(language === "ar" ? "تم حذف المستخدم بنجاح" : "User deleted successfully");
+      showNotification("User deleted successfully");
     } catch (err: any) {
-      showNotification(err.message || "لا يمكن حذف هذا المستخدم", "error");
+      showNotification(err.message || "Cannot delete this user", "error");
     }
   };
 
@@ -187,13 +182,13 @@ export default function UsersPage() {
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
       case "ADMIN":
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30">👑 {language === "ar" ? "مدير نظام" : "Admin"}</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30">👑 Admin</span>;
       case "HEAD_COACH":
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">⭐ {language === "ar" ? "مشرف عام" : "Head Coach"}</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">⭐ Head Coach</span>;
       case "COACH":
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/40">🏋️ {language === "ar" ? "كابتن" : "Coach"}</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/40">🏋️ Coach</span>;
       case "CLIENT":
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">🏃 {language === "ar" ? "مشترك" : "Client"}</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">🏃 Client</span>;
     }
   };
 
@@ -202,31 +197,29 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5">
             <Users className="w-6 h-6 text-brand-crimson" />
-            <span>{language === "ar" ? "إدارة المستخدمين والحسابات" : "User & Account Management"}</span>
+            <span>User & Account Management</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {language === "ar"
-              ? "إنشاء والتحكم في كافة مستخدمي الأكاديمية (المدراء، الكباتن، المشتركون)، وتعيين كلمات المرور والصلاحيات"
-              : "Create, edit and manage academy users, roles, credentials and access rights"}
+            Create, edit and manage academy users, roles, credentials and access rights
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all self-start sm:self-auto"
+          className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all self-start sm:self-auto"
         >
           <UserPlus className="w-4 h-4" />
-          <span>{language === "ar" ? "إضافة مستخدم جديد +" : "Create New User +"}</span>
+          <span>Create New User +</span>
         </button>
       </div>
 
       {/* Notification Banner */}
       {notification && (
-        <div className={`p-4 rounded-2xl border text-xs font-bold flex items-center space-x-2 rtl:space-x-reverse animate-in fade-in ${
+        <div className={`p-4 rounded-2xl border text-xs font-bold flex items-center space-x-2 animate-in fade-in ${
           notification.type === "success"
-            ? "bg-brand-crimson/15 border-brand-crimson/40 text-brand-crimson dark:text-brand-crimson"
+            ? "bg-brand-crimson/15 border-brand-crimson/40 text-brand-crimson"
             : "bg-red-500/10 border-red-500/40 text-red-600 dark:text-red-300"
         }`}>
           {notification.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
@@ -237,23 +230,23 @@ export default function UsersPage() {
       {/* Metrics Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "إجمالي الحسابات" : "Total Users"}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Total Users</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{users.length}</p>
         </div>
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-purple-600 dark:text-purple-400">{language === "ar" ? "المدراء (Admin)" : "Admins"}</p>
+          <p className="text-xs text-purple-600 dark:text-purple-400">Admins</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{users.filter(u => u.role === "ADMIN").length}</p>
         </div>
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-blue-600 dark:text-blue-400">{language === "ar" ? "المشرفون (Head Coach)" : "Head Coaches"}</p>
+          <p className="text-xs text-blue-600 dark:text-blue-400">Head Coaches</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{users.filter(u => u.role === "HEAD_COACH").length}</p>
         </div>
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-brand-crimson">{language === "ar" ? "الكباتن (Coaches)" : "Coaches"}</p>
+          <p className="text-xs text-brand-crimson">Coaches</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{users.filter(u => u.role === "COACH").length}</p>
         </div>
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm col-span-2 sm:col-span-1">
-          <p className="text-xs text-amber-600 dark:text-amber-400">{language === "ar" ? "المشتركون (Clients)" : "Clients"}</p>
+          <p className="text-xs text-amber-600 dark:text-amber-400">Clients</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{users.filter(u => u.role === "CLIENT").length}</p>
         </div>
       </div>
@@ -264,7 +257,7 @@ export default function UsersPage() {
           <Search className="w-4 h-4 text-slate-400 absolute top-3 start-3" />
           <input
             type="text"
-            placeholder={language === "ar" ? "بحث بالاسم أو الإيميل أو الهاتف..." : "Search by name, email, phone..."}
+            placeholder="Search by name, email, phone..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full ps-9 pe-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson"
@@ -282,7 +275,7 @@ export default function UsersPage() {
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              {r === "ALL" ? (language === "ar" ? "الكل" : "All") : r}
+              {r === "ALL" ? "All" : r}
             </button>
           ))}
         </div>
@@ -294,19 +287,19 @@ export default function UsersPage() {
           <table className="w-full text-start text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-4 py-3.5 text-start font-bold">{language === "ar" ? "المستخدم" : "User"}</th>
-                <th className="px-4 py-3.5 text-start font-bold">{language === "ar" ? "الصلاحية / الدور" : "Role"}</th>
-                <th className="px-4 py-3.5 text-start font-bold">{language === "ar" ? "البريد الإلكتروني" : "Email"}</th>
-                <th className="px-4 py-3.5 text-start font-bold">{language === "ar" ? "الهاتف" : "Phone"}</th>
-                <th className="px-4 py-3.5 text-start font-bold">{language === "ar" ? "تاريخ الإنشاء" : "Created Date"}</th>
-                <th className="px-4 py-3.5 text-center font-bold">{language === "ar" ? "الإجراءات" : "Actions"}</th>
+                <th className="px-4 py-3.5 text-start font-bold">User</th>
+                <th className="px-4 py-3.5 text-start font-bold">Role</th>
+                <th className="px-4 py-3.5 text-start font-bold">Email</th>
+                <th className="px-4 py-3.5 text-start font-bold">Phone</th>
+                <th className="px-4 py-3.5 text-start font-bold">Created Date</th>
+                <th className="px-4 py-3.5 text-center font-bold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-700 dark:text-slate-200">
               {filteredUsers.map(u => (
                 <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="px-4 py-3.5">
-                    <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                    <div className="flex items-center space-x-3">
                       <img
                         src={u.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
                         alt={u.name}
@@ -323,28 +316,28 @@ export default function UsersPage() {
                     {getRoleBadge(u.role)}
                   </td>
                   <td className="px-4 py-3.5 font-medium text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                    <div className="flex items-center space-x-1.5">
                       <Mail className="w-3.5 h-3.5 text-slate-400" />
                       <span>{u.email}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                    <div className="flex items-center space-x-1.5">
                       <Phone className="w-3.5 h-3.5 text-slate-400" />
                       <span>{u.phone || "—"}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3.5 text-slate-500 text-[11px]">
-                    {new Date(u.createdAt).toLocaleDateString(language === "ar" ? "ar-EG" : "en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    {new Date(u.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                   </td>
                   <td className="px-4 py-3.5 text-center">
-                    <div className="flex items-center justify-center space-x-1.5 rtl:space-x-reverse">
+                    <div className="flex items-center justify-center space-x-1.5">
                       <button
                         onClick={() => {
                           setSelectedUser(u);
                           setIsPasswordModalOpen(true);
                         }}
-                        title={language === "ar" ? "تغيير كلمة المرور" : "Reset Password"}
+                        title="Reset Password"
                         className="p-1.5 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors"
                       >
                         <Key className="w-4 h-4" />
@@ -355,7 +348,7 @@ export default function UsersPage() {
                           setSelectedUser({ ...u });
                           setIsEditModalOpen(true);
                         }}
-                        title={language === "ar" ? "تعديل البيانات" : "Edit User"}
+                        title="Edit User"
                         className="p-1.5 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors"
                       >
                         <Edit className="w-4 h-4" />
@@ -363,7 +356,7 @@ export default function UsersPage() {
 
                       <button
                         onClick={() => handleDeleteUser(u.id, u.name)}
-                        title={language === "ar" ? "حذف المستخدم" : "Delete User"}
+                        title="Delete User"
                         className="p-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -382,9 +375,9 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                 <UserPlus className="w-5 h-5 text-brand-crimson" />
-                <span>{language === "ar" ? "إضافة مستخدم جديد للنظام" : "Create New User"}</span>
+                <span>Create New User</span>
               </h2>
               <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -394,12 +387,12 @@ export default function UsersPage() {
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  {language === "ar" ? "الاسم الكامل *" : "Full Name *"}
+                  Full Name *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={language === "ar" ? "مثال: كابتن إسلام أحمد" : "e.g. John Doe"}
+                  placeholder="e.g. John Doe"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-brand-crimson focus:outline-none"
@@ -409,7 +402,7 @@ export default function UsersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                    Email Address *
                   </label>
                   <input
                     type="email"
@@ -422,7 +415,7 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    {language === "ar" ? "كلمة المرور *" : "Password *"}
+                    Password *
                   </label>
                   <input
                     type="text"
@@ -437,22 +430,22 @@ export default function UsersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    {language === "ar" ? "الدور والصلاحية *" : "Role & Permission *"}
+                    Role & Permission *
                   </label>
                   <select
                     value={formData.role}
                     onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-brand-crimson focus:outline-none"
                   >
-                    <option value="ADMIN">{language === "ar" ? "مدير نظام (Admin)" : "System Admin"}</option>
-                    <option value="HEAD_COACH">{language === "ar" ? "كبير المدربين (Head Coach)" : "Head Coach"}</option>
-                    <option value="COACH">{language === "ar" ? "كابتن تدريب (Coach)" : "Coach"}</option>
-                    <option value="CLIENT">{language === "ar" ? "مشترك / متدرب (Client)" : "Client Athlete"}</option>
+                    <option value="ADMIN">System Admin</option>
+                    <option value="HEAD_COACH">Head Coach</option>
+                    <option value="COACH">Coach</option>
+                    <option value="CLIENT">Client Athlete</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                    Phone Number
                   </label>
                   <input
                     type="text"
@@ -467,15 +460,15 @@ export default function UsersPage() {
               {(formData.role === "COACH" || formData.role === "HEAD_COACH") && (
                 <div className="p-3.5 rounded-2xl bg-brand-crimson/15 border border-brand-crimson/40 space-y-3">
                   <p className="text-xs font-bold text-brand-crimson">
-                    {language === "ar" ? "🏋️ بيانات الكابتن الإضافية:" : "🏋️ Coach Details:"}
+                    🏋️ Coach Details:
                   </p>
                   <div>
                     <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                      {language === "ar" ? "التخصصات (مفصولة بفواصل)" : "Specialties (comma-separated)"}
+                      Specialties (comma-separated)
                     </label>
                     <input
                       type="text"
-                      placeholder={language === "ar" ? "كمال أجسام، كروس فيت، تغذية" : "Bodybuilding, CrossFit, Nutrition"}
+                      placeholder="Bodybuilding, CrossFit, Nutrition"
                       value={formData.specialties}
                       onChange={e => setFormData({ ...formData, specialties: e.target.value })}
                       className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
@@ -487,12 +480,12 @@ export default function UsersPage() {
               {formData.role === "CLIENT" && (
                 <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
                   <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                    {language === "ar" ? "🏃 بيانات المشترك المبدئية:" : "🏃 Athlete Details:"}
+                    🏃 Athlete Details:
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                        {language === "ar" ? "الوزن (KG)" : "Weight (KG)"}
+                        Weight (KG)
                       </label>
                       <input
                         type="number"
@@ -503,7 +496,7 @@ export default function UsersPage() {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                        {language === "ar" ? "الطول (CM)" : "Height (CM)"}
+                        Height (CM)
                       </label>
                       <input
                         type="number"
@@ -516,7 +509,7 @@ export default function UsersPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse pt-3">
+              <div className="flex items-center justify-end space-x-2 pt-3">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
@@ -528,7 +521,7 @@ export default function UsersPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md"
                 >
-                  {language === "ar" ? "حفظ وإنشاء المستخدم" : "Create User"}
+                  Create User
                 </button>
               </div>
             </form>
@@ -541,9 +534,9 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                 <Edit className="w-5 h-5 text-blue-500" />
-                <span>{language === "ar" ? "تعديل بيانات المستخدم" : "Edit User Profile"}</span>
+                <span>Edit User Profile</span>
               </h2>
               <button onClick={() => setIsEditModalOpen(false)} className="p-1 text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -553,7 +546,7 @@ export default function UsersPage() {
             <form onSubmit={handleUpdateUser} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  {language === "ar" ? "الاسم *" : "Name *"}
+                  Name *
                 </label>
                 <input
                   type="text"
@@ -566,7 +559,7 @@ export default function UsersPage() {
 
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  Email Address *
                 </label>
                 <input
                   type="email"
@@ -580,22 +573,22 @@ export default function UsersPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    {language === "ar" ? "الصلاحية" : "Role"}
+                    Role
                   </label>
                   <select
                     value={selectedUser.role}
                     onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value as UserRole })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
                   >
-                    <option value="ADMIN">{language === "ar" ? "مدير نظام (Admin)" : "Admin"}</option>
-                    <option value="HEAD_COACH">{language === "ar" ? "كبير المدربين (Head Coach)" : "Head Coach"}</option>
-                    <option value="COACH">{language === "ar" ? "كابتن تدريب (Coach)" : "Coach"}</option>
-                    <option value="CLIENT">{language === "ar" ? "مشترك (Client)" : "Client"}</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="HEAD_COACH">Head Coach</option>
+                    <option value="COACH">Coach</option>
+                    <option value="CLIENT">Client</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                    {language === "ar" ? "الهاتف" : "Phone"}
+                    Phone
                   </label>
                   <input
                     type="text"
@@ -606,7 +599,7 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse pt-3">
+              <div className="flex items-center justify-end space-x-2 pt-3">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
@@ -618,7 +611,7 @@ export default function UsersPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md"
                 >
-                  {language === "ar" ? "حفظ التعديلات" : "Save Changes"}
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -631,9 +624,9 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                 <Key className="w-5 h-5 text-amber-500" />
-                <span>{language === "ar" ? "تعيين كلمة مرور جديدة" : "Reset User Password"}</span>
+                <span>Reset User Password</span>
               </h2>
               <button onClick={() => setIsPasswordModalOpen(false)} className="p-1 text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -642,12 +635,12 @@ export default function UsersPage() {
 
             <form onSubmit={handleResetPassword} className="space-y-3">
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {language === "ar" ? "تعيين كلمة مرور جديدة للمستخدم:" : "Set new password for user:"}{" "}
+                Set new password for user:{" "}
                 <strong className="text-slate-900 dark:text-white">{selectedUser.name}</strong>
               </p>
               <div>
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  {language === "ar" ? "كلمة المرور الجديدة" : "New Password"}
+                  New Password
                 </label>
                 <input
                   type="text"
@@ -658,7 +651,7 @@ export default function UsersPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse pt-3">
+              <div className="flex items-center justify-end space-x-2 pt-3">
                 <button
                   type="button"
                   onClick={() => setIsPasswordModalOpen(false)}
@@ -670,7 +663,7 @@ export default function UsersPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md"
                 >
-                  {language === "ar" ? "تحديث كلمة المرور" : "Update Password"}
+                  Update Password
                 </button>
               </div>
             </form>

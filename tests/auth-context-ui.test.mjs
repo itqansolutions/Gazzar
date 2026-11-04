@@ -109,7 +109,7 @@ test("Milestone 1.3.4 – Frontend UI Authentication & Context Integration Suite
           status: 401,
           json: async () => ({
             success: false,
-            message: "بيانات الدخول غير صحيحة"
+            message: "Invalid login credentials"
           })
         };
       }
@@ -129,7 +129,7 @@ test("Milestone 1.3.4 – Frontend UI Authentication & Context Integration Suite
 
     assert.equal(authState.user, null);
     assert.equal(data.success, false);
-    assert.equal(data.message, "بيانات الدخول غير صحيحة");
+    assert.equal(data.message, "Invalid login credentials");
   });
 
   // 3. Session Restoration on Application Startup

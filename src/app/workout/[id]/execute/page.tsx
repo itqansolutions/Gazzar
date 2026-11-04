@@ -169,12 +169,12 @@ export default function WorkoutExecutionPage() {
   };
 
   const getRpeDescription = (rpe: number) => {
-    if (rpe <= 4) return language === "ar" ? "سهل جداً (إحماء وتكيف)" : "Very Easy";
-    if (rpe <= 6) return language === "ar" ? "معتدل (جهد متوسط)" : "Moderate Effort";
-    if (rpe === 7) return language === "ar" ? "تحدي جيد (متبقي 3 تكرارات للفشل)" : "Good Challenge (3 RIR)";
-    if (rpe === 8) return language === "ar" ? "شاق وقوي (متبقي تكراران للفشل 2 RIR)" : "Heavy (2 RIR)";
-    if (rpe === 9) return language === "ar" ? "قريب من أقصى جهد (1 RIR)" : "Near Max (1 RIR)";
-    return language === "ar" ? "أقصى جهد ممكن 10/10 (فشل عضلي تام)" : "Absolute Max (0 RIR)";
+    if (rpe <= 4) return "Very Easy";
+    if (rpe <= 6) return "Moderate Effort";
+    if (rpe === 7) return "Good Challenge (3 RIR)";
+    if (rpe === 8) return "Heavy (2 RIR)";
+    if (rpe === 9) return "Near Max (1 RIR)";
+    return "Absolute Max (0 RIR)";
   };
 
   return (
@@ -191,28 +191,28 @@ export default function WorkoutExecutionPage() {
             </span>
           </div>
           <h1 className="text-lg sm:text-xl font-black text-white">
-            {assignment?.template?.titleAr || "تمرين اليوم"}
+            {assignment?.template?.titleEn || assignment?.template?.titleAr || "Today's Workout"}
           </h1>
         </div>
 
         {/* Live Elapsed & Rest Timers */}
         <div className="flex items-center gap-2">
           {/* Workout Elapsed Timer */}
-          <div className="flex items-center space-x-2 rtl:space-x-reverse px-3 py-1.5 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-brand-crimson text-sm font-bold">
+          <div className="flex items-center space-x-2 px-3 py-1.5 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-brand-crimson text-sm font-bold">
             <Clock className="w-4 h-4" />
             <span>{formatTimer(workoutSeconds)}</span>
           </div>
 
           {/* Rest Timer Floating Pill */}
           {isRestActive && (
-            <div className="flex items-center space-x-1.5 rtl:space-x-reverse px-3 py-1.5 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold animate-pulse">
-              <span>راحة: {restSecondsLeft}ث</span>
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold animate-pulse">
+              <span>Rest: {restSecondsLeft}s</span>
             </div>
           )}
 
           <button
             onClick={handleFinishWorkout}
-            className="px-4 py-2 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B]  text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 active:scale-95"
+            className="px-4 py-2 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 active:scale-95"
           >
             {t("finishWorkout")} 🏆
           </button>
@@ -228,20 +228,19 @@ export default function WorkoutExecutionPage() {
           >
             {/* Exercise Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center space-x-3 rtl:space-x-reverse">
+              <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-sm text-brand-crimson">
                   {exIdx + 1}
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white">{el.exercise?.nameAr}</h3>
-                  <p className="text-xs font-semibold text-slate-400">{el.exercise?.nameEn}</p>
+                  <h3 className="text-sm sm:text-base font-bold text-white">{el.exercise?.nameEn || el.exercise?.nameAr}</h3>
                 </div>
               </div>
 
               {el.exercise?.contraindicatedBodyParts?.length > 0 && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950/40 text-red-300 border border-red-500/30 flex items-center space-x-1 rtl:space-x-reverse">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950/40 text-red-300 border border-red-500/30 flex items-center space-x-1">
                   <AlertTriangle className="w-3 h-3 text-red-400" />
-                  <span>تنبيه إصابة</span>
+                  <span>Injury Alert</span>
                 </span>
               )}
             </div>
@@ -249,11 +248,11 @@ export default function WorkoutExecutionPage() {
             {/* Sets Touch Table (Mobile-First) */}
             <div className="space-y-2">
               <div className="grid grid-cols-12 text-[11px] font-bold text-slate-400 px-3 pb-1">
-                <span className="col-span-2 text-start">الجولة (Set)</span>
-                <span className="col-span-3 text-center">المطلوب</span>
-                <span className="col-span-3 text-center">الوزن الفعلي (KG)</span>
-                <span className="col-span-2 text-center">التكرار الفعلي</span>
-                <span className="col-span-2 text-center">الحالة</span>
+                <span className="col-span-2 text-start">Set</span>
+                <span className="col-span-3 text-center">Target</span>
+                <span className="col-span-3 text-center">Actual Weight (KG)</span>
+                <span className="col-span-2 text-center">Actual Reps</span>
+                <span className="col-span-2 text-center">Status</span>
               </div>
 
               {el.sets.map((set, setIdx) => (
@@ -267,7 +266,7 @@ export default function WorkoutExecutionPage() {
                 >
                   {/* Set # */}
                   <span className="col-span-2 font-bold text-xs ps-2">
-                    جولة {set.setNumber}
+                    Set {set.setNumber}
                   </span>
 
                   {/* Target reference */}
@@ -315,28 +314,28 @@ export default function WorkoutExecutionPage() {
 
             {/* Quick Rest Timer Shortcuts */}
             <div className="flex items-center justify-between pt-1 text-xs">
-              <span className="text-slate-400 font-medium">مؤقت الراحة السريع:</span>
-              <div className="flex space-x-1.5 rtl:space-x-reverse">
+              <span className="text-slate-400 font-medium">Quick Rest Timer:</span>
+              <div className="flex space-x-1.5">
                 <button
                   type="button"
                   onClick={() => startRestTimer(45)}
                   className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300"
                 >
-                  45ث
+                  45s
                 </button>
                 <button
                   type="button"
                   onClick={() => startRestTimer(60)}
                   className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-brand-crimson"
                 >
-                  60ث
+                  60s
                 </button>
                 <button
                   type="button"
                   onClick={() => startRestTimer(90)}
                   className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300"
                 >
-                  90ث
+                  90s
                 </button>
               </div>
             </div>
@@ -347,7 +346,7 @@ export default function WorkoutExecutionPage() {
       {/* Rate of Perceived Exertion (RPE) & Feedback Card */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
             <Flame className="w-4 h-4 text-amber-400" />
             <span>{t("rpeScale")}</span>
           </h3>
@@ -373,20 +372,20 @@ export default function WorkoutExecutionPage() {
 
         <div>
           <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-            ملاحظات وشعور المتدرب بعد التمرين (Feedback)
+            Workout Feedback & Notes
           </label>
           <textarea
             rows={2}
             value={clientFeedback}
             onChange={e => setClientFeedback(e.target.value)}
-            placeholder="مثال: شعرت بقوة استثنائية في تمرين البنش بريس، وتجنبت السكوات لحماية الركبة..."
+            placeholder="e.g. Felt strong on bench press, form was clean..."
             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-brand-crimson"
           />
         </div>
 
         <button
           onClick={handleFinishWorkout}
-          className="w-full py-3.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B]  text-white font-extrabold text-sm shadow-xl shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 hover:scale-[1.01] active:scale-95"
+          className="w-full py-3.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-extrabold text-sm shadow-xl shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 hover:scale-[1.01] active:scale-95"
         >
           {t("finishWorkout")} 🏆
         </button>
@@ -401,23 +400,23 @@ export default function WorkoutExecutionPage() {
             </div>
 
             <div>
-              <h3 className="text-xl font-extrabold text-white">عاش يا بطل! تم إنهاء التمرين 🏆</h3>
+              <h3 className="text-xl font-extrabold text-white">Great job! Workout Completed 🏆</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">{t("workoutCompletedSuccess")}</p>
             </div>
 
             <div className="grid grid-cols-3 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800 text-center">
               <div>
-                <span className="text-[10px] text-slate-500 block">الوقت المستغرق</span>
+                <span className="text-[10px] text-slate-500 block">Total Time</span>
                 <span className="text-xs font-bold text-white">{formatTimer(workoutSeconds)}</span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-500 block">معدل RPE</span>
+                <span className="text-[10px] text-slate-500 block">RPE Level</span>
                 <span className="text-xs font-bold text-brand-crimson">{overallRpe}/10</span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-500 block">الجولات المنجزة</span>
+                <span className="text-[10px] text-slate-500 block">Completed Sets</span>
                 <span className="text-xs font-bold text-teal-400">
-                  {exerciseLogs.reduce((acc, el) => acc + el.sets.filter(s => s.isCompleted).length, 0)} جولة
+                  {exerciseLogs.reduce((acc, el) => acc + el.sets.filter(s => s.isCompleted).length, 0)} Sets
                 </span>
               </div>
             </div>
@@ -427,13 +426,13 @@ export default function WorkoutExecutionPage() {
                 onClick={() => router.push("/dashboard")}
                 className="w-full py-3 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md"
               >
-                العودة للوحة التحكم
+                Back to Dashboard
               </button>
               <button
                 onClick={() => router.push(`/clients/${assignment?.clientId || "client-1"}`)}
                 className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs"
               >
-                عرض سجل التطور والقياسات
+                View Progress & Stats
               </button>
             </div>
           </div>

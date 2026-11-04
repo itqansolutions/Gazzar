@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { CoachProfile, UserRole, Sport, ClientProfile } from "@/types";
 import {
   Shield,
@@ -57,18 +56,33 @@ export default function CoachesPage() {
   const [formSpecialties, setFormSpecialties] = useState<string[]>([]);
   const [customSpecialtyInput, setCustomSpecialtyInput] = useState("");
 
-  const refreshData = () => {
-    setCoaches(db.getCoaches());
-    setSports(db.getSports());
-    setClients(db.getClients());
+  const refreshData = async () => {
+    try {
+      const [coachesRes, sportsRes, clientsRes] = await Promise.all([
+        fetch("/api/coaches"),
+        fetch("/api/sports"),
+        fetch("/api/clients")
+      ]);
+
+      if (coachesRes.ok) {
+        const cJson = await coachesRes.json();
+        if (cJson.success && Array.isArray(cJson.data)) setCoaches(cJson.data);
+      }
+      if (sportsRes.ok) {
+        const sJson = await sportsRes.json();
+        if (sJson.success && Array.isArray(sJson.data)) setSports(sJson.data);
+      }
+      if (clientsRes.ok) {
+        const clJson = await clientsRes.json();
+        if (clJson.success && Array.isArray(clJson.data)) setClients(clJson.data);
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error refreshing coaches data:", err);
+    }
   };
 
   useEffect(() => {
     refreshData();
-
-    const handleDbChange = () => refreshData();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
@@ -78,31 +92,56 @@ export default function CoachesPage() {
 
   const openAssignAthleteModal = (coach: CoachProfile) => {
     setTargetCoach(coach);
-    const cls = db.getClients();
-    setClients(cls);
-    const unassigned = cls.find(cl => !cl.coaches?.some(ca => ca.coachId === coach.id && ca.active));
-    setAthleteIdToAssign(unassigned?.id || (cls[0]?.id || ""));
+    const unassigned = clients.find(cl => !cl.coaches?.some(ca => ca.coachId === coach.id && ca.active));
+    setAthleteIdToAssign(unassigned?.id || (clients[0]?.id || ""));
     setAthleteRoleToAssign("PRIMARY");
     setAthleteAssignNotes("");
     setIsAssignAthleteModalOpen(true);
   };
 
-  const handleAssignAthleteSubmit = (e: React.FormEvent) => {
+  const handleAssignAthleteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetCoach || !athleteIdToAssign) return;
 
-    db.assignCoachToClient(athleteIdToAssign, targetCoach.id, athleteRoleToAssign, athleteAssignNotes);
-    setIsAssignAthleteModalOpen(false);
-    setTargetCoach(null);
-    refreshData();
-    showNotification("Athlete assigned to coach successfully!");
+    try {
+      const res = await fetch(`/api/clients/${athleteIdToAssign}/coaches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          coachId: targetCoach.id,
+          role: athleteRoleToAssign,
+          notes: athleteAssignNotes
+        })
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        showNotification(json.error || "Failed to assign athlete", "error");
+        return;
+      }
+
+      setIsAssignAthleteModalOpen(false);
+      setTargetCoach(null);
+      await refreshData();
+      showNotification("Athlete assigned to coach in PostgreSQL!");
+    } catch (err: any) {
+      showNotification(err.message || "Network error", "error");
+    }
   };
 
-  const handleUnassignAthlete = (clientId: string, coachId: string) => {
+  const handleUnassignAthlete = async (clientId: string, coachId: string) => {
     if (confirm("Unassign this athlete from the coach?")) {
-      db.removeCoachFromClient(clientId, coachId);
-      refreshData();
-      showNotification("Athlete unassigned successfully");
+      try {
+        const res = await fetch(`/api/clients/${clientId}/coaches?coachId=${coachId}`, {
+          method: "DELETE"
+        });
+        if (res.ok) {
+          await refreshData();
+          showNotification("Athlete unassigned successfully");
+        }
+      } catch (err: any) {
+        showNotification(err.message || "Network error", "error");
+      }
     }
   };
 
@@ -114,7 +153,7 @@ export default function CoachesPage() {
     setCustomSpecialtyInput("");
   };
 
-  const handleAddCoach = (e: React.FormEvent) => {
+  const handleAddCoach = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formEmail.trim()) {
       showNotification("Please fill in coach name and email", "error");
@@ -122,66 +161,90 @@ export default function CoachesPage() {
     }
 
     try {
-      db.createUser({
-        name: formName.trim(),
-        email: formEmail.trim(),
-        password: formPassword || "A@123456",
-        phone: formPhone.trim(),
-        role: formRole,
-        bio: formBio.trim() || "Certified Coach at GX Fitness Academy",
-        yearsOfExperience: formExperience,
-        specialties: formSpecialties.length > 0 ? formSpecialties : ["CrossFit", "Strength & Conditioning"],
-        avatar: "/coach_dark_hero.jpg"
+      const res = await fetch("/api/coaches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formName.trim(),
+          email: formEmail.trim(),
+          password: formPassword || "A@123456",
+          phone: formPhone.trim(),
+          role: formRole,
+          bio: formBio.trim() || "Certified Coach at GX Fitness Academy",
+          yearsOfExperience: Number(formExperience),
+          specialties: formSpecialties.length > 0 ? formSpecialties : ["CrossFit", "Strength & Conditioning"],
+          avatar: "/coach_dark_hero.jpg"
+        })
       });
 
-      refreshData();
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        showNotification(json.error || "Failed to create coach in PostgreSQL", "error");
+        return;
+      }
+
+      await refreshData();
       setIsAddModalOpen(false);
       setFormName("");
       setFormEmail("");
       setFormBio("");
       setFormSpecialties([]);
       setCustomSpecialtyInput("");
-      showNotification("Coach profile created successfully!");
+      showNotification("Coach profile created in PostgreSQL successfully!");
     } catch (err: any) {
       showNotification(err.message || "Error creating coach profile", "error");
     }
   };
 
-  const handleUpdateCoach = (e: React.FormEvent) => {
+  const handleUpdateCoach = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCoach) return;
 
     try {
-      db.updateUser(editingCoach.userId, {
-        name: formName.trim(),
-        email: formEmail.trim(),
-        phone: formPhone.trim(),
-        role: formRole
+      const res = await fetch(`/api/coaches/${editingCoach.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formName.trim(),
+          email: formEmail.trim(),
+          phone: formPhone.trim(),
+          role: formRole,
+          bio: formBio.trim(),
+          yearsOfExperience: Number(formExperience),
+          specialties: formSpecialties
+        })
       });
 
-      db.updateCoachProfile(editingCoach.id, {
-        bio: formBio.trim(),
-        yearsOfExperience: formExperience,
-        specialties: formSpecialties
-      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        showNotification(json.error || "Error updating coach", "error");
+        return;
+      }
 
-      refreshData();
+      await refreshData();
       setIsEditModalOpen(false);
       setEditingCoach(null);
       setCustomSpecialtyInput("");
-      showNotification("Coach updated successfully!");
+      showNotification("Coach updated in PostgreSQL successfully!");
     } catch (err: any) {
       showNotification(err.message || "Error updating coach", "error");
     }
   };
 
-  const handleDeleteCoach = () => {
+  const handleDeleteCoach = async () => {
     if (!deleteConfirmCoach) return;
     try {
-      db.deleteUser(deleteConfirmCoach.userId);
-      refreshData();
-      setDeleteConfirmCoach(null);
-      showNotification("Coach account deleted successfully");
+      const res = await fetch(`/api/coaches/${deleteConfirmCoach.id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        await refreshData();
+        setDeleteConfirmCoach(null);
+        showNotification("Coach deleted from PostgreSQL successfully");
+      } else {
+        const json = await res.json();
+        showNotification(json.error || "Error deleting coach", "error");
+      }
     } catch (err: any) {
       showNotification(err.message || "Error deleting coach", "error");
     }
