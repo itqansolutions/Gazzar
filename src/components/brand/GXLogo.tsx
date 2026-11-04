@@ -30,14 +30,14 @@ export default function GXLogo({
     xl: { width: 220, height: 88, imgHeight: "h-20 sm:h-24" }
   }[size];
 
-  const logoSrc = theme === "dark" ? "/gx_logo_dark.png" : "/gx_logo_light.png";
+  const logoSrc = theme === "dark" ? "/brand/gx-logo-dark.svg" : "/brand/gx-logo-light.svg";
 
   return (
     <div className={`inline-flex items-center select-none ${className}`}>
       <img
         src={logoSrc}
-        alt="GX Fitness Academy - By Abdullah Elgazzar"
-        className={`${dimensions.imgHeight} w-auto object-contain rounded-lg transition-opacity duration-200`}
+        alt="GX Fitness Academy"
+        className={`${dimensions.imgHeight} w-auto object-contain transition-opacity duration-200`}
         loading={priority ? "eager" : "lazy"}
       />
     </div>
