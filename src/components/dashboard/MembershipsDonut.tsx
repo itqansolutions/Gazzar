@@ -59,7 +59,7 @@ export function MembershipsDonut({
               endAngle={-270}
               stroke="none"
             >
-              <Cell fill="var(--brand)" />
+              <Cell fill="var(--brand)" style={{ filter: "drop-shadow(0 0 8px rgba(240,20,37,.55))" }} />
               <Cell fill="var(--border-subtle)" />
             </Pie>
           </PieChart>

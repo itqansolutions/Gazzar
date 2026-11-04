@@ -12,3 +12,9 @@ export type { ProgressChartProps, ProgressDataPoint } from "./ProgressChart";
 
 export { MembershipsDonut } from "./MembershipsDonut";
 export type { MembershipsDonutProps } from "./MembershipsDonut";
+
+export { TopPrograms } from "./TopPrograms";
+export type { TopProgramsProps, ProgramStat } from "./TopPrograms";
+
+export { WelcomeHero } from "./WelcomeHero";
+export type { WelcomeHeroProps } from "./WelcomeHero";

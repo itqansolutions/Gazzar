@@ -12,6 +12,8 @@ import {
   ActivityChart,
   ProgressChart,
   MembershipsDonut,
+  TopPrograms,
+  WelcomeHero,
 } from "@/components/dashboard";
 import {
   Users,
@@ -21,6 +23,7 @@ import {
   ChevronRight,
   PlusCircle,
   Dumbbell,
+  Bell,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -80,7 +83,7 @@ export default function DashboardPage() {
           { id: "ref-3", title: "MetCon", time: "06:00 PM", members: "16 Members" },
         ];
 
-  // Members Activity Spline Wave Curve (Dark Mode Reference)
+  // Members Activity Spline Wave Curve (Weekly)
   const activityData = [
     { day: "Mon", members: 20 },
     { day: "Tue", members: 38 },
@@ -91,7 +94,7 @@ export default function DashboardPage() {
     { day: "Sun", members: 92 },
   ];
 
-  // Progress Overview Bar Chart (Light Mode Reference)
+  // Progress Overview Bar Chart (Monthly)
   const progressData = [
     { month: "Jan", progress: 30 },
     { month: "Feb", progress: 45 },
@@ -102,172 +105,160 @@ export default function DashboardPage() {
   ];
 
   const displayName = user?.name || "Coach Abdullah";
+  const isLight = theme === "light";
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 w-full overflow-x-hidden">
-      {/* =========================================================================
-          1. DESKTOP HEADER (CLEAN MATCH TO REFERENCE TOP BAR)
-          ========================================================================= */}
-      <div className="hidden sm:flex items-center justify-between pb-2">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black font-sans text-fg tracking-tight">
-            Dashboard
-          </h1>
-          <p className="text-xs sm:text-sm text-muted mt-1 font-medium">
-            Welcome back, {displayName} 👋
-          </p>
+    <div className="atmo -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen relative overflow-hidden">
+      {/* Background athletic atmospheric texture and slashes */}
+      <div className="texture-hatch" aria-hidden="true" />
+      <div
+        className="slash-accent left-[14%] top-[-60px] w-[70px] h-[300px] opacity-20"
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 space-y-6 max-w-7xl mx-auto pb-16 w-full">
+        {/* =========================================================================
+            1. DESKTOP HEADER (TOP BAR WITH WELCOME)
+            ========================================================================= */}
+        <div className="hidden sm:flex items-center justify-between pb-1">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold font-sans text-fg tracking-tight">
+              Dashboard
+            </h1>
+            <p className="text-xs sm:text-sm text-muted mt-1 font-medium">
+              Welcome back, {displayName} 👋
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <Link
+              href="/assignments"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-control bg-brand hover:bg-brand-hover text-brand-contrast font-bold text-xs shadow-glow transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-app"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>New Assignment</span>
+            </Link>
+          </div>
         </div>
 
-        {/* Quick Assignment CTA */}
-        <div className="flex items-center space-x-3">
-          <Link
-            href="/assignments"
-            className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-control bg-brand hover:bg-brand-hover text-brand-contrast font-bold text-xs shadow-glow transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-app"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>New Assignment</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          2. MOBILE WELCOME HERO BANNER (MATCHING PHONE FRAME IN REFERENCE)
-          ========================================================================= */}
-      <div className="sm:hidden relative overflow-hidden rounded-card bg-card border border-line p-5 shadow-card text-fg">
-        {/* Genuine Coach Abdullah portrait blend */}
-        <div className="absolute right-0 top-0 bottom-0 w-36 pointer-events-none opacity-40 mix-blend-screen">
-          <img
-            src="/coach_abdullah_portrait.png"
-            alt="Coach Abdullah"
-            className="w-full h-full object-cover object-top"
+        {/* =========================================================================
+            2. DESKTOP WELCOME HERO BANNER (MATCHING GX FIT LOOK PROTOTYPE)
+            ========================================================================= */}
+        <div className="hidden sm:block">
+          <WelcomeHero
+            displayName={displayName}
+            theme={theme as "dark" | "light"}
+            classesCount={todayClasses.length}
+            checkinsCount={12}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-card via-card/50 to-transparent" />
         </div>
 
-        <div className="relative z-10 max-w-[210px]">
-          <div className="mb-2.5">
-            <Mark size={28} />
-          </div>
-          <p className="text-xs text-muted font-medium">Good Morning,</p>
-          <h2 className="text-xl font-black text-fg tracking-tight mt-0.5 truncate font-display">
-            {displayName}
-          </h2>
-          <p className="text-[10px] text-brand font-bold uppercase tracking-wider mt-1.5">
-            Manage • Train • Track • Perform
-          </p>
-        </div>
-      </div>
+        {/* =========================================================================
+            3. MOBILE IMMERSIVE HERO BANNER (< sm)
+            - 304px height, genuine coach photo, radial glow, slashes, logo, title
+            ========================================================================= */}
+        <div className="sm:hidden relative h-[304px] -mx-4 -mt-4 overflow-hidden rounded-b-card shadow-card">
+          <img
+            src={isLight ? "/coach_light_hero.jpg" : "/coach_dark_hero.jpg"}
+            alt="Coach Abdullah"
+            className="absolute inset-0 w-full h-full object-cover object-[62%_10%]"
+          />
 
-      {/* =========================================================================
-          3. FOUR KPI CARDS (2x2 ON MOBILE, 4-COL ON DESKTOP, MATCHING REFERENCE)
-          ========================================================================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* KPI 1: Members (Brand Accent) */}
-        <KPICard
-          label="Members"
-          value={membersCount}
-          delta="+12%"
-          accent="brand"
-          icon={<Users className="w-5 h-5" />}
-        />
+          {/* Bottom gradient fade */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: isLight
+                ? "linear-gradient(0deg, #F4F5F7 4%, rgba(244,245,247,0.6) 48%, rgba(244,245,247,0.25) 100%)"
+                : "linear-gradient(0deg, #0A0A0B 4%, rgba(10,10,11,0.6) 48%, rgba(10,10,11,0.25) 100%)",
+            }}
+          />
 
-        {/* KPI 2: Active Programs (Purple Accent) */}
-        <KPICard
-          label="Active Programs"
-          value={programsCount}
-          delta="+20%"
-          accent="purple"
-          icon={<Layers className="w-5 h-5" />}
-        />
+          {/* Radial red glow overlay */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: isLight
+                ? "radial-gradient(320px 220px at 0% 0%, rgba(226,13,27,0.25), transparent 68%)"
+                : "radial-gradient(320px 220px at 0% 0%, rgba(240,20,37,0.42), transparent 68%)",
+            }}
+          />
 
-        {/* KPI 3: Sessions (Blue Accent) */}
-        <KPICard
-          label="Sessions"
-          value={sessionsCount}
-          delta="+18%"
-          accent="blue"
-          icon={<Calendar className="w-5 h-5" />}
-        />
+          {/* Slashes */}
+          <div
+            className="slash-accent left-[58%] top-[-30px] w-[56px] h-[230px] opacity-80"
+            aria-hidden="true"
+          />
+          <div
+            className="slash-accent left-[72%] top-[-30px] w-[12px] h-[200px] opacity-60"
+            aria-hidden="true"
+          />
+          <div className="texture-hatch" aria-hidden="true" />
 
-        {/* KPI 4: Coaches (Neutral Accent) */}
-        <KPICard
-          label="Coaches"
-          value={coachesCount}
-          delta="Active"
-          accent="neutral"
-          icon={<UserCheck className="w-5 h-5" />}
-        />
-      </div>
-
-      {/* =========================================================================
-          4. MOBILE TODAY'S CLASSES (< lg) - EXACT MATCH TO REFERENCE
-          ========================================================================= */}
-      <div className="lg:hidden bg-card border border-line rounded-card p-5 shadow-card">
-        <div className="flex items-center justify-between mb-3.5">
-          <h2 className="text-sm font-bold text-fg">Today&apos;s Classes</h2>
-          <Link
-            href="/calendar"
-            className="text-xs font-bold text-brand hover:underline flex items-center gap-1"
-          >
-            <span>View all</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        <div className="space-y-2.5">
-          {todayClasses.map((cls) => (
-            <ClassRow
-              key={cls.id}
-              id={cls.id}
-              title={cls.title}
-              time={cls.time}
-              members={cls.members}
-              icon={<Dumbbell className="h-4 w-4" />}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* =========================================================================
-          5. DESKTOP MAIN SECTION (≥ lg): DUAL-MODE VISUAL LAYOUT
-          - Dark Mode: Members Activity Wave Chart (Span 2) + Today's Classes (Span 1)
-          - Light Mode: Progress Overview + Memberships Donut + Coach Hero Cutout
-          ========================================================================= */}
-      {theme === "light" ? (
-        /* Light Theme Desktop Composition Matching Reference */
-        <div className="hidden lg:grid lg:grid-cols-12 gap-6 items-stretch">
-          {/* Progress Overview Bar Chart (Span 6) */}
-          <div className="lg:col-span-6">
-            <ProgressChart data={progressData} />
+          {/* Top Logo and Notification row */}
+          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
+            <Mark size={32} />
+            <Link
+              href="/attendance"
+              className="w-10 h-10 rounded-control flex items-center justify-center bg-card/70 backdrop-blur-md border border-line text-muted relative cursor-pointer"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-brand" />
+            </Link>
           </div>
 
-          {/* Memberships Donut Chart (Span 3) */}
-          <div className="lg:col-span-3">
-            <MembershipsDonut percentage={76} delta="+12%" />
-          </div>
-
-          {/* Coach Abdullah Cutout with Dynamic Red Brush Strokes (Span 3) */}
-          <div className="lg:col-span-3 relative rounded-card bg-raised border border-line p-5 shadow-card overflow-hidden flex flex-col justify-end min-h-[300px]">
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <img
-                src="/coach_abdullah_light_hero.png"
-                alt="Coach Abdullah"
-                className="w-full h-full object-contain object-bottom filter drop-shadow-md"
-              />
-            </div>
-            <div className="relative z-10 pt-48">
-              <span className="px-2.5 py-1 rounded-pill bg-brand text-brand-contrast text-[10px] font-bold uppercase tracking-wider inline-block">
-                Coach Lead
-              </span>
-              <p className="text-xs font-black text-fg mt-1">
-                Abdullah Elgazzar
-              </p>
-            </div>
+          {/* Bottom Coach Title */}
+          <div className="absolute left-4 bottom-10 z-10">
+            <p className="text-xs text-muted font-medium">Good Morning,</p>
+            <h1 className="font-display italic font-bold uppercase text-3xl sm:text-4xl text-fg leading-none mt-1">
+              {displayName}
+            </h1>
+            <p className="text-[10px] text-brand font-bold uppercase tracking-wider mt-1">
+              Manage • Train • Track • Perform
+            </p>
           </div>
         </div>
-      ) : (
-        /* Dark Theme Desktop Composition Matching Reference */
-        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-          {/* Left: Members Activity Wave Chart (Span 2) */}
+
+        {/* =========================================================================
+            4. FOUR KPI CARDS (OVERLAPPING ON MOBILE, 4-COL ON DESKTOP)
+            ========================================================================= */}
+        <div className="relative z-20 -mt-6 sm:mt-0 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <KPICard
+            label="Members"
+            value={membersCount}
+            delta="+12%"
+            accent="brand"
+            icon={<Users className="w-5 h-5" />}
+          />
+          <KPICard
+            label="Active Programs"
+            value={programsCount}
+            delta="+20%"
+            accent="purple"
+            icon={<Layers className="w-5 h-5" />}
+          />
+          <KPICard
+            label="Sessions"
+            value={sessionsCount}
+            delta="+18%"
+            accent="blue"
+            icon={<Calendar className="w-5 h-5" />}
+          />
+          <KPICard
+            label="Coaches"
+            value={coachesCount}
+            delta="Active"
+            accent="neutral"
+            icon={<UserCheck className="w-5 h-5" />}
+          />
+        </div>
+
+        {/* =========================================================================
+            5. MIDDLE SECTION: MEMBERS ACTIVITY WAVE CHART + TODAY'S CLASSES
+            ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          {/* Left: Members Activity Area Wave Chart (Span 2) */}
           <div className="lg:col-span-2">
             <ActivityChart data={activityData} />
           </div>
@@ -314,55 +305,75 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      )}
 
-      {/* =========================================================================
-          6. ATHLETE CLIENT SECTION (FOR ATHLETE USERS ONLY)
-          ========================================================================= */}
-      {isClient && (
-        <div className="bg-card border border-line rounded-card p-5 sm:p-6 shadow-card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-lg font-bold text-fg tracking-tight">
-              My Training & Medical Status
-            </h2>
-            <Link
-              href={`/clients/${myClient?.id || ""}`}
-              className="text-xs font-bold text-brand hover:underline"
-            >
-              View Full Profile
-            </Link>
+        {/* =========================================================================
+            6. LOWER SECTION: PROGRESS OVERVIEW + MEMBERSHIPS + TOP PROGRAMS
+            ========================================================================= */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Progress Overview Bar Chart (Span 5) */}
+          <div className="lg:col-span-5">
+            <ProgressChart data={progressData} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-control bg-raised border border-line">
-              <span className="text-[11px] font-medium text-muted block mb-1">
-                Target Sport
-              </span>
-              <p className="text-sm font-bold text-fg">
-                {myClient?.sport?.nameEn || "CrossFit / Fitness"}
-              </p>
-            </div>
-            <div className="p-4 rounded-control bg-raised border border-line">
-              <span className="text-[11px] font-medium text-muted block mb-1">
-                Membership Status
-              </span>
-              <p className="text-sm font-bold text-emerald-500">
-                {myClient?.status || "ACTIVE"}
-              </p>
-            </div>
-            <div className="p-4 rounded-control bg-raised border border-line">
-              <span className="text-[11px] font-medium text-muted block mb-1">
-                Medical Clearance
-              </span>
-              <p className="text-sm font-bold text-fg">
-                {clientRestrictions.length === 0
-                  ? "Full Clearance (Safe)"
-                  : `${clientRestrictions.length} Restriction(s)`}
-              </p>
-            </div>
+          {/* Memberships Donut Chart (Span 3) */}
+          <div className="lg:col-span-3">
+            <MembershipsDonut percentage={76} delta="+12%" />
+          </div>
+
+          {/* Top Programs Progress Bars (Span 4) */}
+          <div className="lg:col-span-4 md:col-span-2">
+            <TopPrograms />
           </div>
         </div>
-      )}
+
+        {/* =========================================================================
+            7. ATHLETE CLIENT SECTION (FOR ATHLETE USERS ONLY)
+            ========================================================================= */}
+        {isClient && (
+          <div className="bg-card border border-line rounded-card p-5 sm:p-6 shadow-card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base sm:text-lg font-bold text-fg tracking-tight">
+                My Training & Medical Status
+              </h2>
+              <Link
+                href={`/clients/${myClient?.id || ""}`}
+                className="text-xs font-bold text-brand hover:underline"
+              >
+                View Full Profile
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-control bg-raised border border-line">
+                <span className="text-[11px] font-medium text-muted block mb-1">
+                  Target Sport
+                </span>
+                <p className="text-sm font-bold text-fg">
+                  {myClient?.sport?.nameEn || "CrossFit / Fitness"}
+                </p>
+              </div>
+              <div className="p-4 rounded-control bg-raised border border-line">
+                <span className="text-[11px] font-medium text-muted block mb-1">
+                  Membership Status
+                </span>
+                <p className="text-sm font-bold text-emerald-500">
+                  {myClient?.status || "ACTIVE"}
+                </p>
+              </div>
+              <div className="p-4 rounded-control bg-raised border border-line">
+                <span className="text-[11px] font-medium text-muted block mb-1">
+                  Medical Clearance
+                </span>
+                <p className="text-sm font-bold text-fg">
+                  {clientRestrictions.length === 0
+                    ? "Full Clearance (Safe)"
+                    : `${clientRestrictions.length} Restriction(s)`}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

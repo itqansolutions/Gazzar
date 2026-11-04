@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Members Dark</title>
+<script src="asset_2c16d24d-c794-4a42-8bdd-8334dd59dc18.bin"></script>
+<style>/* GX Fitness — shared look. Tokens mirror DESIGN.md */
+.gx{font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:20px;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;position:relative;overflow:hidden}
+.gx *,.gx *::before,.gx *::after{box-sizing:border-box}
+.gx a{color:inherit;text-decoration:none}
+.gx h1,.gx h2,.gx h3,.gx p{margin:0}
+.gx button,.gx input{font:inherit;color:inherit}
+
+.t-dark{--brand:#F01425;--brand-hover:#FF2D3B;--brand-soft:rgba(240,20,37,.14);--brand-text:#FF4D57;--bg:#0A0A0B;--surface:#141416;--raised:#1C1C1F;--line:#26262A;--text:#F5F5F6;--muted:#9A9AA3;--shadow:0 8px 24px rgba(0,0,0,.35);--glow:0 0 28px rgba(240,20,37,.38);--ok:#22C55E;--bad:#F87171;--hatch:rgba(255,255,255,.028);--fade:10,10,11}
+.t-light{--brand:#E20D1B;--brand-hover:#C40A17;--brand-soft:rgba(226,13,27,.08);--brand-text:#C40A17;--bg:#F4F5F7;--surface:#FFFFFF;--raised:#F6F7F9;--line:#E6E8EC;--text:#0F1115;--muted:#5B6370;--shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.07);--glow:0 6px 18px rgba(226,13,27,.28);--ok:#16A34A;--bad:#DC2626;--hatch:rgba(0,0,0,.03);--fade:244,245,247}
+
+.t-dark.atmo{background:radial-gradient(900px 520px at 0% -8%,rgba(240,20,37,.20),transparent 62%),radial-gradient(800px 520px at 100% 108%,rgba(240,20,37,.10),transparent 62%),#0A0A0B}
+.t-light.atmo{background:radial-gradient(900px 520px at 0% -8%,rgba(226,13,27,.10),transparent 62%),radial-gradient(800px 520px at 100% 108%,rgba(23,30,36,.07),transparent 62%),#F4F5F7}
+.texture{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(115deg,var(--hatch) 0 1px,transparent 1px 7px)}
+.slash{position:absolute;pointer-events:none;transform:skewX(-22deg);background:linear-gradient(180deg,var(--brand),rgba(0,0,0,0))}
+.display{font-family:'Barlow Condensed',Impact,sans-serif;font-style:italic;font-weight:700;letter-spacing:.01em}
+.muted{color:var(--muted)}
+.brand-text{color:var(--brand-text)}
+
+/* shell */
+.shell{display:flex;flex-wrap:wrap;min-height:100%;position:relative}
+.side{flex:0 0 248px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;background:var(--surface);border-right:1px solid var(--line);position:relative;z-index:2}
+.t-dark .side{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0) 40%),#101012}
+.logo-crop{overflow:hidden;width:176px;height:110px;margin:2px 0 14px 6px;flex:none}
+.logo-crop img{display:block;width:176px;height:auto;margin-top:-3px}
+.nav{display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border-radius:12px;color:var(--muted);font-weight:500;transition:background .15s,color .15s}
+.nav:hover{background:var(--raised);color:var(--text)}
+.nav.on{background:var(--brand);color:#fff;box-shadow:var(--glow)}
+.nav svg{flex:none}
+.nav .dot{margin-left:auto;width:6px;height:6px;border-radius:50%;background:#fff}
+.side-foot{margin-top:auto;padding:14px;border-radius:14px;background:var(--raised);border:1px solid var(--line)}
+.main{flex:999 1 560px;min-width:0;padding:24px 32px 40px;position:relative;z-index:1}
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.top .title{flex:1 1 240px}
+.h1{font-size:28px;line-height:34px;font-weight:700;letter-spacing:-.01em}
+.iconbtn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);color:var(--muted);position:relative;cursor:pointer}
+.iconbtn .ping{position:absolute;top:10px;right:11px;width:8px;height:8px;border-radius:50%;background:var(--brand);border:2px solid var(--surface)}
+.userchip{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px 0 6px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--brand-soft);color:var(--brand-text);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;object-position:60% 18%}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);position:relative}
+.t-dark .card{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0) 60%),var(--surface)}
+.card-pad{padding:20px}
+.h2{font-size:18px;line-height:24px;font-weight:600}
+.row{display:flex;align-items:center;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.kpi{padding:18px 20px;display:flex;align-items:center;gap:16px}
+.kpi .ico{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;flex:none}
+.kpi .num{font-size:32px;line-height:36px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .lbl{font-size:12px;line-height:16px;font-weight:500;color:var(--muted)}
+.delta{font-size:12px;font-weight:600;color:var(--ok);display:inline-flex;align-items:center;gap:2px}
+.badge{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600}
+.b-ok{background:rgba(34,197,94,.14);color:var(--ok)}
+.b-warn{background:rgba(245,158,11,.16);color:#D97706}
+.t-dark .b-warn{color:#F59E0B}
+.b-off{background:var(--raised);color:var(--muted);border:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:12px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:background .15s,box-shadow .15s}
+.btn-primary{background:var(--brand);color:#fff;box-shadow:var(--glow)}
+.btn-primary:hover{background:var(--brand-hover)}
+.btn-ghost{background:var(--surface);border-color:var(--line);color:var(--text)}
+.btn-sm{height:36px;padding:0 14px;font-size:13px}
+.input{width:100%;height:48px;padding:0 16px;border-radius:12px;background:var(--raised);border:1px solid var(--line);outline:none;color:var(--text)}
+.input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.input::placeholder{color:var(--muted)}
+.label{display:block;font-size:12px;font-weight:600;margin-bottom:8px;color:var(--muted);letter-spacing:.02em}
+.class-row{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;background:var(--raised);border:1px solid var(--line)}
+.class-row .ico{width:40px;height:40px;border-radius:10px;background:var(--brand-soft);color:var(--brand-text);display:grid;place-items:center;flex:none}
+.tabs{display:flex;gap:6px;padding:4px;border-radius:12px;background:var(--surface);border:1px solid var(--line);width:fit-content;max-width:100%;overflow-x:auto}
+.tab{height:36px;padding:0 16px;border-radius:9px;display:inline-flex;align-items:center;font-weight:600;font-size:13px;color:var(--muted);white-space:nowrap}
+.tab.on{background:var(--brand);color:#fff}
+.tbl-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;min-width:760px}
+.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:14px 20px;border-bottom:1px solid var(--line);letter-spacing:.03em;text-transform:uppercase}
+.tbl td{padding:14px 20px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover td{background:var(--raised)}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;width:120px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--brand)}
+
+/* hero banner inside the app */
+.welcome{overflow:hidden;min-height:176px;display:flex;align-items:center;padding:28px 32px;border-radius:20px;position:relative;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface)}
+.welcome .photo{position:absolute;right:0;top:0;bottom:0;width:58%;object-fit:cover;object-position:60% 14%}
+.welcome .veil{position:absolute;inset:0;background:linear-gradient(90deg,rgb(var(--fade)) 0%,rgba(var(--fade),.92) 38%,rgba(var(--fade),.2) 72%,rgba(var(--fade),0) 100%)}
+.welcome .slash{opacity:.9}
+
+/* mobile */
+.bottom-nav{position:absolute;left:0;right:0;bottom:0;height:72px;display:flex;justify-content:space-around;align-items:center;padding:0 12px 6px;background:var(--surface);border-top:1px solid var(--line);z-index:5}
+.bn{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--muted);min-width:64px}
+.bn.on{color:var(--brand-text)}
+.bn.on .pill{background:var(--brand);color:#fff;box-shadow:var(--glow)}
+.bn .pill{width:44px;height:30px;border-radius:999px;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* vietnamese */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/barlowcondensed/v13/HTxyL3I-JCGChYJ8VI-L6OO_au7B6xTrY3TmtIkGUrs.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/barlowcondensed/v13/HTxyL3I-JCGChYJ8VI-L6OO_au7B6xTrY3TmtYkGUrs.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("asset_0d2f7b6b-3817-40f5-b9c2-0203b1f1371f.bin") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7SUc.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7SUc.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7SUc.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("asset_4a6c569e-9633-4e3e-a142-d613f44fad8f.bin") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7SUc.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7SUc.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7SUc.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("asset_4a6c569e-9633-4e3e-a142-d613f44fad8f.bin") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7SUc.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7SUc.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7SUc.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("asset_4a6c569e-9633-4e3e-a142-d613f44fad8f.bin") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7SUc.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7SUc.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7SUc.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("asset_4a6c569e-9633-4e3e-a142-d613f44fad8f.bin") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="gx t-dark atmo" style="min-height: 980px">
+  <div class="texture"></div>
+  <div class="slash" style="left: 14%; top: -60px; width: 70px; height: 300px; opacity: .22"></div>
+  <div class="shell">
+    <aside class="side">
+      <div class="logo-crop"><img src="asset_7cc1a1b1-0785-4324-945d-711221e4c847.svg" alt="GX Fitness Academy"></div>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg>Dashboard</a>
+      <a class="nav on" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.3c2.2.7 3.5 2.6 3.5 5.7"></path></svg>Members<span class="dot"></span></a>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg>Programs</a>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"></path></svg>Workouts</a>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>Classes</a>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 11l2 2 4-4"></path></svg>Coaches</a>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7c-2-2.5-7-1.5-7 3.5 0 4.5 3 9.5 5.5 9.5 1 0 1-.6 1.5-.6s.5.6 1.5.6c2.5 0 5.5-5 5.5-9.5C19 5.5 14 4.5 12 7z"></path><path d="M12 7c0-2 1-3.5 3-4"></path></svg>Nutrition</a>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M11 20V4M17 20v-6M3 20h18"></path></svg>Reports</a>
+      <a class="nav" href="#"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"></path></svg>Settings</a>
+      <div class="side-foot">
+        <p style="font-weight: 600">Head Coach access</p>
+        <p class="muted" style="font-size: 12px; margin-top: 2px">Full control of programs, classes and members.</p>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="top">
+        <div class="title">
+          <h1 class="h1">Members</h1>
+          <p class="muted">128 athletes in the academy</p>
+        </div>
+        <label class="row" style="height: 44px; padding: 0 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); min-width: 260px; color: var(--muted)">
+          <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+          <input type="search" placeholder="Search members" aria-label="Search members" style="background: transparent; border: 0; outline: none; flex: 1; min-width: 0">
+        </label>
+        <button class="btn btn-primary" type="button">+ Add member</button>
+      </div>
+
+      <div class="row" style="justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px">
+        <div class="tabs"><a class="tab on" href="#">All · 128</a><a class="tab" href="#">Active · 97</a><a class="tab" href="#">Expiring · 14</a><a class="tab" href="#">Frozen · 6</a></div>
+        <button class="btn btn-ghost btn-sm" type="button">Filters</button>
+      </div>
+
+      <div class="card" style="overflow: hidden">
+        <div class="tbl-wrap">
+          <sc-raw-table class="tbl">
+            <sc-raw-thead><sc-raw-tr><sc-raw-th>Member</sc-raw-th><sc-raw-th>Program</sc-raw-th><sc-raw-th>Plan</sc-raw-th><sc-raw-th>Progress</sc-raw-th><sc-raw-th>Last visit</sc-raw-th><sc-raw-th>Status</sc-raw-th><sc-raw-th></sc-raw-th></sc-raw-tr></sc-raw-thead>
+            <sc-raw-tbody>
+              <sc-raw-tr><sc-raw-td><div class="row"><span class="avatar">OH</span><div><p style="font-weight: 600">Omar Hassan</p><p class="muted" style="font-size: 12px">Member since Mar 2025</p></div></div></sc-raw-td><sc-raw-td>CrossFit Foundations</sc-raw-td><sc-raw-td>Annual</sc-raw-td><sc-raw-td><div class="bar"><i style="width: 86%"></i></div></sc-raw-td><sc-raw-td class="muted">Today</sc-raw-td><sc-raw-td><span class="badge b-ok">Active</span></sc-raw-td><sc-raw-td style="text-align: right"><a href="#" class="brand-text" style="font-weight: 600">View</a></sc-raw-td></sc-raw-tr>
+              <sc-raw-tr><sc-raw-td><div class="row"><span class="avatar">YA</span><div><p style="font-weight: 600">Youssef Ali</p><p class="muted" style="font-size: 12px">Member since Jun 2025</p></div></div></sc-raw-td><sc-raw-td>Strength Cycle</sc-raw-td><sc-raw-td>Quarterly</sc-raw-td><sc-raw-td><div class="bar"><i style="width: 72%"></i></div></sc-raw-td><sc-raw-td class="muted">Yesterday</sc-raw-td><sc-raw-td><span class="badge b-ok">Active</span></sc-raw-td><sc-raw-td style="text-align: right"><a href="#" class="brand-text" style="font-weight: 600">View</a></sc-raw-td></sc-raw-tr>
+              <sc-raw-tr><sc-raw-td><div class="row"><span class="avatar">MT</span><div><p style="font-weight: 600">Mariam Tarek</p><p class="muted" style="font-size: 12px">Member since Jan 2026</p></div></div></sc-raw-td><sc-raw-td>Mobility &amp; Recovery</sc-raw-td><sc-raw-td>Monthly</sc-raw-td><sc-raw-td><div class="bar"><i style="width: 54%"></i></div></sc-raw-td><sc-raw-td class="muted">2 days ago</sc-raw-td><sc-raw-td><span class="badge b-warn">Expiring</span></sc-raw-td><sc-raw-td style="text-align: right"><a href="#" class="brand-text" style="font-weight: 600">View</a></sc-raw-td></sc-raw-tr>
+              <sc-raw-tr><sc-raw-td><div class="row"><span class="avatar">KA</span><div><p style="font-weight: 600">Karim Adel</p><p class="muted" style="font-size: 12px">Member since Aug 2024</p></div></div></sc-raw-td><sc-raw-td>Olympic Lifting</sc-raw-td><sc-raw-td>Annual</sc-raw-td><sc-raw-td><div class="bar"><i style="width: 91%"></i></div></sc-raw-td><sc-raw-td class="muted">Today</sc-raw-td><sc-raw-td><span class="badge b-ok">Active</span></sc-raw-td><sc-raw-td style="text-align: right"><a href="#" class="brand-text" style="font-weight: 600">View</a></sc-raw-td></sc-raw-tr>
+              <sc-raw-tr><sc-raw-td><div class="row"><span class="avatar">NS</span><div><p style="font-weight: 600">Nour Samir</p><p class="muted" style="font-size: 12px">Member since Oct 2025</p></div></div></sc-raw-td><sc-raw-td>CrossFit Foundations</sc-raw-td><sc-raw-td>Quarterly</sc-raw-td><sc-raw-td><div class="bar"><i style="width: 38%"></i></div></sc-raw-td><sc-raw-td class="muted">9 days ago</sc-raw-td><sc-raw-td><span class="badge b-off">Frozen</span></sc-raw-td><sc-raw-td style="text-align: right"><a href="#" class="brand-text" style="font-weight: 600">View</a></sc-raw-td></sc-raw-tr>
+              <sc-raw-tr><sc-raw-td><div class="row"><span class="avatar">HM</span><div><p style="font-weight: 600">Hana Mostafa</p><p class="muted" style="font-size: 12px">Member since Feb 2026</p></div></div></sc-raw-td><sc-raw-td>Strength Cycle</sc-raw-td><sc-raw-td>Monthly</sc-raw-td><sc-raw-td><div class="bar"><i style="width: 63%"></i></div></sc-raw-td><sc-raw-td class="muted">Yesterday</sc-raw-td><sc-raw-td><span class="badge b-warn">Expiring</span></sc-raw-td><sc-raw-td style="text-align: right"><a href="#" class="brand-text" style="font-weight: 600">View</a></sc-raw-td></sc-raw-tr>
+              <sc-raw-tr><sc-raw-td><div class="row"><span class="avatar">AF</span><div><p style="font-weight: 600">Ahmed Fathy</p><p class="muted" style="font-size: 12px">Member since May 2025</p></div></div></sc-raw-td><sc-raw-td>MetCon</sc-raw-td><sc-raw-td>Annual</sc-raw-td><sc-raw-td><div class="bar"><i style="width: 78%"></i></div></sc-raw-td><sc-raw-td class="muted">Today</sc-raw-td><sc-raw-td><span class="badge b-ok">Active</span></sc-raw-td><sc-raw-td style="text-align: right"><a href="#" class="brand-text" style="font-weight: 600">View</a></sc-raw-td></sc-raw-tr>
+            </sc-raw-tbody>
+          </sc-raw-table>
+        </div>
+        <div class="row" style="justify-content: space-between; padding: 14px 20px; border-top: 1px solid var(--line)">
+          <p class="muted" style="font-size: 13px">Showing 1–7 of 128</p>
+          <div class="row" style="gap: 8px"><button class="btn btn-ghost btn-sm" type="button">Previous</button><button class="btn btn-primary btn-sm" type="button">Next</button></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:980}}">
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+
+
+</body></html>

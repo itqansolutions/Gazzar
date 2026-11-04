@@ -179,3 +179,38 @@ html.light .glass-card {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.9);
 }
+
+/* Atmospheric background glows & textures from GX Fitness Look */
+.atmo {
+  position: relative;
+}
+
+html.dark .atmo, .dark .atmo {
+  background: radial-gradient(900px 520px at 0% -8%, rgba(240, 20, 37, 0.20), transparent 62%),
+              radial-gradient(800px 520px at 100% 108%, rgba(240, 20, 37, 0.10), transparent 62%),
+              #0A0A0B;
+}
+
+html.light .atmo, .light .atmo {
+  background: radial-gradient(900px 520px at 0% -8%, rgba(226, 13, 27, 0.10), transparent 62%),
+              radial-gradient(800px 520px at 100% 108%, rgba(23, 30, 36, 0.07), transparent 62%),
+              #F4F5F7;
+}
+
+.texture-hatch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 7px);
+}
+
+html.light .texture-hatch {
+  background: repeating-linear-gradient(115deg, rgba(0, 0, 0, 0.03) 0 1px, transparent 1px 7px);
+}
+
+.slash-accent {
+  position: absolute;
+  pointer-events: none;
+  transform: skewX(-22deg);
+  background: linear-gradient(180deg, var(--brand), rgba(0, 0, 0, 0));
+}

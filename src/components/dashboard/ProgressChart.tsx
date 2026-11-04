@@ -115,6 +115,7 @@ export function ProgressChart({
                       key={`bar-${index}`}
                       fill={isLatest ? "var(--brand)" : "var(--surface-raised)"}
                       stroke={isLatest ? "none" : "var(--border-subtle)"}
+                      style={isLatest ? { filter: "drop-shadow(0 0 8px rgba(240,20,37,.6))" } : undefined}
                     />
                   );
                 })}

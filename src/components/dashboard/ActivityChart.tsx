@@ -111,9 +111,10 @@ export function ActivityChart({
                 type="monotone"
                 dataKey="members"
                 stroke="var(--brand)"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#brandWaveGradient)"
+                style={{ filter: "drop-shadow(0 0 6px rgba(240,20,37,.65))" }}
               />
             </AreaChart>
           </ResponsiveContainer>
