@@ -63,38 +63,37 @@ export function KPICard({
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-muted tracking-wide truncate pr-2">
-          {label}
-        </span>
+      <div className="relative z-10 flex items-center gap-3.5">
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center border transition-transform duration-200 group-hover:scale-105 flex-shrink-0 ${accentStyle.bg} ${accentStyle.text} ${accentStyle.border}`}
+          className={`w-11 h-11 rounded-full flex items-center justify-center border transition-transform duration-200 group-hover:scale-105 flex-shrink-0 ${accentStyle.bg} ${accentStyle.text} ${accentStyle.border}`}
         >
           {icon}
         </div>
-      </div>
 
-      <div className="relative z-10 flex items-baseline justify-between gap-2">
-        <span className="text-2xl sm:text-[32px] font-bold font-sans tracking-tight tabular-nums text-fg leading-none">
-          {value}
-        </span>
-
-        {parsedDelta && (
-          <span
-            className={`inline-flex items-center gap-1 text-xs font-semibold tabular-nums ${
-              parsedDelta.positive
-                ? "text-emerald-500 dark:text-emerald-400"
-                : "text-rose-500 dark:text-rose-400"
-            }`}
-          >
-            {parsedDelta.positive ? (
-              <TrendingUp className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-            ) : (
-              <TrendingDown className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-            )}
-            <span>{parsedDelta.value}</span>
-          </span>
-        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-muted tracking-wide truncate">
+            {label}
+          </p>
+          <p className="text-2xl sm:text-[28px] font-bold font-sans tracking-tight tabular-nums text-fg leading-tight mt-0.5">
+            {value}
+          </p>
+          {parsedDelta && (
+            <div
+              className={`inline-flex items-center gap-1 text-xs font-semibold tabular-nums mt-0.5 ${
+                parsedDelta.positive
+                  ? "text-emerald-500 dark:text-emerald-400"
+                  : "text-rose-500 dark:text-rose-400"
+              }`}
+            >
+              {parsedDelta.positive ? (
+                <TrendingUp className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+              ) : (
+                <TrendingDown className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+              )}
+              <span>{parsedDelta.value}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

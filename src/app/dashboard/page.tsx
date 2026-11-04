@@ -200,13 +200,41 @@ export default function DashboardPage() {
       </div>
 
       {/* =========================================================================
-          4. MAIN SECTION: DUAL-MODE VISUAL LAYOUT
+          4. MOBILE TODAY'S CLASSES (< lg) - EXACT MATCH TO REFERENCE
+          ========================================================================= */}
+      <div className="lg:hidden bg-card border border-line rounded-card p-5 shadow-card">
+        <div className="flex items-center justify-between mb-3.5">
+          <h2 className="text-sm font-bold text-fg">Today&apos;s Classes</h2>
+          <Link
+            href="/calendar"
+            className="text-xs font-bold text-brand hover:underline flex items-center gap-1"
+          >
+            <span>View all</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+        <div className="space-y-2.5">
+          {todayClasses.map((cls) => (
+            <ClassRow
+              key={cls.id}
+              id={cls.id}
+              title={cls.title}
+              time={cls.time}
+              members={cls.members}
+              icon={<Dumbbell className="h-4 w-4" />}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* =========================================================================
+          5. DESKTOP MAIN SECTION (≥ lg): DUAL-MODE VISUAL LAYOUT
           - Dark Mode: Members Activity Wave Chart (Span 2) + Today's Classes (Span 1)
           - Light Mode: Progress Overview + Memberships Donut + Coach Hero Cutout
           ========================================================================= */}
       {theme === "light" ? (
-        /* Light Theme Composition Matching Reference */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        /* Light Theme Desktop Composition Matching Reference */
+        <div className="hidden lg:grid lg:grid-cols-12 gap-6 items-stretch">
           {/* Progress Overview Bar Chart (Span 6) */}
           <div className="lg:col-span-6">
             <ProgressChart data={progressData} />
@@ -237,8 +265,8 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : (
-        /* Dark Theme Composition Matching Reference */
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        /* Dark Theme Desktop Composition Matching Reference */
+        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
           {/* Left: Members Activity Wave Chart (Span 2) */}
           <div className="lg:col-span-2">
             <ActivityChart data={activityData} />
@@ -284,32 +312,6 @@ export default function DashboardPage() {
                 <span>Create Workout Assignment</span>
               </Link>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================================
-          5. MOBILE TODAY'S CLASSES (RENDERED DIRECTLY ON MOBILE IN LIGHT MODE TOO)
-          ========================================================================= */}
-      {theme === "light" && (
-        <div className="sm:hidden bg-card border border-line rounded-card p-5 shadow-card">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-fg">Today&apos;s Classes</h2>
-            <Link href="/calendar" className="text-xs font-bold text-brand">
-              View all
-            </Link>
-          </div>
-          <div className="space-y-2.5">
-            {todayClasses.map((cls) => (
-              <ClassRow
-                key={cls.id}
-                id={cls.id}
-                title={cls.title}
-                time={cls.time}
-                members={cls.members}
-                icon={<Dumbbell className="h-4 w-4" />}
-              />
-            ))}
           </div>
         </div>
       )}

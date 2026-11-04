@@ -120,6 +120,21 @@ async function captureScreen({ width, height, theme, filename, isMobile, pathUrl
     await cdp.send("Network.clearBrowserCookies");
   }
 
+  await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
+    source: `
+      try {
+        localStorage.setItem('gx_theme', '${theme}');
+        if ('${theme}' === 'dark') {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        }
+      } catch (e) {}
+    `
+  });
+
   await cdp.send("Page.navigate", { url: `${BASE_URL}${pathUrl}` });
   await sleep(3000);
 

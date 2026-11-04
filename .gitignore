@@ -33,3 +33,7 @@ next-env.d.ts
 # Prisma local database files if any
 prisma/*.db
 prisma/*.db-journal
+
+# Temporary files
+tmp/
+
