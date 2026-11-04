@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/db";
 import { CoachProfile, UserRole, Sport, ClientProfile } from "@/types";
@@ -11,8 +10,7 @@ import {
   Users,
   Award,
   Star,
-  PlusCircle,
-  Dumbbell,
+  Plus,
   Search,
   Mail,
   Phone,
@@ -21,15 +19,11 @@ import {
   X,
   CheckCircle,
   AlertTriangle,
-  Sparkles,
   UserCheck,
-  Briefcase,
-  Check,
-  Plus
+  Check
 } from "lucide-react";
 
 export default function CoachesPage() {
-  const { t, language, dir } = useLanguage();
   const { user: currentUser } = useAuth();
 
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
@@ -101,41 +95,43 @@ export default function CoachesPage() {
     setIsAssignAthleteModalOpen(false);
     setTargetCoach(null);
     refreshData();
-    showNotification(language === "ar" ? "تم تعيين المتدرب للكابتن بنجاح! ✓" : "Athlete assigned to coach successfully!");
+    showNotification("Athlete assigned to coach successfully!");
   };
 
   const handleUnassignAthlete = (clientId: string, coachId: string) => {
-    if (confirm(language === "ar" ? "هل أنت متأكد من إلغاء تعيين هذا المتدرب؟" : "Unassign this athlete?")) {
+    if (confirm("Unassign this athlete from the coach?")) {
       db.removeCoachFromClient(clientId, coachId);
       refreshData();
-      showNotification(language === "ar" ? "تم إلغاء تعيين المتدرب" : "Athlete unassigned");
+      showNotification("Athlete unassigned successfully");
     }
   };
 
   const addCustomSpecialty = () => {
-    const trimmed = customSpecialtyInput.trim();
-    if (trimmed && !formSpecialties.includes(trimmed)) {
-      setFormSpecialties(prev => [...prev, trimmed]);
-      setCustomSpecialtyInput("");
+    if (!customSpecialtyInput.trim()) return;
+    if (!formSpecialties.includes(customSpecialtyInput.trim())) {
+      setFormSpecialties(prev => [...prev, customSpecialtyInput.trim()]);
     }
+    setCustomSpecialtyInput("");
   };
 
-  // Handle Add Coach
   const handleAddCoach = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const defaultSport = sports[0] ? (language === "ar" ? sports[0].nameAr : (sports[0].nameEn || sports[0].nameAr)) : (language === "ar" ? "لياقة بدنية" : "Fitness");
-      const specs = formSpecialties.length > 0 ? formSpecialties : [defaultSport];
+    if (!formName.trim() || !formEmail.trim()) {
+      showNotification("Please fill in coach name and email", "error");
+      return;
+    }
 
+    try {
       db.createUser({
         name: formName.trim(),
-        email: formEmail.trim().toLowerCase(),
-        password: formPassword.trim() || "A@123456",
+        email: formEmail.trim(),
+        password: formPassword || "A@123456",
         phone: formPhone.trim(),
         role: formRole,
-        bio: formBio.trim() || "كابتن ومدرب معتمد في الأكاديمية",
-        yearsOfExperience: Number(formExperience) || 3,
-        specialties: specs
+        bio: formBio.trim() || "Certified Coach at GX Fitness Academy",
+        yearsOfExperience: formExperience,
+        specialties: formSpecialties.length > 0 ? formSpecialties : ["CrossFit", "Strength & Conditioning"],
+        avatar: "/coach_dark_hero.jpg"
       });
 
       refreshData();
@@ -145,57 +141,49 @@ export default function CoachesPage() {
       setFormBio("");
       setFormSpecialties([]);
       setCustomSpecialtyInput("");
-      showNotification(language === "ar" ? "تم إضافة الكابتن الجديد بنجاح! ✓" : "Coach added successfully!");
+      showNotification("Coach profile created successfully!");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء إضافة الكابتن", "error");
+      showNotification(err.message || "Error creating coach profile", "error");
     }
   };
 
-  // Handle Edit Coach
   const handleUpdateCoach = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCoach) return;
 
     try {
-      const defaultSport = sports[0] ? (language === "ar" ? sports[0].nameAr : (sports[0].nameEn || sports[0].nameAr)) : (language === "ar" ? "لياقة بدنية" : "Fitness");
-      const specs = formSpecialties.length > 0 ? formSpecialties : [defaultSport];
-
-      // Update User info
       db.updateUser(editingCoach.userId, {
         name: formName.trim(),
-        email: formEmail.trim().toLowerCase(),
+        email: formEmail.trim(),
         phone: formPhone.trim(),
         role: formRole
       });
 
-      // Update Coach Profile
-      const index = db.getCoaches().findIndex(c => c.id === editingCoach.id);
-      if (index !== -1) {
-        editingCoach.bio = formBio.trim();
-        editingCoach.yearsOfExperience = Number(formExperience);
-        editingCoach.specialties = specs;
-      }
+      db.updateCoachProfile(editingCoach.id, {
+        bio: formBio.trim(),
+        yearsOfExperience: formExperience,
+        specialties: formSpecialties
+      });
 
       refreshData();
       setIsEditModalOpen(false);
       setEditingCoach(null);
       setCustomSpecialtyInput("");
-      showNotification(language === "ar" ? "تم تحديث بيانات الكابتن بنجاح! ✓" : "Coach updated successfully!");
+      showNotification("Coach updated successfully!");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء التحديث", "error");
+      showNotification(err.message || "Error updating coach", "error");
     }
   };
 
-  // Handle Delete Coach
   const handleDeleteCoach = () => {
     if (!deleteConfirmCoach) return;
     try {
       db.deleteUser(deleteConfirmCoach.userId);
       refreshData();
       setDeleteConfirmCoach(null);
-      showNotification(language === "ar" ? "تم حذف حساب الكابتن بنجاح" : "Coach account deleted successfully");
+      showNotification("Coach account deleted successfully");
     } catch (err: any) {
-      showNotification(err.message || "حدث خطأ أثناء الحذف", "error");
+      showNotification(err.message || "Error deleting coach", "error");
     }
   };
 
@@ -212,7 +200,6 @@ export default function CoachesPage() {
     setIsEditModalOpen(true);
   };
 
-  // Filtered coaches
   const filteredCoaches = coaches.filter(co => {
     const matchQuery =
       co.user?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -229,19 +216,19 @@ export default function CoachesPage() {
 
   const allSpecialties = Array.from(
     new Set([
-      ...sports.map(s => language === "ar" ? s.nameAr : (s.nameEn || s.nameAr)),
+      ...sports.map(s => s.nameEn || s.nameAr),
       ...coaches.flatMap(c => c.specialties || [])
     ])
   );
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
       {/* Toast Notification */}
       {notification && (
         <div
-          className={`fixed bottom-5 end-5 z-50 flex items-center space-x-2.5 rtl:space-x-reverse px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold animate-in slide-in-from-bottom-5 duration-200 ${
+          className={`fixed bottom-5 right-5 z-50 flex items-center space-x-2.5 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold animate-in slide-in-from-bottom-5 duration-200 ${
             notification.type === "success"
-              ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30"
+              ? "bg-brand-crimson text-white border-red-500 shadow-red-600/40"
               : "bg-red-600 text-white border-red-500 shadow-red-600/30"
           }`}
         >
@@ -250,20 +237,23 @@ export default function CoachesPage() {
         </div>
       )}
 
+      {/* Atmospheric Accent Slash */}
+      <div
+        className="slash-accent hidden lg:block opacity-20 pointer-events-none"
+        style={{ left: "18%", top: "-60px", width: "70px", height: "300px" }}
+      />
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-            <Shield className="w-6 h-6 text-emerald-500" />
-            <span>{t("navCoaches")}</span>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
-              {filteredCoaches.length} {language === "ar" ? "مدرب" : "coaches"}
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <span>Coaching Staff</span>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#1C1C1F] text-slate-300 border border-[#26262A]">
+              {filteredCoaches.length} coaches
             </span>
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {language === "ar"
-              ? "إدارة الكباتن، المشرفين (Head Coaches)، التخصصات الرياضية وتوزيع المتدربين"
-              : "Coaching staff directory, Head Coach oversight, specialties & assigned athletes"}
+          <p className="text-xs text-slate-400 mt-1">
+            Coaching staff directory, Head Coach oversight, specialties and assigned athletes
           </p>
         </div>
 
@@ -276,23 +266,23 @@ export default function CoachesPage() {
             setCustomSpecialtyInput("");
             setIsAddModalOpen(true);
           }}
-          className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-[0_0_24px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
         >
-          <PlusCircle className="w-4 h-4" />
-          <span>{language === "ar" ? "إضافة كابتن جديد +" : "Create New Coach +"}</span>
+          <Plus className="w-4 h-4" />
+          <span>Add Coach</span>
         </button>
       </div>
 
       {/* Search & Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="sm:col-span-2 relative">
-          <Search className="w-4 h-4 text-slate-400 absolute top-3 start-3" />
+          <Search className="w-4 h-4 text-slate-500 absolute top-3.5 left-3.5 pointer-events-none" />
           <input
             type="text"
-            placeholder={language === "ar" ? "بحث باسم الكابتن، التخصص، أو البريد..." : "Search coach name, specialty, email..."}
+            placeholder="Search coach name, specialty, email..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full ps-9 pe-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson transition-colors"
           />
         </div>
 
@@ -300,9 +290,9 @@ export default function CoachesPage() {
           <select
             value={selectedSpecialty}
             onChange={e => setSelectedSpecialty(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 shadow-sm"
+            className="w-full px-3 py-2.5 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-slate-300 focus:outline-none focus:border-brand-crimson"
           >
-            <option value="ALL">{language === "ar" ? "جميع التخصصات" : "All Specialties"}</option>
+            <option value="ALL">All Specialties</option>
             {allSpecialties.map((s, idx) => (
               <option key={idx} value={s}>{s}</option>
             ))}
@@ -312,280 +302,283 @@ export default function CoachesPage() {
 
       {/* Coaches Cards Grid */}
       {filteredCoaches.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+        <div className="p-12 text-center rounded-3xl bg-[#141416] border border-[#26262A] shadow-lg space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center mx-auto">
             <Users className="w-8 h-8" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {language === "ar" ? "لا يوجد كباتن مسجلون حالياً" : "No coaches registered yet"}
+            <h3 className="text-base font-bold text-white">
+              No coaches found
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-              {language === "ar"
-                ? "ابدأ بتسجيل أول كابتن أو مشرف تدريب في الأكاديمية لبدء تعيين المتدربين والتمارين."
-                : "Add your first coach or head coach to start assigning athletes and workouts."}
+            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+              Add your first coach or head coach to start assigning athletes and workouts.
             </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all inline-flex items-center space-x-2 rtl:space-x-reverse"
+            className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-[0_0_20px_rgba(240,20,37,0.4)] transition-all inline-flex items-center gap-2 cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>{language === "ar" ? "إضافة أول كابتن الآن" : "Add First Coach Now"}</span>
+            <Plus className="w-4 h-4" />
+            <span>Add First Coach</span>
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCoaches.map(co => (
-            <div
-              key={co.id}
-              className="relative bg-white rounded-3xl border border-slate-200 hover:border-emerald-500/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group"
-            >
-              {/* Top Gradient Line */}
-              <div className={`h-1.5 w-full ${co.user?.role === "HEAD_COACH" ? "bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500" : "bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600"}`} />
+          {filteredCoaches.map(co => {
+            const isHeadCoach = co.user?.role === "HEAD_COACH";
+            const avatarSrc = co.user?.avatar || (isHeadCoach ? "/coach_dark_hero.jpg" : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200");
 
-              <div className="p-5 sm:p-6 space-y-4">
-                {/* Header: Avatar, Name, Role, Actions */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center space-x-3.5 rtl:space-x-reverse min-w-0">
-                    <div className="relative flex-shrink-0">
-                      <img
-                        src={co.user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
-                        alt={co.user?.name || "Coach"}
-                        onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"; }}
-                        className="w-14 h-14 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10"
-                      />
-                      {co.user?.role === "HEAD_COACH" && (
-                        <div className="absolute -top-1.5 -end-1.5 w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-sm">
-                          <Star className="w-3 h-3 fill-white text-white" />
-                        </div>
-                      )}
-                    </div>
+            return (
+              <div
+                key={co.id}
+                className="relative bg-[#141416] rounded-3xl border border-[#26262A] hover:border-brand-crimson/50 shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+              >
+                {/* Top Athletic Accent Line */}
+                <div className={`h-1.5 w-full ${isHeadCoach ? "bg-gradient-to-r from-brand-crimson via-red-500 to-amber-500" : "bg-gradient-to-r from-brand-crimson via-red-600 to-zinc-700"}`} />
 
-                    <div className="min-w-0">
-                      <h3 className="text-base font-extrabold text-slate-900 truncate">
-                        {co.user?.name}
-                      </h3>
-                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                        {co.user?.role === "HEAD_COACH" ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                            <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
-                            <span>{language === "ar" ? "كبير المدربين" : "Head Coach"}</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <Shield className="w-2.5 h-2.5 text-emerald-600" />
-                            <span>{language === "ar" ? "كابتن تدريب" : "Coach"}</span>
-                          </span>
+                <div className="p-5 sm:p-6 space-y-4">
+                  {/* Header: Avatar, Name, Role, Actions */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <img
+                          src={avatarSrc}
+                          alt={co.user?.name || "Coach"}
+                          onError={(e) => { (e.target as HTMLImageElement).src = "/coach_dark_hero.jpg"; }}
+                          className="w-14 h-14 rounded-2xl object-cover ring-2 ring-brand-crimson/40 shadow-md"
+                        />
+                        {isHeadCoach && (
+                          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-brand-crimson text-white flex items-center justify-center shadow-sm">
+                            <Star className="w-3 h-3 fill-white text-white" />
+                          </div>
                         )}
                       </div>
+
+                      <div className="min-w-0">
+                        <h3 className="text-base font-bold text-white truncate">
+                          {co.user?.name}
+                        </h3>
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                          {isHeadCoach ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">
+                              <Star className="w-2.5 h-2.5 fill-brand-crimson text-brand-crimson" />
+                              <span>Head Coach</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#1C1C1F] text-slate-300 border border-[#26262A]">
+                              <Shield className="w-2.5 h-2.5 text-slate-400" />
+                              <span>Coach</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions Buttons */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => openEditModal(co)}
+                        title="Edit Coach"
+                        className="p-2 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-400 hover:text-white border border-[#26262A] transition-all cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmCoach(co)}
+                        title="Delete Coach"
+                        className="p-2 rounded-xl bg-[#1C1C1F] hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-[#26262A] hover:border-red-800/40 transition-all cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
 
-                  {/* Actions Buttons */}
-                  <div className="flex items-center space-x-1 rtl:space-x-reverse flex-shrink-0">
-                    <button
-                      onClick={() => openEditModal(co)}
-                      title={language === "ar" ? "تعديل الكابتن" : "Edit Coach"}
-                      className="p-2 rounded-xl bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmCoach(co)}
-                      title={language === "ar" ? "حذف الكابتن" : "Delete Coach"}
-                      className="p-2 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-100 hover:border-red-200 transition-all cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  {/* Contact Meta */}
+                  <div className="space-y-1.5 pt-1 text-xs text-slate-400">
+                    <div className="flex items-center gap-2 font-mono text-[11px] truncate">
+                      <Mail className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                      <span className="truncate">{co.user?.email}</span>
+                    </div>
+                    {co.user?.phone && (
+                      <div className="flex items-center gap-2 font-mono text-[11px]">
+                        <Phone className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                        <span>{co.user.phone}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                {/* Contact Meta */}
-                <div className="space-y-1.5 pt-1 text-xs text-slate-500">
-                  <div className="flex items-center gap-2 font-mono text-[11px] truncate">
-                    <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    <span className="truncate">{co.user?.email}</span>
-                  </div>
-                  {co.user?.phone && (
-                    <div className="flex items-center gap-2 font-mono text-[11px]">
-                      <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                      <span>{co.user.phone}</span>
+                  {/* Bio Quote */}
+                  {co.bio && (
+                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-2 bg-[#1C1C1F] px-3.5 py-2.5 rounded-xl border border-[#26262A] italic">
+                      "{co.bio}"
+                    </p>
+                  )}
+
+                  {/* Specialties */}
+                  {co.specialties && co.specialties.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Specialties
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {co.specialties.map((s, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2.5 py-0.5 rounded-lg bg-brand-crimson/10 border border-brand-crimson/25 text-brand-crimson font-semibold text-[11px]"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
-                </div>
 
-                {/* Bio Quote */}
-                {co.bio && (
-                  <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 bg-slate-50/70 px-3 py-2 rounded-xl border border-slate-100 italic">
-                    "{co.bio}"
-                  </p>
-                )}
-
-                {/* Specialties */}
-                {co.specialties && co.specialties.length > 0 && (
-                  <div className="space-y-1.5 pt-1">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                      {language === "ar" ? "التخصصات التدريبية" : "Specialties"}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {co.specialties.map((s, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2.5 py-0.5 rounded-lg bg-emerald-50/80 border border-emerald-100 text-emerald-800 font-semibold text-[11px]"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Performance Stats Grid */}
-                <div className="grid grid-cols-2 gap-2.5 pt-1">
-                  <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center space-x-2.5 rtl:space-x-reverse">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center flex-shrink-0">
-                      <Award className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] text-slate-400 font-medium block">
-                        {language === "ar" ? "الخبرة" : "Experience"}
-                      </span>
-                      <span className="text-xs font-bold text-slate-900 block truncate">
-                        {co.yearsOfExperience || 3} {language === "ar" ? "سنوات" : "Years"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between">
-                    <div className="flex items-center space-x-2.5 rtl:space-x-reverse min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-blue-100/70 text-blue-700 flex items-center justify-center flex-shrink-0">
-                        <Users className="w-4 h-4" />
+                  {/* Performance Stats Grid */}
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                    <div className="p-3 rounded-2xl bg-[#1C1C1F] border border-[#26262A] flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center flex-shrink-0">
+                        <Award className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
                         <span className="text-[10px] text-slate-400 font-medium block">
-                          {language === "ar" ? "المتدربون النشطون" : "Active Athletes"}
+                          Experience
                         </span>
-                        <span className="text-xs font-bold text-slate-900 block truncate">
-                          {co.assignedClientsCount || 0} {language === "ar" ? "مشترك" : "Athletes"}
+                        <span className="text-xs font-bold text-white block truncate">
+                          {co.yearsOfExperience || 3} Years
                         </span>
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => openAssignAthleteModal(co)}
-                      title={language === "ar" ? "تعيين متدرب لهذا الكابتن" : "Assign athlete to this coach"}
-                      className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1 cursor-pointer transition-colors flex-shrink-0"
-                    >
-                      <Plus className="w-3 h-3" />
-                      <span>{language === "ar" ? "تعيين متدرب" : "Assign"}</span>
-                    </button>
+                    <div className="p-3 rounded-2xl bg-[#1C1C1F] border border-[#26262A] flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center flex-shrink-0">
+                          <Users className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-slate-400 font-medium block">
+                            Athletes
+                          </span>
+                          <span className="text-xs font-bold text-white block truncate">
+                            {co.assignedClientsCount || 0}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => openAssignAthleteModal(co)}
+                        title="Assign athlete to this coach"
+                        className="px-2 py-1 rounded-lg bg-brand-crimson/15 hover:bg-brand-crimson text-brand-crimson hover:text-white text-[10px] font-bold border border-brand-crimson/30 flex items-center gap-1 cursor-pointer transition-colors flex-shrink-0"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Assign</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Card Footer */}
-              <div className="px-5 py-3 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
-                <button
-                  type="button"
-                  onClick={() => openAssignAthleteModal(co)}
-                  className="inline-flex items-center gap-1.5 font-bold text-slate-700 hover:text-emerald-600 transition-colors cursor-pointer text-xs"
-                >
-                  <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{language === "ar" ? "إدارة المتدربين" : "Manage Athletes"}</span>
-                </button>
-                <button
-                  onClick={() => openEditModal(co)}
-                  className="text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
-                >
-                  {language === "ar" ? "تعديل البيانات" : "Manage Profile"}
-                </button>
+                {/* Card Footer */}
+                <div className="px-5 py-3 bg-[#1C1C1F]/60 border-t border-[#26262A] flex items-center justify-between text-xs">
+                  <button
+                    type="button"
+                    onClick={() => openAssignAthleteModal(co)}
+                    className="inline-flex items-center gap-1.5 font-bold text-slate-300 hover:text-brand-crimson transition-colors cursor-pointer text-xs"
+                  >
+                    <UserCheck className="w-3.5 h-3.5 text-brand-crimson" />
+                    <span>Manage Athletes</span>
+                  </button>
+                  <button
+                    onClick={() => openEditModal(co)}
+                    className="text-xs font-bold text-brand-crimson hover:underline cursor-pointer"
+                  >
+                    Edit Profile
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* --- ADD COACH MODAL --- */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2 rtl:space-x-reverse">
-                  <PlusCircle className="w-5 h-5 text-emerald-500" />
-                  <span>{language === "ar" ? "إضافة كابتن / مدرب جديد" : "Create New Coach"}</span>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-brand-crimson" />
+                  <span>Create New Coach</span>
                 </h3>
-                <p className="text-xs text-slate-500">
-                  {language === "ar" ? "أدخل بيانات الكابتن لإنشاء حسابه وربطه بالجداول التدريبية" : "Enter coach credentials and details to set up account"}
+                <p className="text-xs text-slate-400">
+                  Enter coach credentials and details to set up account
                 </p>
               </div>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAddCoach} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {language === "ar" ? "اسم الكابتن *" : "Coach Name *"}
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Coach Name *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder={language === "ar" ? "e.g. كابتن حسام حسن" : "e.g. Coach John Doe"}
+                  placeholder="e.g. Coach Abdullah"
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Email Address *
                   </label>
                   <input
                     type="email"
                     required
-                    placeholder="coach@gxacademy.com"
+                    placeholder="coach@gxfitness.com"
                     value={formEmail}
                     onChange={e => setFormEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Phone Number
                   </label>
                   <input
                     type="text"
                     placeholder="+20 100 000 0000"
                     value={formPhone}
                     onChange={e => setFormPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "الدور والصلاحية" : "Role & Permission"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Role & Permission
                   </label>
                   <select
                     value={formRole}
                     onChange={e => setFormRole(e.target.value as UserRole)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   >
-                    <option value="COACH">{language === "ar" ? "كابتن ومدرب (Coach)" : "Coach"}</option>
-                    <option value="HEAD_COACH">{language === "ar" ? "مشرف عام تدريب (Head Coach)" : "Head Coach"}</option>
+                    <option value="COACH">Coach</option>
+                    <option value="HEAD_COACH">Head Coach</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "سنوات الخبرة" : "Years of Experience"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Years of Experience
                   </label>
                   <input
                     type="number"
@@ -593,95 +586,82 @@ export default function CoachesPage() {
                     max="40"
                     value={formExperience}
                     onChange={e => setFormExperience(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    {language === "ar" ? "التخصصات الرياضية (اختر من قائمة الرياضات) *" : "Sports & Specialties (Select from Catalog) *"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Sports & Specialties *
                   </label>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    {formSpecialties.length} {language === "ar" ? "تخصص محدد" : "selected"}
+                  <span className="text-[10px] font-bold text-brand-crimson bg-brand-crimson/15 px-2 py-0.5 rounded-full border border-brand-crimson/30">
+                    {formSpecialties.length} selected
                   </span>
                 </div>
 
-                {sports.length > 0 ? (
-                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
-                    <p className="text-[11px] text-slate-500">
-                      {language === "ar"
-                        ? "اختر الرياضات المعتمدة للكابتن من الدليل التدريبي للأكاديمية:"
-                        : "Select sports from the academy catalog for this coach:"}
-                    </p>
+                <div className="p-3.5 rounded-2xl bg-[#1C1C1F] border border-[#26262A] space-y-2.5">
+                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
+                    {sports.map(sport => {
+                      const sportName = sport.nameEn || sport.nameAr;
+                      const isSelected = formSpecialties.some(
+                        s => s === sport.nameAr || s === sport.nameEn || s.toLowerCase() === (sport.nameEn || "").toLowerCase()
+                      );
 
-                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
-                      {sports.map(sport => {
-                        const sportName = language === "ar" ? sport.nameAr : (sport.nameEn || sport.nameAr);
-                        const isSelected = formSpecialties.some(
-                          s => s === sport.nameAr || s === sport.nameEn || s.toLowerCase() === (sport.nameEn || "").toLowerCase()
-                        );
-
-                        return (
-                          <button
-                            type="button"
-                            key={sport.id}
-                            onClick={() => {
-                              if (isSelected) {
-                                setFormSpecialties(prev => prev.filter(s => s !== sport.nameAr && s !== sport.nameEn && s.toLowerCase() !== (sport.nameEn || "").toLowerCase()));
-                              } else {
-                                setFormSpecialties(prev => [...prev, sportName]);
-                              }
-                            }}
-                            className={`flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                              isSelected
-                                ? "bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20"
-                                : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50"
-                            }`}
-                          >
-                            <span>{sport.icon || "🏆"}</span>
-                            <span>{sportName}</span>
-                            {isSelected ? (
-                              <Check className="w-3.5 h-3.5 ms-1 text-white" />
-                            ) : (
-                              <Plus className="w-3.5 h-3.5 ms-1 text-slate-400" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Add custom specialty input */}
-                    <div className="pt-2 border-t border-slate-200/80 flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder={language === "ar" ? "أو أضف تخصصاً يدوياً..." : "Or add custom specialty..."}
-                        value={customSpecialtyInput}
-                        onChange={e => setCustomSpecialtyInput(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addCustomSpecialty();
-                          }
-                        }}
-                        className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={addCustomSpecialty}
-                        className="px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-emerald-600 hover:text-white text-slate-700 text-xs font-bold transition-colors cursor-pointer"
-                      >
-                        {language === "ar" ? "إضافة +" : "Add +"}
-                      </button>
-                    </div>
+                      return (
+                        <button
+                          type="button"
+                          key={sport.id}
+                          onClick={() => {
+                            if (isSelected) {
+                              setFormSpecialties(prev => prev.filter(s => s !== sport.nameAr && s !== sport.nameEn && s.toLowerCase() !== (sport.nameEn || "").toLowerCase()));
+                            } else {
+                              setFormSpecialties(prev => [...prev, sportName]);
+                            }
+                          }}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                            isSelected
+                              ? "bg-brand-crimson text-white border-brand-crimson shadow-[0_0_12px_rgba(240,20,37,0.4)]"
+                              : "bg-[#141416] text-slate-300 border-[#26262A] hover:border-brand-crimson/40"
+                          }`}
+                        >
+                          <span>{sport.icon || "🏆"}</span>
+                          <span>{sportName}</span>
+                          {isSelected ? (
+                            <Check className="w-3.5 h-3.5 text-white" />
+                          ) : (
+                            <Plus className="w-3.5 h-3.5 text-slate-500" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                ) : (
-                  <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between">
-                    <span>{language === "ar" ? "لا توجد رياضات في الدليل بعد." : "No sports in catalog yet."}</span>
-                    <Link href="/sports" className="underline font-bold">{language === "ar" ? "إضافة رياضة الآن" : "Add Sport Now"}</Link>
+
+                  {/* Add custom specialty input */}
+                  <div className="pt-2 border-t border-[#26262A] flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Or add custom specialty..."
+                      value={customSpecialtyInput}
+                      onChange={e => setCustomSpecialtyInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addCustomSpecialty();
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                    />
+                    <button
+                      type="button"
+                      onClick={addCustomSpecialty}
+                      className="px-3 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Add +
+                    </button>
                   </div>
-                )}
+                </div>
 
                 {/* Selected specialties chips */}
                 {formSpecialties.length > 0 && (
@@ -689,13 +669,13 @@ export default function CoachesPage() {
                     {formSpecialties.map((spec, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center space-x-1 rtl:space-x-reverse px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-crimson/15 border border-brand-crimson/30 text-brand-crimson text-[11px] font-bold"
                       >
                         <span>{spec}</span>
                         <button
                           type="button"
                           onClick={() => setFormSpecialties(prev => prev.filter((_, i) => i !== idx))}
-                          className="p-0.5 hover:bg-emerald-200/60 rounded text-emerald-600 hover:text-emerald-900 cursor-pointer"
+                          className="p-0.5 hover:bg-brand-crimson/30 rounded text-brand-crimson"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -706,31 +686,31 @@ export default function CoachesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {language === "ar" ? "نبذة تعريفية (Bio)" : "Bio / Background"}
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Bio / Background
                 </label>
                 <textarea
                   rows={2}
-                  placeholder={language === "ar" ? "نبذة عن خبرات الكابتن وإنجازاته التدريبية..." : "Brief background, certifications, and achievements..."}
+                  placeholder="Brief background, certifications, and achievements..."
                   value={formBio}
                   onChange={e => setFormBio(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 rtl:space-x-reverse pt-2">
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                  className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
                 >
-                  {t("cancel")}
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30"
+                  className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-[0_0_20px_rgba(240,20,37,0.4)] transition-all cursor-pointer"
                 >
-                  {language === "ar" ? "حفظ الكابتن ✓" : "Save Coach"}
+                  Save Coach
                 </button>
               </div>
             </form>
@@ -740,77 +720,77 @@ export default function CoachesPage() {
 
       {/* --- EDIT COACH MODAL --- */}
       {isEditModalOpen && editingCoach && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2 rtl:space-x-reverse">
-                  <Edit2 className="w-5 h-5 text-emerald-500" />
-                  <span>{language === "ar" ? "تعديل بيانات الكابتن" : "Edit Coach Profile"}</span>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Edit2 className="w-5 h-5 text-brand-crimson" />
+                  <span>Edit Coach Profile</span>
                 </h3>
               </div>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleUpdateCoach} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {language === "ar" ? "اسم الكابتن *" : "Coach Name *"}
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Coach Name *
                 </label>
                 <input
                   type="text"
                   required
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Email Address *
                   </label>
                   <input
                     type="email"
                     required
                     value={formEmail}
                     onChange={e => setFormEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Phone Number
                   </label>
                   <input
                     type="text"
                     value={formPhone}
                     onChange={e => setFormPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "الدور والصلاحية" : "Role & Permission"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Role & Permission
                   </label>
                   <select
                     value={formRole}
                     onChange={e => setFormRole(e.target.value as UserRole)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   >
-                    <option value="COACH">{language === "ar" ? "كابتن ومدرب (Coach)" : "Coach"}</option>
-                    <option value="HEAD_COACH">{language === "ar" ? "مشرف عام تدريب (Head Coach)" : "Head Coach"}</option>
+                    <option value="COACH">Coach</option>
+                    <option value="HEAD_COACH">Head Coach</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {language === "ar" ? "سنوات الخبرة" : "Years of Experience"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Years of Experience
                   </label>
                   <input
                     type="number"
@@ -818,143 +798,36 @@ export default function CoachesPage() {
                     max="40"
                     value={formExperience}
                     onChange={e => setFormExperience(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    {language === "ar" ? "التخصصات الرياضية (اختر من قائمة الرياضات) *" : "Sports & Specialties (Select from Catalog) *"}
-                  </label>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    {formSpecialties.length} {language === "ar" ? "تخصص محدد" : "selected"}
-                  </span>
-                </div>
-
-                {sports.length > 0 ? (
-                  <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
-                    <p className="text-[11px] text-slate-500">
-                      {language === "ar"
-                        ? "اختر الرياضات المعتمدة للكابتن من الدليل التدريبي للأكاديمية:"
-                        : "Select sports from the academy catalog for this coach:"}
-                    </p>
-
-                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
-                      {sports.map(sport => {
-                        const sportName = language === "ar" ? sport.nameAr : (sport.nameEn || sport.nameAr);
-                        const isSelected = formSpecialties.some(
-                          s => s === sport.nameAr || s === sport.nameEn || s.toLowerCase() === (sport.nameEn || "").toLowerCase()
-                        );
-
-                        return (
-                          <button
-                            type="button"
-                            key={sport.id}
-                            onClick={() => {
-                              if (isSelected) {
-                                setFormSpecialties(prev => prev.filter(s => s !== sport.nameAr && s !== sport.nameEn && s.toLowerCase() !== (sport.nameEn || "").toLowerCase()));
-                              } else {
-                                setFormSpecialties(prev => [...prev, sportName]);
-                              }
-                            }}
-                            className={`flex items-center space-x-1.5 rtl:space-x-reverse px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                              isSelected
-                                ? "bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20"
-                                : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50"
-                            }`}
-                          >
-                            <span>{sport.icon || "🏆"}</span>
-                            <span>{sportName}</span>
-                            {isSelected ? (
-                              <Check className="w-3.5 h-3.5 ms-1 text-white" />
-                            ) : (
-                              <Plus className="w-3.5 h-3.5 ms-1 text-slate-400" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Add custom specialty input */}
-                    <div className="pt-2 border-t border-slate-200/80 flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder={language === "ar" ? "أو أضف تخصصاً يدوياً..." : "Or add custom specialty..."}
-                        value={customSpecialtyInput}
-                        onChange={e => setCustomSpecialtyInput(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addCustomSpecialty();
-                          }
-                        }}
-                        className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={addCustomSpecialty}
-                        className="px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-emerald-600 hover:text-white text-slate-700 text-xs font-bold transition-colors cursor-pointer"
-                      >
-                        {language === "ar" ? "إضافة +" : "Add +"}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between">
-                    <span>{language === "ar" ? "لا توجد رياضات في الدليل بعد." : "No sports in catalog yet."}</span>
-                    <Link href="/sports" className="underline font-bold">{language === "ar" ? "إضافة رياضة الآن" : "Add Sport Now"}</Link>
-                  </div>
-                )}
-
-                {/* Selected specialties chips */}
-                {formSpecialties.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {formSpecialties.map((spec, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center space-x-1 rtl:space-x-reverse px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold"
-                      >
-                        <span>{spec}</span>
-                        <button
-                          type="button"
-                          onClick={() => setFormSpecialties(prev => prev.filter((_, i) => i !== idx))}
-                          className="p-0.5 hover:bg-emerald-200/60 rounded text-emerald-600 hover:text-emerald-900 cursor-pointer"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {language === "ar" ? "نبذة تعريفية (Bio)" : "Bio / Background"}
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Bio / Background
                 </label>
                 <textarea
                   rows={2}
                   value={formBio}
                   onChange={e => setFormBio(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 rtl:space-x-reverse pt-2">
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                  className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
                 >
-                  {t("cancel")}
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30"
+                  className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-[0_0_20px_rgba(240,20,37,0.4)] transition-all cursor-pointer"
                 >
-                  {language === "ar" ? "حفظ التعديلات ✓" : "Save Changes"}
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -964,35 +837,33 @@ export default function CoachesPage() {
 
       {/* --- DELETE COACH CONFIRMATION MODAL --- */}
       {deleteConfirmCoach && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/15 text-red-400 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">
-                {language === "ar" ? "تأكيد حذف حساب الكابتن" : "Confirm Coach Deletion"}
+              <h3 className="text-base font-bold text-white">
+                Confirm Coach Deletion
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                {language === "ar"
-                  ? `هل أنت متأكد من حذف الكابتن "${deleteConfirmCoach.user?.name}" نهائياً من النظام؟`
-                  : `Are you sure you want to permanently delete coach "${deleteConfirmCoach.user?.name}"?`}
+              <p className="text-xs text-slate-400 mt-1">
+                Are you sure you want to permanently delete coach "{deleteConfirmCoach.user?.name}"?
               </p>
             </div>
-            <div className="flex justify-center space-x-3 rtl:space-x-reverse pt-2">
+            <div className="flex justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setDeleteConfirmCoach(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold"
+                className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors cursor-pointer"
               >
-                {t("cancel")}
+                Cancel
               </button>
               <button
                 type="button"
                 onClick={handleDeleteCoach}
-                className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/30"
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/40 cursor-pointer"
               >
-                {language === "ar" ? "نعم، احذف الكابتن" : "Yes, Delete Coach"}
+                Yes, Delete Coach
               </button>
             </div>
           </div>
@@ -1001,19 +872,19 @@ export default function CoachesPage() {
 
       {/* --- ASSIGN ATHLETE TO COACH MODAL --- */}
       {isAssignAthleteModalOpen && targetCoach && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center">
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    {language === "ar" ? "إدارة متدربي الكابتن" : "Manage Coach Athletes"}
+                  <h3 className="text-base font-bold text-white">
+                    Manage Coach Athletes
                   </h3>
-                  <p className="text-xs text-slate-500 font-semibold">
-                    {targetCoach.user?.name} ({targetCoach.specialties?.slice(0, 2).join(", ") || (language === "ar" ? "مدرب معتمد" : "Coach")})
+                  <p className="text-xs text-slate-400 font-semibold">
+                    {targetCoach.user?.name}
                   </p>
                 </div>
               </div>
@@ -1022,7 +893,7 @@ export default function CoachesPage() {
                   setIsAssignAthleteModalOpen(false);
                   setTargetCoach(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1030,8 +901,8 @@ export default function CoachesPage() {
 
             {/* Currently Assigned Athletes */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                {language === "ar" ? "المتدربون المشرف عليهم حالياً:" : "Currently Assigned Athletes:"}
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                Currently Assigned Athletes:
               </label>
 
               {(() => {
@@ -1041,8 +912,8 @@ export default function CoachesPage() {
 
                 if (assignedAthletes.length === 0) {
                   return (
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-xs text-center">
-                      {language === "ar" ? "لا يوجد متدربون معينون لهذا الكابتن حالياً." : "No athletes currently assigned to this coach."}
+                    <div className="p-3 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-slate-400 text-xs text-center">
+                      No athletes currently assigned to this coach.
                     </div>
                   );
                 }
@@ -1054,25 +925,19 @@ export default function CoachesPage() {
                       return (
                         <div
                           key={cl.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs"
                         >
-                          <div className="flex items-center space-x-2.5 rtl:space-x-reverse min-w-0">
+                          <div className="flex items-center gap-2.5 min-w-0">
                             <img
-                              src={cl.user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
+                              src={cl.user?.avatar || "/coach_dark_hero.jpg"}
                               alt={cl.user?.name}
-                              className="w-7 h-7 rounded-full object-cover border border-slate-300"
-                              onError={e => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"; }}
+                              className="w-7 h-7 rounded-full object-cover border border-[#26262A]"
+                              onError={e => { (e.target as HTMLImageElement).src = "/coach_dark_hero.jpg"; }}
                             />
                             <div className="min-w-0">
-                              <span className="font-bold text-slate-900 block truncate">{cl.user?.name}</span>
-                              <span className="text-[10px] text-slate-500 block">
-                                {ca?.role === "PRIMARY"
-                                  ? (language === "ar" ? "كابتن رئيسي" : "Primary Coach")
-                                  : ca?.role === "NUTRITIONIST"
-                                  ? (language === "ar" ? "أخصائي تغذية" : "Nutritionist")
-                                  : ca?.role === "PHYSIOTHERAPIST"
-                                  ? (language === "ar" ? "علاج طبيعي" : "Physiotherapist")
-                                  : (language === "ar" ? "كابتن مساعد" : "Assistant Coach")}
+                              <span className="font-bold text-white block truncate">{cl.user?.name}</span>
+                              <span className="text-[10px] text-slate-400 block">
+                                {ca?.role === "PRIMARY" ? "Primary Coach" : ca?.role}
                               </span>
                             </div>
                           </div>
@@ -1080,10 +945,10 @@ export default function CoachesPage() {
                           <button
                             type="button"
                             onClick={() => handleUnassignAthlete(cl.id, targetCoach.id)}
-                            className="px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold border border-red-200 flex items-center gap-1 cursor-pointer transition-colors"
+                            className="px-2 py-1 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 text-[10px] font-bold border border-red-800/60 flex items-center gap-1 cursor-pointer transition-colors"
                           >
                             <Trash2 className="w-3 h-3" />
-                            <span>{language === "ar" ? "إلغاء التعيين" : "Unassign"}</span>
+                            <span>Unassign</span>
                           </button>
                         </div>
                       );
@@ -1094,29 +959,29 @@ export default function CoachesPage() {
             </div>
 
             {/* Assign New Athlete Form */}
-            <form onSubmit={handleAssignAthleteSubmit} className="space-y-3 pt-3 border-t border-slate-200">
-              <span className="block text-xs font-bold text-emerald-700">
-                {language === "ar" ? "+ تعيين متدرب جديد لهذا الكابتن" : "+ Assign Athlete to Coach"}
+            <form onSubmit={handleAssignAthleteSubmit} className="space-y-3 pt-3 border-t border-[#26262A]">
+              <span className="block text-xs font-bold text-brand-crimson">
+                + Assign Athlete to Coach
               </span>
 
               {clients.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
-                        {language === "ar" ? "اختر المتدرب *" : "Select Athlete *"}
+                      <label className="block text-xs font-semibold text-slate-400 mb-1">
+                        Select Athlete *
                       </label>
                       <select
                         required
                         value={athleteIdToAssign}
                         onChange={e => setAthleteIdToAssign(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:outline-none focus:border-emerald-500"
+                        className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white font-medium focus:outline-none focus:border-brand-crimson"
                       >
                         {clients.map(c => {
                           const isAlreadyAssigned = c.coaches?.some(ca => ca.coachId === targetCoach.id && ca.active);
                           return (
                             <option key={c.id} value={c.id}>
-                              {c.user?.name} {isAlreadyAssigned ? (language === "ar" ? "(معين حالياً)" : "(Already assigned)") : ""}
+                              {c.user?.name} {isAlreadyAssigned ? "(Already assigned)" : ""}
                             </option>
                           );
                         })}
@@ -1124,57 +989,57 @@ export default function CoachesPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
-                        {language === "ar" ? "الدور التدريبي *" : "Coaching Role *"}
+                      <label className="block text-xs font-semibold text-slate-400 mb-1">
+                        Coaching Role *
                       </label>
                       <select
                         value={athleteRoleToAssign}
                         onChange={e => setAthleteRoleToAssign(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-medium focus:outline-none focus:border-emerald-500"
+                        className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white font-medium focus:outline-none focus:border-brand-crimson"
                       >
-                        <option value="PRIMARY">{language === "ar" ? "كابتن رئيسي (Primary Coach)" : "Primary Coach"}</option>
-                        <option value="ASSISTANT">{language === "ar" ? "كابتن مساعد (Assistant Coach)" : "Assistant Coach"}</option>
-                        <option value="NUTRITIONIST">{language === "ar" ? "أخصائي تغذية (Nutritionist)" : "Nutritionist"}</option>
-                        <option value="PHYSIOTHERAPIST">{language === "ar" ? "أخصائي علاج طبيعي (Physio)" : "Physiotherapist"}</option>
+                        <option value="PRIMARY">Primary Coach</option>
+                        <option value="ASSISTANT">Assistant Coach</option>
+                        <option value="NUTRITIONIST">Nutritionist</option>
+                        <option value="PHYSIOTHERAPIST">Physiotherapist</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-700 mb-1">
-                      {language === "ar" ? "ملاحظات وتوجيهات (اختياري)" : "Supervision Notes (Optional)"}
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">
+                      Supervision Notes (Optional)
                     </label>
                     <input
                       type="text"
                       value={athleteAssignNotes}
                       onChange={e => setAthleteAssignNotes(e.target.value)}
-                      placeholder={language === "ar" ? "مثال: خطة تضخيم ومتابعة أسبوعية" : "e.g. Muscle gain program and check-ins"}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
+                      placeholder="e.g. Muscle gain program and check-ins"
+                      className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                     />
                   </div>
 
-                  <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse pt-2">
+                  <div className="flex items-center justify-end gap-2 pt-2">
                     <button
                       type="button"
                       onClick={() => {
                         setIsAssignAthleteModalOpen(false);
                         setTargetCoach(null);
                       }}
-                      className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-[#1C1C1F] text-slate-300 text-xs font-bold cursor-pointer"
                     >
-                      {t("cancel")}
+                      Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 cursor-pointer"
+                      className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-[0_0_20px_rgba(240,20,37,0.4)] cursor-pointer"
                     >
-                      {language === "ar" ? "تأكيد تعيين المتدرب ✓" : "Confirm Athlete Assignment ✓"}
+                      Confirm Athlete Assignment
                     </button>
                   </div>
                 </>
               ) : (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs text-center">
-                  {language === "ar" ? "لا يوجد متدربون مسجلون في الأكاديمية بعد." : "No athletes registered in academy yet."}
+                <div className="p-3 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-slate-400 text-xs text-center">
+                  No athletes registered in academy yet.
                 </div>
               )}
             </form>

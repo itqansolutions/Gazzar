@@ -37,7 +37,7 @@ export default function AttendancePage() {
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-          <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+          <CheckCircle2 className="w-6 h-6 text-brand-crimson" />
           <span>{t("navAttendance")}</span>
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -61,7 +61,7 @@ export default function AttendancePage() {
                   {new Date(sess.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} • الكابتن: {sess.coach?.user?.name}
                 </p>
               </div>
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-emerald-400 border border-slate-700 self-start sm:self-auto">
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-brand-crimson border border-slate-700 self-start sm:self-auto">
                 {sess.attendances?.length || 0} مشتركون مسجلون
               </span>
             </div>
@@ -91,7 +91,7 @@ export default function AttendancePage() {
                       onClick={() => handleUpdateStatus(sess.id, att.clientId, "PRESENT")}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                         att.status === "PRESENT"
-                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+                          ? "bg-brand-crimson text-white shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
                           : "bg-slate-900 hover:bg-slate-800 text-slate-400"
                       }`}
                     >

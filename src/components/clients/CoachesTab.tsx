@@ -32,7 +32,7 @@ export default function CoachesTab({ assignments, onOpenModal, onUnassign, isCli
         {!isClient && (
           <button
             onClick={onOpenModal}
-            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse cursor-pointer shadow-md shadow-emerald-600/30"
+            className="px-3.5 py-1.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse cursor-pointer shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
           >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>{language === "ar" ? "تعيين كابتن جديد" : "Assign Coach"}</span>
@@ -52,7 +52,7 @@ export default function CoachesTab({ assignments, onOpenModal, onUnassign, isCli
               className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl flex items-center justify-between"
             >
               <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-black text-sm text-white shadow-md flex-shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-brand-crimson text-white flex items-center justify-center font-black text-sm text-white shadow-md flex-shrink-0">
                   {ca.coach?.user?.name ? ca.coach.user.name.slice(0, 2) : "CO"}
                 </div>
                 <div>
@@ -65,7 +65,7 @@ export default function CoachesTab({ assignments, onOpenModal, onUnassign, isCli
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                   ca.role === "PRIMARY"
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                    ? "bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30"
                     : ca.role === "NUTRITIONIST"
                     ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20"
                     : ca.role === "PHYSIOTHERAPIST"

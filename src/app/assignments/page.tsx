@@ -95,7 +95,7 @@ export default function AssignmentsPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-          <ClipboardList className="w-6 h-6 text-emerald-500" />
+          <ClipboardList className="w-6 h-6 text-brand-crimson" />
           <span>{isClient ? (language === "ar" ? "جدول تماريني وحصص التدريب" : "My Workouts & Sessions") : t("navAssignments")}</span>
           <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
             {assignments.length}
@@ -112,13 +112,13 @@ export default function AssignmentsPage() {
       {!isClient && (
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm dark:shadow-xl space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse border-b border-slate-100 dark:border-slate-800 pb-3">
-            <PlusCircle className="w-4 h-4 text-emerald-500" />
+            <PlusCircle className="w-4 h-4 text-brand-crimson" />
             <span>تعيين تمرين جديد لمشترك</span>
           </h3>
 
           {successMessage && (
-            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center space-x-2 rtl:space-x-reverse animate-in fade-in">
-              <CheckCircle className="w-4 h-4 text-emerald-500" />
+            <div className="p-3 rounded-xl bg-brand-crimson/15 border border-brand-crimson/40 text-xs text-brand-crimson font-bold flex items-center space-x-2 rtl:space-x-reverse animate-in fade-in">
+              <CheckCircle className="w-4 h-4 text-brand-crimson" />
               <span>{successMessage}</span>
             </div>
           )}
@@ -192,7 +192,7 @@ export default function AssignmentsPage() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
               >
                 تعيين التمرين وجدولته للمتدرب ✓
               </button>
@@ -207,7 +207,7 @@ export default function AssignmentsPage() {
           onClick={() => setActiveTab("SCHEDULED")}
           className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === "SCHEDULED"
-              ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+              ? "bg-brand-crimson text-white shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
               : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100"
           }`}
         >
@@ -218,7 +218,7 @@ export default function AssignmentsPage() {
           onClick={() => setActiveTab("COMPLETED")}
           className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === "COMPLETED"
-              ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+              ? "bg-brand-crimson text-white shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
               : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100"
           }`}
         >
@@ -241,7 +241,7 @@ export default function AssignmentsPage() {
               className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
               <div className="flex items-center space-x-3.5 rtl:space-x-reverse">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg flex-shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center font-bold text-lg flex-shrink-0">
                   <Dumbbell className="w-6 h-6" />
                 </div>
                 <div>
@@ -274,7 +274,7 @@ export default function AssignmentsPage() {
                   </div>
 
                   {a.coachNotes && (
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">
+                    <p className="text-[11px] text-brand-crimson mt-1">
                       💡 {a.coachNotes}
                     </p>
                   )}
@@ -285,14 +285,14 @@ export default function AssignmentsPage() {
                 {a.status === "SCHEDULED" ? (
                   <Link
                     href={`/workout/${a.id}/execute`}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-emerald-600/30 flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer scale-100 hover:scale-105"
+                    className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] hover:bg-[#FF2D3B]  text-white font-bold text-xs shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer scale-100 hover:scale-105"
                   >
                     <Play className="w-3.5 h-3.5 fill-white" />
                     <span>{language === "ar" ? "بدء التمرين وتسجيل الأوزان 🏋️‍♂️" : "Start & Log Workout"}</span>
                   </Link>
                 ) : (
                   <div className="text-end">
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 block">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30 block">
                       ✓ مكتمل ({a.workoutLog?.durationMinutes || 45} دقيقة)
                     </span>
                     {a.workoutLog?.overallRpe && (

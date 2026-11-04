@@ -171,7 +171,7 @@ export default function AssessmentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-            <Activity className="w-6 h-6 text-emerald-500" />
+            <Activity className="w-6 h-6 text-brand-crimson" />
             <span>{isClient ? (language === "ar" ? "تقييماتي واختباراتي البدنية" : "My Physical Assessments") : t("navAssessments")}</span>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
               {assessments.length}
@@ -187,7 +187,7 @@ export default function AssessmentsPage() {
         {!isClient && (
           <button
             onClick={openAddModal}
-            className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all self-start sm:self-auto cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{language === "ar" ? "تسجيل تقييم بدني جديد لمشترك +" : "Record Assessment +"}</span>
@@ -217,7 +217,7 @@ export default function AssessmentsPage() {
 
       {/* Comparison Hero Card: Latest vs Baseline */}
       {aLatest && aBaseline && aLatest.id !== aBaseline.id ? (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900/90 border border-emerald-500/40 shadow-sm dark:shadow-2xl space-y-6">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900/90 border border-brand-crimson/40 shadow-sm dark:shadow-2xl space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
@@ -230,7 +230,7 @@ export default function AssessmentsPage() {
                 {language === "ar" ? `الفترة بين ${aBaseline.date} إلى ${aLatest.date}` : `Between ${aBaseline.date} and ${aLatest.date}`}
               </p>
             </div>
-            <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 self-start sm:self-auto">
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/40 self-start sm:self-auto">
               🏆 {language === "ar" ? "تطور بدني ممتاز" : "Excellent Progress"}
             </span>
           </div>
@@ -244,7 +244,7 @@ export default function AssessmentsPage() {
                 <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{aLatest.pushupsCount}</span>
                 <span className="text-xs text-slate-400 line-through">{aBaseline.pushupsCount}</span>
               </div>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block">
+              <span className="text-[11px] font-bold text-brand-crimson block">
                 {calcImprovement(aBaseline.pushupsCount, aLatest.pushupsCount)} {language === "ar" ? "زيادة قوة" : "Gain"}
               </span>
             </div>
@@ -256,7 +256,7 @@ export default function AssessmentsPage() {
                 <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{aLatest.pullupsCount}</span>
                 <span className="text-xs text-slate-400 line-through">{aBaseline.pullupsCount}</span>
               </div>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block">
+              <span className="text-[11px] font-bold text-brand-crimson block">
                 {calcImprovement(aBaseline.pullupsCount, aLatest.pullupsCount)} {language === "ar" ? "تطور ملحوظ" : "Improvement"}
               </span>
             </div>
@@ -268,7 +268,7 @@ export default function AssessmentsPage() {
                 <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{aLatest.plankSeconds}ث</span>
                 <span className="text-xs text-slate-400 line-through">{aBaseline.plankSeconds}ث</span>
               </div>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block">
+              <span className="text-[11px] font-bold text-brand-crimson block">
                 {calcImprovement(aBaseline.plankSeconds, aLatest.plankSeconds)} {language === "ar" ? "ثبات كور" : "Core endurance"}
               </span>
             </div>
@@ -280,7 +280,7 @@ export default function AssessmentsPage() {
                 <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{aLatest.vo2Max}</span>
                 <span className="text-xs text-slate-400 line-through">{aBaseline.vo2Max}</span>
               </div>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 block">
+              <span className="text-[11px] font-bold text-brand-crimson block">
                 {calcImprovement(aBaseline.vo2Max, aLatest.vo2Max)} {language === "ar" ? "لياقة قلبية" : "Cardio capacity"}
               </span>
             </div>
@@ -288,7 +288,7 @@ export default function AssessmentsPage() {
 
           {aLatest.coachNotes && (
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">تقييم الكابتن المشرف:</span> {aLatest.coachNotes}
+              <span className="font-bold text-brand-crimson">تقييم الكابتن المشرف:</span> {aLatest.coachNotes}
             </div>
           )}
         </div>
@@ -323,7 +323,7 @@ export default function AssessmentsPage() {
                 <div key={item.id} className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
-                      <span className="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center">
+                      <span className="w-7 h-7 rounded-xl bg-brand-crimson/15 text-brand-crimson font-bold text-xs flex items-center justify-center">
                         #{assessments.length - idx}
                       </span>
                       <div>
@@ -343,7 +343,7 @@ export default function AssessmentsPage() {
                         <>
                           <button
                             onClick={() => openEditModal(item)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
@@ -382,7 +382,7 @@ export default function AssessmentsPage() {
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{language === "ar" ? "اللياقة القلبية" : "VO2 Max"}</span>
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.vo2Max}</span>
+                      <span className="font-bold text-brand-crimson text-sm">{item.vo2Max}</span>
                     </div>
                   </div>
 
@@ -404,7 +404,7 @@ export default function AssessmentsPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-                <Activity className="w-5 h-5 text-emerald-500" />
+                <Activity className="w-5 h-5 text-brand-crimson" />
                 <span>{isAddModalOpen ? "تسجيل تقييم واختبار بدني جديد" : "تعديل التقييم البدني"}</span>
               </h3>
               <button
@@ -542,7 +542,7 @@ export default function AssessmentsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] cursor-pointer"
                 >
                   {isAddModalOpen ? "حفظ التقييم البدني ✓" : "تحديث التقييم البدني ✓"}
                 </button>

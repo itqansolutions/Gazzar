@@ -81,7 +81,7 @@ export function KPICard({
             <div
               className={`inline-flex items-center gap-1 text-xs font-semibold tabular-nums mt-0.5 ${
                 parsedDelta.positive
-                  ? "text-emerald-500 dark:text-emerald-400"
+                  ? "text-emerald-500 dark:text-brand-crimson"
                   : "text-rose-500 dark:text-rose-400"
               }`}
             >

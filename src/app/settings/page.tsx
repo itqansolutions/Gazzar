@@ -35,7 +35,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-          <SettingsIcon className="w-6 h-6 text-emerald-500" />
+          <SettingsIcon className="w-6 h-6 text-brand-crimson" />
           <span>{t("navSettings")}</span>
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -46,8 +46,8 @@ export default function SettingsPage() {
       </div>
 
       {savedMessage && (
-        <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-600 dark:text-emerald-300 font-bold flex items-center space-x-2 rtl:space-x-reverse animate-in fade-in">
-          <CheckCircle className="w-4 h-4 text-emerald-500" />
+        <div className="p-3 rounded-2xl bg-brand-crimson/15 border border-brand-crimson/40 text-xs text-brand-crimson dark:text-brand-crimson font-bold flex items-center space-x-2 rtl:space-x-reverse animate-in fade-in">
+          <CheckCircle className="w-4 h-4 text-brand-crimson" />
           <span>{savedMessage}</span>
         </div>
       )}

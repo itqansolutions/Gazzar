@@ -32,7 +32,7 @@ export default function MeasurementsTab({ measurements, onOpenModal }: Measureme
           </div>
           <button
             onClick={onOpenModal}
-            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse cursor-pointer shadow-md shadow-emerald-600/30"
+            className="px-3 py-1.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse cursor-pointer shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
           >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>{t("addMeasurement")}</span>
@@ -84,7 +84,7 @@ export default function MeasurementsTab({ measurements, onOpenModal }: Measureme
               {measurements.map(m => (
                 <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="p-3 font-semibold text-slate-900 dark:text-white font-mono">{m.date}</td>
-                  <td className="p-3 text-center font-bold text-emerald-600 dark:text-emerald-400">{m.weightKg} {language === "ar" ? "كجم" : "KG"}</td>
+                  <td className="p-3 text-center font-bold text-brand-crimson">{m.weightKg} {language === "ar" ? "كجم" : "KG"}</td>
                   <td className="p-3 text-center">{m.bmi}</td>
                   <td className="p-3 text-center">{m.bodyFatPercentage}%</td>
                   <td className="p-3 text-center">{m.muscleMassKg} {language === "ar" ? "كجم" : "KG"}</td>

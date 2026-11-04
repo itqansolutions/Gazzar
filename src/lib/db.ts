@@ -371,6 +371,18 @@ class CoachingStore {
     };
   }
 
+  updateCoachProfile(id: string, updates: Partial<CoachProfile>): CoachProfile {
+    this.loadFromStorage();
+    const index = this.coachProfiles.findIndex(cp => cp.id === id || cp.userId === id);
+    if (index === -1) throw new Error("Coach profile not found");
+    this.coachProfiles[index] = {
+      ...this.coachProfiles[index],
+      ...updates
+    };
+    this.saveToStorage();
+    return this.coachProfiles[index];
+  }
+
   // --- Clients CRUD & Client 360 ---
   getClients(status?: string, userRole?: string, userId?: string): ClientProfile[] {
     this.loadFromStorage();

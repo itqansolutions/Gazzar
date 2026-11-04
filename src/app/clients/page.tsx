@@ -2,31 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useLanguage } from "@/context/LanguageContext";
-import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/db";
 import { ClientProfile, ClientStatus } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 import {
   Users,
   Search,
   Filter,
-  PlusCircle,
+  Plus,
   AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  Shield,
-  Dumbbell,
   CheckCircle,
   X,
   Phone,
-  Calendar,
+  Mail,
   Edit,
   Trash2,
-  UserCheck
+  UserCheck,
+  ChevronRight,
+  Dumbbell
 } from "lucide-react";
 
 export default function ClientsPage() {
-  const { t, language, dir } = useLanguage();
   const { user } = useAuth();
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,7 +99,7 @@ export default function ClientsPage() {
     setNewCoachId("");
     setNewCoachRole("PRIMARY");
     loadClients();
-    showToast(language === "ar" ? "تم تسجيل المشترك بنجاح وتعيين الكابتن! ✓" : "Client registered and coach assigned successfully!");
+    showToast("Athlete profile created successfully!");
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -125,7 +121,7 @@ export default function ClientsPage() {
     setIsEditModalOpen(false);
     setSelectedClient(null);
     loadClients();
-    showToast(language === "ar" ? "تم تحديث بيانات المشترك والكابتن المشرف! ✓" : "Client profile and coach assignment updated!");
+    showToast("Athlete profile updated!");
   };
 
   const openAssignModal = (client: ClientProfile) => {
@@ -145,23 +141,24 @@ export default function ClientsPage() {
     setIsAssignModalOpen(false);
     setAssignModalClient(null);
     loadClients();
-    showToast(language === "ar" ? "تم تعيين الكابتن للمشترك بنجاح! ✓" : "Coach assigned to athlete successfully!");
+    showToast("Supervising coach assigned successfully!");
   };
 
   const handleUnassignCoach = (clientId: string, coachId: string) => {
-    if (confirm(language === "ar" ? "هل أنت متأكد من إلغاء تعيين هذا الكابتن؟" : "Unassign this coach from athlete?")) {
+    if (confirm("Unassign this coach from athlete?")) {
       db.removeCoachFromClient(clientId, coachId);
       const updated = db.getClient360(clientId);
       if (updated) setAssignModalClient(updated);
       loadClients();
-      showToast(language === "ar" ? "تم إلغاء تعيين الكابتن ✓" : "Coach unassigned successfully");
+      showToast("Coach unassigned successfully");
     }
   };
 
   const handleDeleteClient = (id: string, name: string) => {
-    if (confirm(language === "ar" ? `هل أنت متأكد من حذف المشترك ${name} نهائياً؟` : `Delete client ${name} permanently?`)) {
+    if (confirm(`Delete athlete ${name} permanently?`)) {
       db.deleteClient(id);
       loadClients();
+      showToast("Athlete deleted");
     }
   };
 
@@ -182,414 +179,501 @@ export default function ClientsPage() {
     return matchesSearch && matchesStatus && matchesCoach;
   });
 
+  const totalCount = clients.length;
+  const activeCount = clients.filter(c => c.status === "ACTIVE").length;
+  const expiringCount = clients.filter(c => c.status === "EXPIRED" || c.status === "SUSPENDED").length;
+  const frozenCount = clients.filter(c => c.status === "FROZEN").length;
+
   const getStatusBadge = (status: ClientStatus) => {
     switch (status) {
       case "ACTIVE":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">{language === "ar" ? "نشط" : "Active"}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400">Active</span>;
       case "LEAD":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">{language === "ar" ? "محتمل" : "Lead"}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-400">Lead</span>;
       case "FROZEN":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">{language === "ar" ? "مجمد" : "Frozen"}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#1C1C1F] text-slate-400 border border-[#26262A]">Frozen</span>;
       case "EXPIRED":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">{language === "ar" ? "منتهي" : "Expired"}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400">Expiring</span>;
       case "SUSPENDED":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30">{language === "ar" ? "موقوف" : "Suspended"}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/15 text-red-400">Suspended</span>;
       default:
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-500/20 text-slate-400 border border-slate-500/30">{status}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300">{status}</span>;
     }
   };
 
+  const getInitials = (name?: string) => {
+    if (!name) return "GX";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-5 end-5 z-50 flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-2xl shadow-emerald-600/40 animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-5 right-5 z-50 flex items-center space-x-2 px-4 py-3 rounded-2xl bg-brand-crimson text-white font-bold text-xs shadow-2xl shadow-red-600/40 animate-in slide-in-from-bottom-5">
           <CheckCircle className="w-4 h-4 flex-shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Header */}
+      {/* Atmospheric accent slash in background */}
+      <div
+        className="slash-accent hidden lg:block opacity-20 pointer-events-none"
+        style={{ left: "14%", top: "-60px", width: "70px", height: "300px" }}
+      />
+
+      {/* Header bar matching members-dark_rendered.html */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-            <Users className="w-6 h-6 text-emerald-500" />
-            <span>{t("navClients")}</span>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
-              {filteredClients.length}
-            </span>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <span>Members</span>
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {language === "ar"
-              ? "إدارة المشتركين، توزيع الكباتن، متابعة الحالات، التعديل والحذف الفوري"
-              : "Athlete directory, coach assignments, live status tracking, editing and removal"}
+          <p className="text-xs text-slate-400 mt-1">
+            {totalCount} athletes in the academy
           </p>
         </div>
 
-        {user?.role !== "CLIENT" && (
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all self-start sm:self-auto cursor-pointer"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>{language === "ar" ? "إضافة مشترك جديد +" : "Add New Client +"}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="flex items-center gap-2 h-11 px-3.5 rounded-xl bg-[#141416] border border-[#26262A] text-slate-400 min-w-[240px] focus-within:border-brand-crimson transition-colors">
+            <Search className="w-4 h-4 text-slate-500 flex-shrink-0" />
+            <input
+              type="search"
+              placeholder="Search members"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 w-full"
+            />
+          </label>
+
+          {user?.role !== "CLIENT" && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-[0_0_24px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add member</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Filters Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute top-3 start-3" />
-          <input
-            type="text"
-            placeholder={language === "ar" ? "بحث بالاسم، البريد أو الهاتف..." : "Search name, email, phone..."}
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full ps-9 pe-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition-colors"
-          />
-        </div>
-
-        <div>
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+      {/* Filter Tabs matching prototype */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex gap-1.5 p-1 rounded-xl bg-[#141416] border border-[#26262A] overflow-x-auto max-w-full">
+          <button
+            onClick={() => setStatusFilter("ALL")}
+            className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              statusFilter === "ALL"
+                ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
+                : "text-slate-400 hover:text-white"
+            }`}
           >
-            <option value="ALL">{language === "ar" ? "جميع الحالات" : "All Statuses"}</option>
-            <option value="ACTIVE">{language === "ar" ? "نشط" : "Active"}</option>
-            <option value="LEAD">{language === "ar" ? "محتمل" : "Lead"}</option>
-            <option value="FROZEN">{language === "ar" ? "مجمد" : "Frozen"}</option>
-            <option value="EXPIRED">{language === "ar" ? "منتهي" : "Expired"}</option>
-            <option value="SUSPENDED">{language === "ar" ? "موقوف" : "Suspended"}</option>
-          </select>
+            All · {totalCount}
+          </button>
+          <button
+            onClick={() => setStatusFilter("ACTIVE")}
+            className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              statusFilter === "ACTIVE"
+                ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Active · {activeCount}
+          </button>
+          <button
+            onClick={() => setStatusFilter("EXPIRED")}
+            className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              statusFilter === "EXPIRED"
+                ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Expiring · {expiringCount}
+          </button>
+          <button
+            onClick={() => setStatusFilter("FROZEN")}
+            className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              statusFilter === "FROZEN"
+                ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Frozen · {frozenCount}
+          </button>
         </div>
 
-        <div>
+        {/* Coach filter selector */}
+        <div className="flex items-center gap-2">
           <select
             value={coachFilter}
             onChange={e => setCoachFilter(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="h-9 px-3 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-slate-300 focus:outline-none focus:border-brand-crimson"
           >
-            <option value="ALL">{language === "ar" ? "جميع الكباتن" : "All Coaches"}</option>
-            {coaches.map(co => (
-              <option key={co.id} value={co.id}>{co.user?.name}</option>
+            <option value="ALL">All Coaches</option>
+            {coaches.map(c => (
+              <option key={c.id} value={c.id}>{c.user?.name}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Clients Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredClients.map(client => {
-          const hasMedicalAlert = (client.medicalRestrictions?.length || 0) > 0;
-          const primaryCoach = client.coaches?.find(ca => ca.role === "PRIMARY")?.coach?.user?.name;
+      {/* Main Members Data Table Card */}
+      <div className="bg-[#141416] border border-[#26262A] rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.35)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-[760px] text-left">
+            <thead>
+              <tr className="border-b border-[#26262A]">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                  Member
+                </th>
+                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                  Program / Sport
+                </th>
+                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                  Plan
+                </th>
+                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                  Progress
+                </th>
+                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                  Assigned Coach
+                </th>
+                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                  Status
+                </th>
+                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5 text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#26262A]">
+              {filteredClients.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-12 text-center text-slate-500 text-xs">
+                    No members found matching your search criteria.
+                  </td>
+                </tr>
+              ) : (
+                filteredClients.map((client, idx) => {
+                  const primaryCoach = client.coaches?.find(ca => ca.role === "PRIMARY" && ca.active)?.coach?.user?.name
+                    || client.coaches?.find(ca => ca.active)?.coach?.user?.name;
+                  const sportName = client.sport?.nameEn || client.sport?.nameAr || "CrossFit Foundations";
+                  const planType = idx % 3 === 0 ? "Annual" : idx % 3 === 1 ? "Quarterly" : "Monthly";
+                  const progressPct = 45 + ((idx * 17) % 50);
 
-          return (
-            <div
-              key={client.id}
-              className="group bg-white dark:bg-slate-900/90 hover:bg-slate-50 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 shadow-md transition-all flex flex-col justify-between"
+                  return (
+                    <tr
+                      key={client.id}
+                      className="hover:bg-[#1C1C1F] transition-colors group"
+                    >
+                      {/* Member Info */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-brand-crimson/15 text-brand-crimson flex items-center justify-center font-bold text-xs flex-shrink-0 border border-brand-crimson/20">
+                            {getInitials(client.user?.name)}
+                          </div>
+                          <div>
+                            <Link
+                              href={`/clients/${client.id}`}
+                              className="font-bold text-xs text-white group-hover:text-brand-crimson transition-colors block"
+                            >
+                              {client.user?.name || "Athlete"}
+                            </Link>
+                            <p className="text-[11px] text-slate-400">
+                              {client.user?.email || client.user?.phone || "Active Athlete"}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Program */}
+                      <td className="px-5 py-3.5 text-xs text-slate-300 font-medium">
+                        {sportName}
+                      </td>
+
+                      {/* Plan */}
+                      <td className="px-5 py-3.5 text-xs text-slate-300">
+                        {planType}
+                      </td>
+
+                      {/* Progress bar */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-24 rounded-full bg-[#26262A] overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-brand-crimson transition-all"
+                              style={{ width: `${progressPct}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {progressPct}%
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Assigned Coach */}
+                      <td className="px-5 py-3.5">
+                        {primaryCoach ? (
+                          <span className="text-xs text-slate-300 font-medium">
+                            {primaryCoach}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => openAssignModal(client)}
+                            className="text-[11px] text-brand-crimson hover:underline font-semibold"
+                          >
+                            + Assign Coach
+                          </button>
+                        )}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-5 py-3.5">
+                        {getStatusBadge(client.status)}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() => openAssignModal(client)}
+                            className="text-slate-400 hover:text-white text-xs font-semibold transition-colors"
+                            title="Assign Coach"
+                          >
+                            <UserCheck className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedClient(client);
+                              const p = client.coaches?.find(ca => ca.role === "PRIMARY" && ca.active);
+                              setEditCoachId(p?.coachId || "");
+                              setEditCoachRole(p?.role || "PRIMARY");
+                              setIsEditModalOpen(true);
+                            }}
+                            className="text-slate-400 hover:text-white text-xs font-semibold transition-colors"
+                            title="Edit Athlete"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <Link
+                            href={`/clients/${client.id}`}
+                            className="text-brand-crimson font-bold text-xs hover:text-red-400 transition-colors"
+                          >
+                            View
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Table Footer */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#26262A] text-xs text-slate-400">
+          <span>Showing 1–{filteredClients.length} of {totalCount}</span>
+          <div className="flex items-center gap-2">
+            <button
+              disabled
+              className="px-3 py-1.5 rounded-lg bg-[#1C1C1F] border border-[#26262A] text-slate-500 text-xs font-semibold cursor-not-allowed"
             >
-              <div>
-                {/* Top Info */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                    <img
-                      src={client.user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
-                      alt={client.user?.name || "Client"}
-                      onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"; }}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-slate-300 dark:border-slate-700 group-hover:border-emerald-400 transition-colors"
-                    />
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
-                        {client.user?.name}
-                      </h3>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">{client.user?.phone || client.user?.email}</p>
-                    </div>
-                  </div>
-                  {getStatusBadge(client.status)}
-                </div>
-
-                {/* Medical Alert Tag ⚠ */}
-                {hasMedicalAlert && (
-                  <div className="mb-3 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center space-x-2 rtl:space-x-reverse">
-                    <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 animate-pulse" />
-                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-300 truncate">
-                      {client.medicalRestrictions![0].conditionName}
-                    </span>
-                  </div>
-                )}
-
-                {/* Metrics Pill Grid */}
-                <div className="grid grid-cols-3 gap-2 py-2.5 my-2 border-y border-slate-200 dark:border-slate-800/80 text-center">
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">{t("weight")}</span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">{client.weightKg} KG</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">{t("height")}</span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">{client.heightCm} CM</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">{t("sport")}</span>
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate block">
-                      {client.sport ? (language === "ar" ? client.sport.nameAr : (client.sport.nameEn || client.sport.nameAr)) : (language === "ar" ? "لياقة" : "Fitness")}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Coaches Pills */}
-                <div className="space-y-1 mt-2 text-[11px]">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">{language === "ar" ? "الكابتن المسؤول:" : "Assigned Coach:"}</span>
-                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
-                      <span className={`font-semibold ${primaryCoach ? "text-slate-700 dark:text-slate-200" : "text-amber-600 dark:text-amber-400"}`}>
-                        {primaryCoach || (language === "ar" ? "غير محدد" : "Unassigned")}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => openAssignModal(client)}
-                        title={language === "ar" ? "تعيين أو تغيير الكابتن" : "Assign or change coach"}
-                        className="px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <UserCheck className="w-3 h-3" />
-                        <span>{language === "ar" ? (primaryCoach ? "تغيير" : "تعيين +") : (primaryCoach ? "Change" : "Assign +")}</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">{language === "ar" ? "انتهاء الاشتراك:" : "Membership Expiry:"}</span>
-                    <span className="font-semibold text-slate-700 dark:text-slate-300">{client.membershipExpiry || "2026-12-31"}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions Footer */}
-              <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between">
-                <Link
-                  href={`/clients/${client.id}`}
-                  className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center space-x-1 rtl:space-x-reverse"
-                >
-                  <span>{t("viewDetails")} (360°)</span>
-                  {dir === "rtl" ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                </Link>
-
-                <div className="flex items-center space-x-1 rtl:space-x-reverse">
-                  <button
-                    onClick={() => openAssignModal(client)}
-                    title={language === "ar" ? "تعيين / تغيير الكابتن المشرف" : "Assign Coach"}
-                    className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors cursor-pointer"
-                  >
-                    <UserCheck className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSelectedClient(JSON.parse(JSON.stringify(client)));
-                      const primary = client.coaches?.find(ca => ca.active && ca.role === "PRIMARY") || client.coaches?.find(ca => ca.active);
-                      setEditCoachId(primary?.coachId || "");
-                      setEditCoachRole(primary?.role || "PRIMARY");
-                      setIsEditModalOpen(true);
-                    }}
-                    title={language === "ar" ? "تعديل المشترك" : "Edit Athlete"}
-                    className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-colors cursor-pointer"
-                  >
-                    <Edit className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    onClick={() => handleDeleteClient(client.id, client.user?.name || "المشترك")}
-                    title={language === "ar" ? "حذف المشترك" : "Delete Athlete"}
-                    className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+              Previous
+            </button>
+            <button
+              disabled
+              className="px-3 py-1.5 rounded-lg bg-brand-crimson text-white text-xs font-semibold cursor-not-allowed opacity-75"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ADD CLIENT MODAL */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-                <PlusCircle className="w-5 h-5 text-emerald-500" />
-                <span>{language === "ar" ? "تسجيل مشترك جديد" : "Add New Athlete"}</span>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Plus className="w-5 h-5 text-brand-crimson" />
+                <span>Add New Member</span>
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateClient} className="space-y-3">
+            <form onSubmit={handleCreateClient} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                  {language === "ar" ? "الاسم بالكامل *" : "Full Name *"}
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Full Name *
                 </label>
                 <input
                   type="text"
                   required
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  placeholder={language === "ar" ? "محمد أحمد علي" : "e.g. John Doe"}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                  placeholder="Omar Hassan"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Email *
                   </label>
                   <input
                     type="email"
                     required
                     value={newEmail}
                     onChange={e => setNewEmail(e.target.value)}
-                    placeholder="user@example.com"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    placeholder="omar@example.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Phone Number
                   </label>
                   <input
                     type="text"
                     value={newPhone}
                     onChange={e => setNewPhone(e.target.value)}
                     placeholder="+20 100 000 0000"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "الوزن الحالي (KG)" : "Current Weight (KG)"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Weight (KG)
                   </label>
                   <input
                     type="number"
                     value={newWeight}
                     onChange={e => setNewWeight(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "الطول (CM)" : "Height (CM)"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Height (CM)
                   </label>
                   <input
                     type="number"
                     value={newHeight}
                     onChange={e => setNewHeight(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "الرياضة المفضلة" : "Preferred Sport"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Preferred Sport
                   </label>
                   <select
                     value={newSportId}
                     onChange={e => setNewSportId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   >
                     {sports.map(s => (
                       <option key={s.id} value={s.id}>
-                        {language === "ar" ? s.nameAr : (s.nameEn || s.nameAr)}
+                        {s.nameEn || s.nameAr}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "حالة الاشتراك" : "Membership Status"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Status
                   </label>
                   <select
                     value={newStatus}
                     onChange={e => setNewStatus(e.target.value as ClientStatus)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   >
-                    <option value="ACTIVE">{language === "ar" ? "نشط (Active)" : "Active"}</option>
-                    <option value="LEAD">{language === "ar" ? "محتمل (Lead)" : "Lead"}</option>
-                    <option value="FROZEN">{language === "ar" ? "مجمّد (Frozen)" : "Frozen"}</option>
-                    <option value="EXPIRED">{language === "ar" ? "منتهي (Expired)" : "Expired"}</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="LEAD">Lead</option>
+                    <option value="FROZEN">Frozen</option>
+                    <option value="EXPIRED">Expired</option>
                   </select>
                 </div>
               </div>
 
-              {/* Coach Assignment Selector */}
-              <div className="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 space-y-3">
+              {/* Coach Assignment */}
+              <div className="p-4 rounded-2xl bg-[#1C1C1F] border border-[#26262A] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
-                    <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{language === "ar" ? "تعيين الكابتن المشرف (اختياري)" : "Assign Supervising Coach (Optional)"}</span>
-                  </span>
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
-                    {newCoachId ? (language === "ar" ? "سيتم التعيين فوراً" : "Immediate assignment") : (language === "ar" ? "يمكن التعيين لاحقاً" : "Can assign later")}
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <UserCheck className="w-3.5 h-3.5 text-brand-crimson" />
+                    <span>Assign Supervising Coach</span>
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
-                      {language === "ar" ? "الكابتن" : "Coach"}
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Coach
                     </label>
                     <select
                       value={newCoachId}
                       onChange={e => setNewCoachId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                     >
-                      <option value="">{language === "ar" ? "-- بدون كابتن حالياً --" : "-- No Coach (Unassigned) --"}</option>
+                      <option value="">-- Unassigned --</option>
                       {coaches.map(c => (
                         <option key={c.id} value={c.id}>
-                          {c.user?.name} {c.specialties?.length ? `(${c.specialties[0]})` : ""}
+                          {c.user?.name}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
-                      {language === "ar" ? "الدور التدريبي" : "Role"}
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Role
                     </label>
                     <select
                       value={newCoachRole}
                       disabled={!newCoachId}
                       onChange={e => setNewCoachRole(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson disabled:opacity-40"
                     >
-                      <option value="PRIMARY">{language === "ar" ? "كابتن رئيسي (Primary)" : "Primary Coach"}</option>
-                      <option value="ASSISTANT">{language === "ar" ? "كابتن مساعد (Assistant)" : "Assistant Coach"}</option>
-                      <option value="NUTRITIONIST">{language === "ar" ? "أخصائي تغذية (Nutritionist)" : "Nutritionist"}</option>
-                      <option value="PHYSIOTHERAPIST">{language === "ar" ? "علاج طبيعي (Physio)" : "Physiotherapist"}</option>
+                      <option value="PRIMARY">Primary Coach</option>
+                      <option value="ASSISTANT">Assistant Coach</option>
+                      <option value="NUTRITIONIST">Nutritionist</option>
+                      <option value="PHYSIOTHERAPIST">Physiotherapist</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse pt-3">
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
+                  className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
                 >
-                  {t("cancel")}
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md"
+                  className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-[0_0_20px_rgba(240,20,37,0.4)] transition-all"
                 >
-                  {language === "ar" ? "حفظ المشترك" : "Save Athlete"}
+                  Save Member
                 </button>
               </div>
             </form>
@@ -599,176 +683,179 @@ export default function ClientsPage() {
 
       {/* EDIT CLIENT MODAL */}
       {isEditModalOpen && selectedClient && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-                <Edit className="w-5 h-5 text-blue-500" />
-                <span>{language === "ar" ? "تعديل بيانات المشترك" : "Edit Athlete Profile"}</span>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Edit className="w-5 h-5 text-brand-crimson" />
+                <span>Edit Athlete Profile</span>
               </h3>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-slate-400 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleEditSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                  {language === "ar" ? "الاسم بالكامل *" : "Full Name *"}
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Full Name *
                 </label>
                 <input
                   type="text"
                   required
                   value={selectedClient.user?.name || ""}
                   onChange={e => setSelectedClient({ ...selectedClient, user: { ...selectedClient.user, name: e.target.value } })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "البريد الإلكتروني *" : "Email Address *"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Email *
                   </label>
                   <input
                     type="email"
                     required
                     value={selectedClient.user?.email || ""}
                     onChange={e => setSelectedClient({ ...selectedClient, user: { ...selectedClient.user, email: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "رقم الهاتف" : "Phone Number"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Phone Number
                   </label>
                   <input
                     type="text"
                     value={selectedClient.user?.phone || ""}
                     onChange={e => setSelectedClient({ ...selectedClient, user: { ...selectedClient.user, phone: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "الوزن (KG)" : "Weight (KG)"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Weight (KG)
                   </label>
                   <input
                     type="number"
                     value={selectedClient.weightKg || 80}
                     onChange={e => setSelectedClient({ ...selectedClient, weightKg: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "الطول (CM)" : "Height (CM)"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Height (CM)
                   </label>
                   <input
                     type="number"
                     value={selectedClient.heightCm || 175}
                     onChange={e => setSelectedClient({ ...selectedClient, heightCm: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "الرياضة" : "Sport"}
-                  </label>
-                  <select
-                    value={selectedClient.preferredSportId || "sport-bodybuilding"}
-                    onChange={e => setSelectedClient({ ...selectedClient, preferredSportId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
-                  >
-                    {sports.map(s => (
-                      <option key={s.id} value={s.id}>
-                        {language === "ar" ? s.nameAr : (s.nameEn || s.nameAr)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "حالة الحساب" : "Account Status"}
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Status
                   </label>
                   <select
                     value={selectedClient.status}
                     onChange={e => setSelectedClient({ ...selectedClient, status: e.target.value as ClientStatus })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   >
-                    <option value="ACTIVE">{language === "ar" ? "نشط (Active)" : "Active"}</option>
-                    <option value="LEAD">{language === "ar" ? "محتمل (Lead)" : "Lead"}</option>
-                    <option value="FROZEN">{language === "ar" ? "مجمّد (Frozen)" : "Frozen"}</option>
-                    <option value="EXPIRED">{language === "ar" ? "منتهي (Expired)" : "Expired"}</option>
-                    <option value="SUSPENDED">{language === "ar" ? "موقوف (Suspended)" : "Suspended"}</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="LEAD">Lead</option>
+                    <option value="FROZEN">Frozen</option>
+                    <option value="EXPIRED">Expired</option>
+                    <option value="SUSPENDED">Suspended</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Sport
+                  </label>
+                  <select
+                    value={selectedClient.preferredSportId || "sport-bodybuilding"}
+                    onChange={e => setSelectedClient({ ...selectedClient, preferredSportId: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                  >
+                    {sports.map(s => (
+                      <option key={s.id} value={s.id}>
+                        {s.nameEn || s.nameAr}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               {/* Edit Coach Assignment */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 space-y-3">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <UserCheck className="w-3.5 h-3.5 text-blue-500" />
-                  <span>{language === "ar" ? "الكابتن المشرف المسؤول" : "Assigned Supervising Coach"}</span>
+              <div className="p-3.5 rounded-2xl bg-[#1C1C1F] border border-[#26262A] space-y-3">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-brand-crimson" />
+                  <span>Assigned Coach</span>
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
-                      {language === "ar" ? "الكابتن" : "Coach"}
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Coach
                     </label>
                     <select
                       value={editCoachId}
                       onChange={e => setEditCoachId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-blue-500"
+                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                     >
-                      <option value="">{language === "ar" ? "-- بدون كابتن (إلغاء التعيين) --" : "-- No Coach (Unassign) --"}</option>
+                      <option value="">-- No Coach (Unassign) --</option>
                       {coaches.map(c => (
                         <option key={c.id} value={c.id}>
-                          {c.user?.name} {c.specialties?.length ? `(${c.specialties[0]})` : ""}
+                          {c.user?.name}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
-                      {language === "ar" ? "الدور التدريبي" : "Role"}
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Role
                     </label>
                     <select
                       value={editCoachRole}
                       disabled={!editCoachId}
                       onChange={e => setEditCoachRole(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson disabled:opacity-40"
                     >
-                      <option value="PRIMARY">{language === "ar" ? "كابتن رئيسي (Primary)" : "Primary Coach"}</option>
-                      <option value="ASSISTANT">{language === "ar" ? "كابتن مساعد (Assistant)" : "Assistant Coach"}</option>
-                      <option value="NUTRITIONIST">{language === "ar" ? "أخصائي تغذية (Nutritionist)" : "Nutritionist"}</option>
-                      <option value="PHYSIOTHERAPIST">{language === "ar" ? "علاج طبيعي (Physio)" : "Physiotherapist"}</option>
+                      <option value="PRIMARY">Primary Coach</option>
+                      <option value="ASSISTANT">Assistant Coach</option>
+                      <option value="NUTRITIONIST">Nutritionist</option>
+                      <option value="PHYSIOTHERAPIST">Physiotherapist</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse pt-3">
+              <div className="flex items-center justify-end gap-2 pt-3">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
                 >
-                  {t("cancel")}
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md"
+                  className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-[0_0_20px_rgba(240,20,37,0.4)] transition-all"
                 >
-                  {language === "ar" ? "تأكيد التعديلات" : "Save Changes"}
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -778,20 +865,19 @@ export default function ClientsPage() {
 
       {/* QUICK ASSIGN COACH MODAL */}
       {isAssignModalOpen && assignModalClient && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
-                <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center">
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {language === "ar" ? "تعيين كابتن للمشترك" : "Assign Coach to Athlete"}
+                  <h3 className="text-base font-bold text-white">
+                    Assign Coach to Athlete
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {assignModalClient.user?.name} ({assignModalClient.user?.phone || assignModalClient.user?.email})
+                  <p className="text-[11px] text-slate-400">
+                    {assignModalClient.user?.name}
                   </p>
                 </div>
               </div>
@@ -800,7 +886,7 @@ export default function ClientsPage() {
                   setIsAssignModalOpen(false);
                   setAssignModalClient(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -808,31 +894,25 @@ export default function ClientsPage() {
 
             {/* Currently Assigned Coaches List */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                {language === "ar" ? "الكباتن المشرفون حالياً:" : "Currently Assigned Coaches:"}
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                Currently Assigned Coaches:
               </label>
 
               {assignModalClient.coaches && assignModalClient.coaches.filter(ca => ca.active).length > 0 ? (
-                <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar p-1">
+                <div className="space-y-2 max-h-36 overflow-y-auto custom-scrollbar p-1">
                   {assignModalClient.coaches.filter(ca => ca.active).map(ca => (
                     <div
                       key={ca.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 text-xs"
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs"
                     >
-                      <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-black text-xs flex items-center justify-center">
-                          {ca.coach?.user?.name ? ca.coach.user.name.slice(0, 2) : "CO"}
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-brand-crimson text-white font-black text-xs flex items-center justify-center">
+                          {ca.coach?.user?.name ? ca.coach.user.name.slice(0, 2) : "GX"}
                         </div>
                         <div>
-                          <span className="font-bold text-slate-900 dark:text-white block">{ca.coach?.user?.name || "كابتن"}</span>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                            {ca.role === "PRIMARY"
-                              ? (language === "ar" ? "كابتن رئيسي" : "Primary Coach")
-                              : ca.role === "NUTRITIONIST"
-                              ? (language === "ar" ? "أخصائي تغذية" : "Nutritionist")
-                              : ca.role === "PHYSIOTHERAPIST"
-                              ? (language === "ar" ? "علاج طبيعي" : "Physiotherapist")
-                              : (language === "ar" ? "كابتن مساعد" : "Assistant Coach")}
+                          <span className="font-bold text-white block">{ca.coach?.user?.name || "Coach"}</span>
+                          <span className="text-[10px] text-slate-400">
+                            {ca.role === "PRIMARY" ? "Primary Coach" : ca.role}
                           </span>
                         </div>
                       </div>
@@ -840,92 +920,92 @@ export default function ClientsPage() {
                       <button
                         type="button"
                         onClick={() => handleUnassignCoach(assignModalClient.id, ca.coachId)}
-                        className="px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 text-[10px] font-bold border border-red-200 dark:border-red-800/60 flex items-center gap-1 cursor-pointer transition-colors"
+                        className="px-2 py-1 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 text-[10px] font-bold border border-red-800/60 flex items-center gap-1 cursor-pointer transition-colors"
                       >
                         <Trash2 className="w-3 h-3" />
-                        <span>{language === "ar" ? "إلغاء التعيين" : "Unassign"}</span>
+                        <span>Unassign</span>
                       </button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs text-center">
-                  {language === "ar" ? "لم يتم تعيين أي كابتن لهذا المشترك بعد." : "No coaches currently assigned to this athlete."}
+                <div className="p-3 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-slate-400 text-xs text-center">
+                  No coaches currently assigned to this athlete.
                 </div>
               )}
             </div>
 
             {/* Assignment Form */}
-            <form onSubmit={handleQuickAssignSubmit} className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
-              <span className="block text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                {language === "ar" ? "+ تعيين كابتن جديد أو تغيير الكابتن الرئيسي" : "+ Assign New Coach / Switch Primary"}
+            <form onSubmit={handleQuickAssignSubmit} className="space-y-3 pt-2 border-t border-[#26262A]">
+              <span className="block text-xs font-bold text-brand-crimson">
+                + Assign New Coach / Switch Primary
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "اختر الكابتن *" : "Select Coach *"}
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">
+                    Select Coach *
                   </label>
                   <select
                     required
                     value={modalCoachId}
                     onChange={e => setModalCoachId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   >
                     {coaches.map(c => (
                       <option key={c.id} value={c.id}>
-                        {c.user?.name} {c.specialties?.length ? `(${c.specialties.slice(0, 2).join(", ")})` : ""}
+                        {c.user?.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    {language === "ar" ? "الدور التدريبي *" : "Coaching Role *"}
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">
+                    Coaching Role *
                   </label>
                   <select
                     value={modalCoachRole}
                     onChange={e => setModalCoachRole(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
                   >
-                    <option value="PRIMARY">{language === "ar" ? "كابتن رئيسي (Primary Coach)" : "Primary Coach"}</option>
-                    <option value="ASSISTANT">{language === "ar" ? "كابتن مساعد (Assistant Coach)" : "Assistant Coach"}</option>
-                    <option value="NUTRITIONIST">{language === "ar" ? "أخصائي تغذية (Nutritionist)" : "Nutritionist"}</option>
-                    <option value="PHYSIOTHERAPIST">{language === "ar" ? "أخصائي علاج طبيعي (Physio)" : "Physiotherapist"}</option>
+                    <option value="PRIMARY">Primary Coach</option>
+                    <option value="ASSISTANT">Assistant Coach</option>
+                    <option value="NUTRITIONIST">Nutritionist</option>
+                    <option value="PHYSIOTHERAPIST">Physiotherapist</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
-                  {language === "ar" ? "ملاحظات وتوجيهات الإشراف (اختياري)" : "Supervision Notes (Optional)"}
+                <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  Supervision Notes (Optional)
                 </label>
                 <input
                   type="text"
                   value={modalCoachNotes}
                   onChange={e => setModalCoachNotes(e.target.value)}
-                  placeholder={language === "ar" ? "مثال: متابعة خطة التنشيف وقياسات الأسبوع" : "e.g. Weekly check-in for cutting phase"}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                  placeholder="e.g. Focus on mobility and recovery"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse pt-2">
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => {
                     setIsAssignModalOpen(false);
                     setAssignModalClient(null);
                   }}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#1C1C1F] text-slate-300 text-xs font-bold cursor-pointer"
                 >
-                  {t("cancel")}
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-[0_0_20px_rgba(240,20,37,0.4)] cursor-pointer"
                 >
-                  {language === "ar" ? "حفظ وتأكيد التعيين ✓" : "Confirm Assignment ✓"}
+                  Confirm Assignment
                 </button>
               </div>
             </form>

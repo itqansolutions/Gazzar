@@ -317,7 +317,7 @@ export default function ProgramsPage() {
   const getGoalBadge = (g: GoalType) => {
     switch (g) {
       case "MUSCLE_GAIN":
-        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{language === "ar" ? "بناء عضلات" : "Hypertrophy"}</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">{language === "ar" ? "بناء عضلات" : "Hypertrophy"}</span>;
       case "WEIGHT_LOSS":
         return <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">{language === "ar" ? "خسارة وزن" : "Weight Loss"}</span>;
       case "STRENGTH":
@@ -347,7 +347,7 @@ export default function ProgramsPage() {
         <div
           className={`fixed bottom-5 end-5 z-50 flex items-center space-x-2.5 rtl:space-x-reverse px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold animate-in slide-in-from-bottom-5 duration-200 ${
             notification.type === "success"
-              ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30"
+              ? "bg-brand-crimson text-white border-brand-crimson shadow-[0_0_20px_rgba(240,20,37,0.38)]"
               : "bg-red-600 text-white border-red-500 shadow-red-600/30"
           }`}
         >
@@ -360,7 +360,7 @@ export default function ProgramsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-            <BookOpen className="w-6 h-6 text-emerald-500" />
+            <BookOpen className="w-6 h-6 text-brand-crimson" />
             <span>{t("navPrograms")}</span>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
               {programs.length} {language === "ar" ? "برنامج معتمد" : "programs"}
@@ -375,7 +375,7 @@ export default function ProgramsPage() {
 
         <button
           onClick={openAddModal}
-          className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+          className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
           <span>{language === "ar" ? "إنشاء برنامج تدريبي جديد +" : "Create Training Program +"}</span>
@@ -385,7 +385,7 @@ export default function ProgramsPage() {
       {/* Programs Cards Grid */}
       {programs.length === 0 ? (
         <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center mx-auto">
             <BookOpen className="w-8 h-8" />
           </div>
           <div>
@@ -400,7 +400,7 @@ export default function ProgramsPage() {
           </div>
           <button
             onClick={openAddModal}
-            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all inline-flex items-center space-x-2 rtl:space-x-reverse cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all inline-flex items-center space-x-2 rtl:space-x-reverse cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{language === "ar" ? "إنشاء أول برنامج تدريبي الآن" : "Create First Program"}</span>
@@ -426,7 +426,7 @@ export default function ProgramsPage() {
                   className="p-5 sm:p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-center space-x-3.5 rtl:space-x-reverse">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                    <div className="w-12 h-12 rounded-2xl bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg shadow-[0_0_15px_rgba(240,20,37,0.3)]">
                       <BookOpen className="w-6 h-6" />
                     </div>
                     <div>
@@ -437,7 +437,7 @@ export default function ProgramsPage() {
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">{prog.titleEn}</p>
                       <div className="flex items-center space-x-3 rtl:space-x-reverse text-xs text-slate-600 dark:text-slate-300 mt-1">
-                        <span className="flex items-center space-x-1 rtl:space-x-reverse font-bold text-emerald-600 dark:text-emerald-400">
+                        <span className="flex items-center space-x-1 rtl:space-x-reverse font-bold text-brand-crimson">
                           <Clock className="w-3.5 h-3.5" />
                           <span>{prog.durationWeeks} {language === "ar" ? "أسابيع تدريبية" : "weeks"}</span>
                         </span>
@@ -454,7 +454,7 @@ export default function ProgramsPage() {
                         setApplyProgram(prog);
                         if (clients.length > 0) setSelectedClientId(clients[0].id);
                       }}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-emerald-600/30 flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer scale-100 hover:scale-105"
+                      className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] hover:bg-[#FF2D3B]  text-white font-bold text-xs shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer scale-100 hover:scale-105"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>{language === "ar" ? "تطبيق البرنامج للمتدرب 🎯" : "Apply Program to Client 🎯"}</span>
@@ -463,7 +463,7 @@ export default function ProgramsPage() {
                     <button
                       onClick={() => openEditModal(prog)}
                       title={language === "ar" ? "تعديل البرنامج" : "Edit program"}
-                      className="p-2 rounded-xl text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -496,7 +496,7 @@ export default function ProgramsPage() {
                       {(prog.weeks || []).map(week => (
                         <div key={week.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
                           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            <span className="text-xs font-bold text-brand-crimson">
                               الأسبوع #{week.weekNumber} - {week.focusAr || "جدول تدريبي مكثف"}
                             </span>
                             <span className="text-[11px] text-slate-400">
@@ -511,7 +511,7 @@ export default function ProgramsPage() {
                                 className={`p-3 rounded-xl border text-xs space-y-1.5 flex flex-col justify-between ${
                                   day.isRestDay
                                     ? "bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-400"
-                                    : "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-500/20 text-slate-900 dark:text-white"
+                                    : "bg-[#141416] border-[#26262A] dark:border-brand-crimson/30 text-slate-900 dark:text-white"
                                 }`}
                               >
                                 <div>
@@ -524,8 +524,8 @@ export default function ProgramsPage() {
                                 </div>
 
                                 {!day.isRestDay && day.workouts && day.workouts.length > 0 && (
-                                  <div className="pt-1 border-t border-emerald-200/50 dark:border-emerald-500/20">
-                                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold block truncate">
+                                  <div className="pt-1 border-t border-[#26262A]/50 dark:border-brand-crimson/30">
+                                    <span className="text-[10px] text-brand-crimson dark:text-brand-crimson font-bold block truncate">
                                       {day.workouts[0]?.template?.titleAr || "قالب تمرين"}
                                     </span>
                                   </div>
@@ -551,7 +551,7 @@ export default function ProgramsPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-                  <BookOpen className="w-5 h-5 text-emerald-500" />
+                  <BookOpen className="w-5 h-5 text-brand-crimson" />
                   <span>{isAddModalOpen ? "تصميم برنامج تدريبي شامل وجدول الشهر" : "تعديل البرنامج التدريبي"}</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -579,7 +579,7 @@ export default function ProgramsPage() {
                     placeholder="e.g. برنامج كمال الأجسام والتضخيم - شهر 1"
                     value={titleAr}
                     onChange={e => setTitleAr(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
@@ -657,7 +657,7 @@ export default function ProgramsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5 rtl:space-x-reverse">
-                      <Sparkles className="w-4 h-4 text-emerald-500" />
+                      <Sparkles className="w-4 h-4 text-brand-crimson" />
                       <span>جدول أيام الأسبوع وتوزيع التمارين</span>
                     </h4>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -684,7 +684,7 @@ export default function ProgramsPage() {
                       onClick={() => setActiveWeekTab(idx + 1)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                         activeWeekTab === idx + 1
-                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+                          ? "bg-brand-crimson text-white shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
                           : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100"
                       }`}
                     >
@@ -710,7 +710,7 @@ export default function ProgramsPage() {
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                              <span className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                              <span className="w-6 h-6 rounded-lg bg-brand-crimson/15 text-brand-crimson font-bold text-xs flex items-center justify-center flex-shrink-0">
                                 {dayIdx + 1}
                               </span>
                               <div>
@@ -744,7 +744,7 @@ export default function ProgramsPage() {
                                       isRest ? "" : (templates[0]?.id || "")
                                     );
                                   }}
-                                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                                  className="rounded border-slate-300 text-brand-crimson focus:ring-brand-crimson w-4 h-4"
                                 />
                                 <span>يوم راحة واستشفاء 💤</span>
                               </label>
@@ -791,7 +791,7 @@ export default function ProgramsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] cursor-pointer"
                 >
                   {isAddModalOpen ? "حفظ البرنامج وجدول الشهر ✓" : "تحديث البرنامج ✓"}
                 </button>
@@ -807,7 +807,7 @@ export default function ProgramsPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                <Send className="w-5 h-5 text-emerald-500" />
+                <Send className="w-5 h-5 text-brand-crimson" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   {language === "ar" ? "تطبيق البرنامج التدريبي للمتدرب (شهر كامل)" : "Apply Program to Athlete"}
                 </h3>
@@ -818,8 +818,8 @@ export default function ProgramsPage() {
             </div>
 
             <form onSubmit={handleApplyProgramSubmit} className="space-y-4">
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/20 text-xs space-y-1.5">
-                <p className="font-bold text-emerald-800 dark:text-emerald-300">البرنامج المختار للتطبيق:</p>
+              <div className="p-4 rounded-2xl bg-[#141416] border border-[#26262A] dark:border-brand-crimson/30 text-xs space-y-1.5">
+                <p className="font-bold text-white dark:text-brand-crimson">البرنامج المختار للتطبيق:</p>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">{applyProgram.titleAr}</p>
                 <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-600 dark:text-slate-300 pt-1">
                   <span>🗓️ المدة: <strong>{applyProgram.durationWeeks} أسابيع</strong></span>
@@ -873,7 +873,7 @@ export default function ProgramsPage() {
                 <button
                   type="submit"
                   disabled={!selectedClientId}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] hover:bg-[#FF2D3B]  text-white text-xs font-bold shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] disabled:opacity-50 cursor-pointer"
                 >
                   تأكيد تطبيق البرنامج لشهر كامل 🎯
                 </button>

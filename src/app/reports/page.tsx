@@ -48,7 +48,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-          <TrendingUp className="w-6 h-6 text-emerald-400" />
+          <TrendingUp className="w-6 h-6 text-brand-crimson" />
           <span>{t("navReports")}</span>
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -62,8 +62,8 @@ export default function ReportsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-1">
           <span className="text-[11px] font-bold text-slate-400">معدل الالتزام العام</span>
-          <p className="text-2xl font-black text-emerald-400">94.2%</p>
-          <span className="text-[10px] text-emerald-400 font-semibold">+3.5% مقارنة بالشهر السابق</span>
+          <p className="text-2xl font-black text-brand-crimson">94.2%</p>
+          <span className="text-[10px] text-brand-crimson font-semibold">+3.5% مقارنة بالشهر السابق</span>
         </div>
 
         <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-1">

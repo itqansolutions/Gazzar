@@ -71,7 +71,7 @@ export function MembershipsDonut({
             {percentage}%
           </span>
           {delta && (
-            <span className="text-[11px] font-semibold text-emerald-500 dark:text-emerald-400 mt-1">
+            <span className="text-[11px] font-semibold text-emerald-500 dark:text-brand-crimson mt-1">
               {delta}
             </span>
           )}

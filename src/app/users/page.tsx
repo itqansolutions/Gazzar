@@ -191,7 +191,7 @@ export default function UsersPage() {
       case "HEAD_COACH":
         return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">⭐ {language === "ar" ? "مشرف عام" : "Head Coach"}</span>;
       case "COACH":
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">🏋️ {language === "ar" ? "كابتن" : "Coach"}</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/40">🏋️ {language === "ar" ? "كابتن" : "Coach"}</span>;
       case "CLIENT":
         return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">🏃 {language === "ar" ? "مشترك" : "Client"}</span>;
     }
@@ -203,7 +203,7 @@ export default function UsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-            <Users className="w-6 h-6 text-emerald-500" />
+            <Users className="w-6 h-6 text-brand-crimson" />
             <span>{language === "ar" ? "إدارة المستخدمين والحسابات" : "User & Account Management"}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -215,7 +215,7 @@ export default function UsersPage() {
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all self-start sm:self-auto"
+          className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all self-start sm:self-auto"
         >
           <UserPlus className="w-4 h-4" />
           <span>{language === "ar" ? "إضافة مستخدم جديد +" : "Create New User +"}</span>
@@ -226,7 +226,7 @@ export default function UsersPage() {
       {notification && (
         <div className={`p-4 rounded-2xl border text-xs font-bold flex items-center space-x-2 rtl:space-x-reverse animate-in fade-in ${
           notification.type === "success"
-            ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-300"
+            ? "bg-brand-crimson/15 border-brand-crimson/40 text-brand-crimson dark:text-brand-crimson"
             : "bg-red-500/10 border-red-500/40 text-red-600 dark:text-red-300"
         }`}>
           {notification.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
@@ -249,7 +249,7 @@ export default function UsersPage() {
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{users.filter(u => u.role === "HEAD_COACH").length}</p>
         </div>
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400">{language === "ar" ? "الكباتن (Coaches)" : "Coaches"}</p>
+          <p className="text-xs text-brand-crimson">{language === "ar" ? "الكباتن (Coaches)" : "Coaches"}</p>
           <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{users.filter(u => u.role === "COACH").length}</p>
         </div>
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm col-span-2 sm:col-span-1">
@@ -267,7 +267,7 @@ export default function UsersPage() {
             placeholder={language === "ar" ? "بحث بالاسم أو الإيميل أو الهاتف..." : "Search by name, email, phone..."}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full ps-9 pe-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="w-full ps-9 pe-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson"
           />
         </div>
 
@@ -278,7 +278,7 @@ export default function UsersPage() {
               onClick={() => setRoleFilter(r)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 roleFilter === r
-                  ? "bg-emerald-600 text-white shadow-md"
+                  ? "bg-brand-crimson text-white shadow-md"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
@@ -383,7 +383,7 @@ export default function UsersPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-                <UserPlus className="w-5 h-5 text-emerald-500" />
+                <UserPlus className="w-5 h-5 text-brand-crimson" />
                 <span>{language === "ar" ? "إضافة مستخدم جديد للنظام" : "Create New User"}</span>
               </h2>
               <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
@@ -402,7 +402,7 @@ export default function UsersPage() {
                   placeholder={language === "ar" ? "مثال: كابتن إسلام أحمد" : "e.g. John Doe"}
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-brand-crimson focus:outline-none"
                 />
               </div>
 
@@ -417,7 +417,7 @@ export default function UsersPage() {
                     placeholder="user@gxacademy.com"
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-brand-crimson focus:outline-none"
                   />
                 </div>
                 <div>
@@ -429,7 +429,7 @@ export default function UsersPage() {
                     required
                     value={formData.password}
                     onChange={e => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none font-mono"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-brand-crimson focus:outline-none font-mono"
                   />
                 </div>
               </div>
@@ -442,7 +442,7 @@ export default function UsersPage() {
                   <select
                     value={formData.role}
                     onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-brand-crimson focus:outline-none"
                   >
                     <option value="ADMIN">{language === "ar" ? "مدير نظام (Admin)" : "System Admin"}</option>
                     <option value="HEAD_COACH">{language === "ar" ? "كبير المدربين (Head Coach)" : "Head Coach"}</option>
@@ -459,14 +459,14 @@ export default function UsersPage() {
                     placeholder="+20 100 000 0000"
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-brand-crimson focus:outline-none"
                   />
                 </div>
               </div>
 
               {(formData.role === "COACH" || formData.role === "HEAD_COACH") && (
-                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
-                  <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="p-3.5 rounded-2xl bg-brand-crimson/15 border border-brand-crimson/40 space-y-3">
+                  <p className="text-xs font-bold text-brand-crimson">
                     {language === "ar" ? "🏋️ بيانات الكابتن الإضافية:" : "🏋️ Coach Details:"}
                   </p>
                   <div>
@@ -526,7 +526,7 @@ export default function UsersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md"
+                  className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md"
                 >
                   {language === "ar" ? "حفظ وإنشاء المستخدم" : "Create User"}
                 </button>

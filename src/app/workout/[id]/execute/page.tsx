@@ -183,7 +183,7 @@ export default function WorkoutExecutionPage() {
       <div className="bg-slate-900/95 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-16 z-30">
         <div>
           <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/40">
               Live Session
             </span>
             <span className="text-xs text-slate-400">
@@ -198,7 +198,7 @@ export default function WorkoutExecutionPage() {
         {/* Live Elapsed & Rest Timers */}
         <div className="flex items-center gap-2">
           {/* Workout Elapsed Timer */}
-          <div className="flex items-center space-x-2 rtl:space-x-reverse px-3 py-1.5 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-emerald-400 text-sm font-bold">
+          <div className="flex items-center space-x-2 rtl:space-x-reverse px-3 py-1.5 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-brand-crimson text-sm font-bold">
             <Clock className="w-4 h-4" />
             <span>{formatTimer(workoutSeconds)}</span>
           </div>
@@ -212,7 +212,7 @@ export default function WorkoutExecutionPage() {
 
           <button
             onClick={handleFinishWorkout}
-            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold text-xs shadow-lg shadow-emerald-500/30 transition-all scale-100 active:scale-95"
+            className="px-4 py-2 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B]  text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 active:scale-95"
           >
             {t("finishWorkout")} 🏆
           </button>
@@ -229,7 +229,7 @@ export default function WorkoutExecutionPage() {
             {/* Exercise Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-sm text-emerald-400">
+                <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-sm text-brand-crimson">
                   {exIdx + 1}
                 </div>
                 <div>
@@ -261,7 +261,7 @@ export default function WorkoutExecutionPage() {
                   key={setIdx}
                   className={`grid grid-cols-12 items-center p-2.5 rounded-2xl border transition-all ${
                     set.isCompleted
-                      ? "bg-emerald-950/20 border-emerald-500/40 text-emerald-300"
+                      ? "bg-[#141416] border-brand-crimson/40 text-brand-crimson"
                       : "bg-slate-950/70 border-slate-800 text-white"
                   }`}
                 >
@@ -281,7 +281,7 @@ export default function WorkoutExecutionPage() {
                       type="number"
                       value={set.actualWeight}
                       onChange={e => handleUpdateActual(exIdx, setIdx, "actualWeight", Number(e.target.value))}
-                      className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
                     />
                   </div>
 
@@ -291,7 +291,7 @@ export default function WorkoutExecutionPage() {
                       type="number"
                       value={set.actualReps}
                       onChange={e => handleUpdateActual(exIdx, setIdx, "actualReps", Number(e.target.value))}
-                      className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
                     />
                   </div>
 
@@ -302,7 +302,7 @@ export default function WorkoutExecutionPage() {
                       onClick={() => handleToggleSet(exIdx, setIdx)}
                       className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
                         set.isCompleted
-                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/40"
+                          ? "bg-brand-crimson text-white shadow-md shadow-[0_0_15px_rgba(240,20,37,0.35)]"
                           : "bg-slate-800 text-slate-500 hover:text-slate-200 border border-slate-700"
                       }`}
                     >
@@ -327,7 +327,7 @@ export default function WorkoutExecutionPage() {
                 <button
                   type="button"
                   onClick={() => startRestTimer(60)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-emerald-400"
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-brand-crimson"
                 >
                   60ث
                 </button>
@@ -357,7 +357,7 @@ export default function WorkoutExecutionPage() {
         {/* RPE Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-extrabold text-emerald-400 text-base">RPE: {overallRpe} / 10</span>
+            <span className="font-extrabold text-brand-crimson text-base">RPE: {overallRpe} / 10</span>
             <span className="font-bold text-slate-700 dark:text-slate-300">{getRpeDescription(overallRpe)}</span>
           </div>
           <input
@@ -367,7 +367,7 @@ export default function WorkoutExecutionPage() {
             step="1"
             value={overallRpe}
             onChange={e => setOverallRpe(Number(e.target.value))}
-            className="w-full accent-emerald-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
+            className="w-full accent-[#F01425] h-2 bg-slate-800 rounded-lg cursor-pointer"
           />
         </div>
 
@@ -380,13 +380,13 @@ export default function WorkoutExecutionPage() {
             value={clientFeedback}
             onChange={e => setClientFeedback(e.target.value)}
             placeholder="مثال: شعرت بقوة استثنائية في تمرين البنش بريس، وتجنبت السكوات لحماية الركبة..."
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-brand-crimson"
           />
         </div>
 
         <button
           onClick={handleFinishWorkout}
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-extrabold text-sm shadow-xl shadow-emerald-500/30 transition-all scale-100 hover:scale-[1.01] active:scale-95"
+          className="w-full py-3.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B]  text-white font-extrabold text-sm shadow-xl shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 hover:scale-[1.01] active:scale-95"
         >
           {t("finishWorkout")} 🏆
         </button>
@@ -396,7 +396,7 @@ export default function WorkoutExecutionPage() {
       {isCompletedModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center space-y-5 animate-in fade-in zoom-in-95">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white mx-auto shadow-xl shadow-emerald-500/30 animate-bounce">
+            <div className="w-16 h-16 rounded-full bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30 flex items-center justify-center text-white mx-auto shadow-xl shadow-[0_0_20px_rgba(240,20,37,0.38)] animate-bounce">
               <Trophy className="w-8 h-8" />
             </div>
 
@@ -412,7 +412,7 @@ export default function WorkoutExecutionPage() {
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">معدل RPE</span>
-                <span className="text-xs font-bold text-emerald-400">{overallRpe}/10</span>
+                <span className="text-xs font-bold text-brand-crimson">{overallRpe}/10</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">الجولات المنجزة</span>
@@ -425,7 +425,7 @@ export default function WorkoutExecutionPage() {
             <div className="flex flex-col gap-2 pt-2">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md"
+                className="w-full py-3 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md"
               >
                 العودة للوحة التحكم
               </button>

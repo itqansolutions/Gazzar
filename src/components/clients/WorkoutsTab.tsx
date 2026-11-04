@@ -37,7 +37,7 @@ export default function WorkoutsTab({ clientId }: WorkoutsTabProps) {
               className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
               <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center font-bold">
                   <Dumbbell className="w-5 h-5" />
                 </div>
                 <div>
@@ -54,7 +54,7 @@ export default function WorkoutsTab({ clientId }: WorkoutsTabProps) {
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                   a.status === "COMPLETED"
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                    ? "bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30"
                     : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
                 }`}>
                   {a.status === "COMPLETED" ? (language === "ar" ? "مكتمل ✓" : "Completed") : (language === "ar" ? "مجدول" : "Scheduled")}
@@ -62,7 +62,7 @@ export default function WorkoutsTab({ clientId }: WorkoutsTabProps) {
 
                 <Link
                   href={`/workout/${a.id}/execute`}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse transition-all shadow-md shadow-emerald-600/30"
+                  className="px-3 py-1.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs flex items-center space-x-1 rtl:space-x-reverse transition-all shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
                 >
                   <Play className="w-3 h-3 fill-white" />
                   <span>{language === "ar" ? "بدء التمرين" : "Start"}</span>

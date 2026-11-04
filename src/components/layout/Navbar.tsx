@@ -48,8 +48,8 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
 
   const roles: Record<UserRole, { title: string; color: string }> = {
     ADMIN: { title: "System Admin", color: "bg-red-600/20 text-red-400 border border-red-500/30" },
-    HEAD_COACH: { title: "Head Coach", color: "bg-blue-600/20 text-blue-400 border border-blue-500/30" },
-    COACH: { title: "Coach", color: "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30" },
+    HEAD_COACH: { title: "Head Coach", color: "bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/30" },
+    COACH: { title: "Coach", color: "bg-red-500/15 text-red-400 border border-red-500/30" },
     CLIENT: { title: "Athlete", color: "bg-amber-600/20 text-amber-400 border border-amber-500/30" }
   };
 
@@ -136,9 +136,10 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
                 aria-label="User account menu"
               >
                 <img
-                  src={user?.avatar || "/coach_abdullah_portrait.png"}
+                  src={user?.avatar || "/coach_dark_hero.jpg"}
                   alt={user?.name || "User"}
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-red-600/40"
+                  onError={(e) => { (e.target as HTMLImageElement).src = "/coach_dark_hero.jpg"; }}
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-brand-crimson/50"
                 />
                 <span className="hidden sm:block text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
                   {user?.name || "User"}

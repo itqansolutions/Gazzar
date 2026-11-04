@@ -36,10 +36,10 @@ export default function GoalsTab({ goals }: GoalsTabProps) {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5 rtl:space-x-reverse">
-                  <Target className="w-4 h-4 text-emerald-500" />
+                  <Target className="w-4 h-4 text-brand-crimson" />
                   <span>{g.title}</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">
                   {g.status === "IN_PROGRESS" ? (language === "ar" ? "قيد التنفيذ" : "In Progress") : g.status}
                 </span>
               </div>
@@ -47,7 +47,7 @@ export default function GoalsTab({ goals }: GoalsTabProps) {
               {g.targetValue && (
                 <div className="text-xs text-slate-600 dark:text-slate-300">
                   <span>{language === "ar" ? "الهدف المستهدف: " : "Target Value: "}</span>
-                  <strong className="text-emerald-600 dark:text-emerald-400">{g.targetValue} {g.unit || "KG"}</strong>
+                  <strong className="text-brand-crimson">{g.targetValue} {g.unit || "KG"}</strong>
                 </div>
               )}
 

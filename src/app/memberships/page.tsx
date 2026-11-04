@@ -29,7 +29,7 @@ export default function MembershipsPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-          <CreditCard className="w-6 h-6 text-emerald-400" />
+          <CreditCard className="w-6 h-6 text-brand-crimson" />
           <span>{t("navMemberships")}</span>
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -44,12 +44,12 @@ export default function MembershipsPage() {
         {plans.map(p => (
           <div
             key={p.id}
-            className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4 hover:border-emerald-500/50 transition-all flex flex-col justify-between"
+            className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4 hover:border-brand-crimson/50 transition-all flex flex-col justify-between"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">{p.nameAr}</h3>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-brand-crimson/20 text-brand-crimson">
                   {p.currency} {p.price}
                 </span>
               </div>
@@ -65,7 +65,7 @@ export default function MembershipsPage() {
               {p.sessionsCount && (
                 <div className="flex justify-between">
                   <span>عدد الحصص الفردية:</span>
-                  <span className="font-bold text-emerald-400">{p.sessionsCount} حصة</span>
+                  <span className="font-bold text-brand-crimson">{p.sessionsCount} حصة</span>
                 </div>
               )}
             </div>
@@ -96,11 +96,11 @@ export default function MembershipsPage() {
                   <td className="p-3 font-bold text-white">{m.client?.user?.name || "مشترك"}</td>
                   <td className="p-3 font-medium text-slate-700 dark:text-slate-300">{(m as any).plan?.nameAr || "باقة تدريب"}</td>
                   <td className="p-3 text-center text-slate-400">{m.startDate}</td>
-                  <td className="p-3 text-center font-semibold text-emerald-400">{m.endDate}</td>
+                  <td className="p-3 text-center font-semibold text-brand-crimson">{m.endDate}</td>
                   <td className="p-3 text-center font-bold text-white">{m.paidAmount} EGP</td>
                   <td className="p-3 text-center font-bold text-amber-400">{m.remainingAmount || 0} EGP</td>
                   <td className="p-3 text-center">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/40">
                       {m.paymentStatus}
                     </span>
                   </td>

@@ -30,7 +30,7 @@ export default function CalendarPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">
-            <CalendarIcon className="w-6 h-6 text-emerald-400" />
+            <CalendarIcon className="w-6 h-6 text-brand-crimson" />
             <span>{t("navCalendar")}</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -53,7 +53,7 @@ export default function CalendarPage() {
                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                   sess.sessionType === "GROUP"
                     ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                    : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                    : "bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/40"
                 }`}>
                   {sess.sessionType === "GROUP" ? "تدريب جماعي (Group Class)" : "تدريب فردي (Personal Training)"}
                 </span>
@@ -61,14 +61,14 @@ export default function CalendarPage() {
                 <p className="text-xs text-slate-400">الكابتن: {sess.coach?.user?.name}</p>
               </div>
 
-              <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400">
+              <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-brand-crimson">
                 <CalendarIcon className="w-5 h-5" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
               <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-700 dark:text-slate-300">
-                <Clock className="w-4 h-4 text-emerald-400" />
+                <Clock className="w-4 h-4 text-brand-crimson" />
                 <span>{new Date(sess.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
               <div className="flex items-center space-x-2 rtl:space-x-reverse text-slate-700 dark:text-slate-300">
@@ -91,7 +91,7 @@ export default function CalendarPage() {
                     <span className="font-semibold text-white">{att.client?.user.name}</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                       att.status === "PRESENT"
-                        ? "bg-emerald-500/20 text-emerald-400"
+                        ? "bg-brand-crimson/20 text-brand-crimson"
                         : "bg-amber-500/20 text-amber-400"
                     }`}>
                       {att.status}
