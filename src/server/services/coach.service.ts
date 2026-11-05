@@ -106,7 +106,7 @@ export class CoachService {
     });
 
     if (existing) {
-      throw new Error(`البريد الإلكتروني ${normalizedEmail} مسجل بالفعل لمستخدم آخر`);
+      throw new Error(`Email ${normalizedEmail} is already registered to another user`);
     }
 
     const plainPassword = data.password || "A@123456";

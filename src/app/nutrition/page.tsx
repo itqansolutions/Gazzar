@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { MealPlan, ClientProfile } from "@/types";
 import {
   Apple,
@@ -31,7 +30,6 @@ export default function NutritionPage() {
   const { user } = useAuth();
 
   const isClient = user?.role === "CLIENT";
-  const myClient = isClient && user ? db.getClients().find(c => c.userId === user.id) : null;
 
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [clients, setClients] = useState<ClientProfile[]>([]);
@@ -60,25 +58,31 @@ export default function NutritionPage() {
   const [notes, setNotes] = useState("Drink a glass of water 30 minutes before each meal, avoid refined sugars.");
   const [isActive, setIsActive] = useState(true);
 
-  const loadData = () => {
-    const allClients = db.getClients();
-    setClients(allClients);
+  const loadData = async () => {
+    try {
+      const [clientsRes, plansRes] = await Promise.all([
+        fetch("/api/clients").then((r) => r.json()),
+        fetch(isClient && user ? `/api/nutrition?clientId=${user.id}` : selectedClientId !== "ALL" ? `/api/nutrition?clientId=${selectedClientId}` : "/api/nutrition").then((r) => r.json())
+      ]);
 
-    if (isClient && myClient) {
-      setMealPlans(db.getMealPlans(myClient.id));
-    } else if (selectedClientId !== "ALL") {
-      setMealPlans(db.getMealPlans(selectedClientId));
-    } else {
-      setMealPlans(db.getMealPlans());
+      if (clientsRes.success && Array.isArray(clientsRes.data)) {
+        setClients(clientsRes.data);
+        if (clientsRes.data.length > 0 && !targetClientId) {
+          setTargetClientId(clientsRes.data[0].id);
+        }
+      }
+
+      if (plansRes.success && Array.isArray(plansRes.data)) {
+        setMealPlans(plansRes.data);
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading nutrition data:", err);
     }
   };
 
   useEffect(() => {
     loadData();
-    const handleDbChange = () => loadData();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
-  }, [isClient, myClient?.id, selectedClientId]);
+  }, [selectedClientId, user]);
 
   const openAddModal = () => {
     if (clients.length > 0) setTargetClientId(clients[0].id);
@@ -97,29 +101,39 @@ export default function NutritionPage() {
     setIsAddModalOpen(true);
   };
 
-  const handleCreatePlan = (e: React.FormEvent) => {
+  const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetClientId || !title) return;
 
-    db.createMealPlan({
-      clientId: targetClientId,
-      coachId: user?.id || "user-coach-1",
-      title,
-      dailyCalories: Number(dailyCalories),
-      proteinGrams: Number(proteinGrams),
-      carbsGrams: Number(carbsGrams),
-      fatsGrams: Number(fatsGrams),
-      waterLiters: Number(waterLiters),
-      breakfast,
-      lunch,
-      dinner,
-      snacks,
-      notes,
-      isActive
-    });
+    try {
+      const res = await fetch("/api/nutrition", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: targetClientId,
+          coachId: user?.id,
+          title,
+          dailyCalories: Number(dailyCalories),
+          proteinGrams: Number(proteinGrams),
+          carbsGrams: Number(carbsGrams),
+          fatsGrams: Number(fatsGrams),
+          waterLiters: Number(waterLiters),
+          breakfast,
+          lunch,
+          dinner,
+          snacks,
+          notes,
+          isActive
+        })
+      });
 
-    setIsAddModalOpen(false);
-    loadData();
+      if (res.ok) {
+        setIsAddModalOpen(false);
+        await loadData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error creating meal plan:", err);
+    }
   };
 
   const openEditModal = (plan: MealPlan) => {
@@ -140,41 +154,65 @@ export default function NutritionPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdatePlan = (e: React.FormEvent) => {
+  const handleUpdatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPlan) return;
 
-    db.updateMealPlan(editingPlan.id, {
-      clientId: targetClientId,
-      title,
-      dailyCalories: Number(dailyCalories),
-      proteinGrams: Number(proteinGrams),
-      carbsGrams: Number(carbsGrams),
-      fatsGrams: Number(fatsGrams),
-      waterLiters: Number(waterLiters),
-      breakfast,
-      lunch,
-      dinner,
-      snacks,
-      notes,
-      isActive
-    });
+    try {
+      const res = await fetch(`/api/nutrition/${editingPlan.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: targetClientId,
+          title,
+          dailyCalories: Number(dailyCalories),
+          proteinGrams: Number(proteinGrams),
+          carbsGrams: Number(carbsGrams),
+          fatsGrams: Number(fatsGrams),
+          waterLiters: Number(waterLiters),
+          breakfast,
+          lunch,
+          dinner,
+          snacks,
+          notes,
+          isActive
+        })
+      });
 
-    setIsEditModalOpen(false);
-    setEditingPlan(null);
-    loadData();
+      if (res.ok) {
+        setIsEditModalOpen(false);
+        setEditingPlan(null);
+        await loadData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error updating meal plan:", err);
+    }
   };
 
-  const handleToggleActive = (plan: MealPlan) => {
-    db.updateMealPlan(plan.id, { isActive: !plan.isActive });
-    loadData();
+  const handleToggleActive = async (plan: MealPlan) => {
+    try {
+      await fetch(`/api/nutrition/${plan.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !plan.isActive })
+      });
+      await loadData();
+    } catch (err) {
+      console.error("[PostgreSQL] Error toggling active status:", err);
+    }
   };
 
-  const handleDeletePlan = () => {
+  const handleDeletePlan = async () => {
     if (!deleteConfirmPlan) return;
-    db.deleteMealPlan(deleteConfirmPlan.id);
-    setDeleteConfirmPlan(null);
-    loadData();
+    try {
+      await fetch(`/api/nutrition/${deleteConfirmPlan.id}`, {
+        method: "DELETE"
+      });
+      setDeleteConfirmPlan(null);
+      await loadData();
+    } catch (err) {
+      console.error("[PostgreSQL] Error deleting meal plan:", err);
+    }
   };
 
   // Active client plan (for Client Portal)

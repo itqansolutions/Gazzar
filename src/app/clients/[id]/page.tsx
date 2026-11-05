@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { ClientProfile, BodyPart, RestrictionSeverity, CoachProfile } from "@/types";
 import {
   Scale,
@@ -122,39 +121,58 @@ export default function ClientProfilePage() {
   const currentBmi = ((client.weightKg || 80) / (heightM * heightM)).toFixed(1);
 
   // Submit Handlers
-  const handleAddMeasurement = (e: React.FormEvent) => {
+  const handleAddMeasurement = async (e: React.FormEvent) => {
     e.preventDefault();
-    db.addMeasurement(client.id, {
-      date: new Date().toISOString().slice(0, 10),
-      weightKg: Number(newWeight),
-      heightCm: client.heightCm,
-      bodyFatPercentage: Number(newBodyFat),
-      muscleMassKg: Number(newMuscleMass),
-      waistCm: Number(newWaist),
-      chestCm: Number(newChest),
-      armsCm: Number(newArms),
-      thighCm: Number(newThigh),
-      notes: measurementNotes
-    });
-    setMeasurementModalOpen(false);
-    loadClientData();
+    try {
+      const res = await fetch(`/api/clients/${client.id}/measurements`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: new Date().toISOString(),
+          weightKg: Number(newWeight),
+          heightCm: client.heightCm,
+          bodyFatPercentage: Number(newBodyFat),
+          muscleMassKg: Number(newMuscleMass),
+          waistCm: Number(newWaist),
+          chestCm: Number(newChest),
+          armsCm: Number(newArms),
+          thighCm: Number(newThigh),
+          notes: measurementNotes
+        })
+      });
+      if (res.ok) {
+        setMeasurementModalOpen(false);
+        await loadClientData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error adding measurement:", err);
+    }
   };
 
-  const handleAddMedical = (e: React.FormEvent) => {
+  const handleAddMedical = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!conditionName) return;
-    db.addMedicalRestriction(client.id, {
-      conditionName,
-      bodyPart,
-      severity,
-      description: conditionDesc,
-      restrictedMuscles: [],
-      restrictedExercises: restrictedEx.split(",").map(s => s.trim()),
-      isActive: true
-    });
-    setMedicalModalOpen(false);
-    setConditionName("");
-    loadClientData();
+    try {
+      const res = await fetch(`/api/clients/${client.id}/medical`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conditionName,
+          bodyPart,
+          severity,
+          description: conditionDesc,
+          restrictedMuscles: [],
+          restrictedExercises: restrictedEx.split(",").map(s => s.trim()).filter(Boolean)
+        })
+      });
+      if (res.ok) {
+        setMedicalModalOpen(false);
+        setConditionName("");
+        await loadClientData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error adding medical restriction:", err);
+    }
   };
 
   const handleAssignCoach = async (e: React.FormEvent) => {
@@ -175,13 +193,27 @@ export default function ClientProfilePage() {
     }
   };
 
-  const handleAddNote = (e: React.FormEvent) => {
+  const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!noteContent || isClient) return;
-    db.addClientNote(client.id, user?.id || "user-coach-1", noteType, noteContent);
-    setNoteModalOpen(false);
-    setNoteContent("");
-    loadClientData();
+    try {
+      const res = await fetch(`/api/clients/${client.id}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          authorId: user?.id,
+          noteType,
+          content: noteContent
+        })
+      });
+      if (res.ok) {
+        setNoteModalOpen(false);
+        setNoteContent("");
+        await loadClientData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error adding note:", err);
+    }
   };
 
   const tabs = [

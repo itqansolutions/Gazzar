@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { db } from "@/lib/db";
 import { Mark } from "@/components/brand/Logo";
 import {
   KPICard,
@@ -30,13 +29,18 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [, setTick] = useState(0);
+  const [dashboardData, setDashboardData] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
-    const handleDbChange = () => setTick((t) => t + 1);
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
+    fetch("/api/dashboard")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setDashboardData(json.data);
+        }
+      })
+      .catch((err) => console.error("[Dashboard] Error loading metrics:", err));
   }, []);
 
   if (!mounted || !user) return null;
@@ -44,27 +48,21 @@ export default function DashboardPage() {
   const role = user.role;
   const isClient = role === "CLIENT";
 
-  // Real Database entities
-  const clients = db.getClients(undefined, user.role, user?.id);
-  const coaches = db.getCoaches();
-  const programs = db.getPrograms();
-  const calendars = db.getCalendars();
-  const assignments = db.getAssignments();
+  // Real Database entities from API
+  const metrics = dashboardData?.metrics || {};
+  const membersCount = metrics.clientsCount ?? 0;
+  const programsCount = metrics.templatesCount ?? 0;
+  const sessionsCount = metrics.totalWorkouts ?? 0;
+  const coachesCount = metrics.coachesCount ?? 0;
 
-  // Metrics grounded strictly in application database (with reference fallbacks if db is fresh)
-  const membersCount = clients.length || 128;
-  const programsCount = programs.length || 24;
-  const sessionsCount = calendars.length + assignments.length || 316;
-  const coachesCount = coaches.length || 8;
+  const myClient = dashboardData?.recentClients?.[0] || null;
+  const clientRestrictions: any[] = [];
 
-  // Client Athlete profile
-  const myClient = clients.find((c) => c.userId === user?.id) || clients[0];
-  const clientRestrictions = myClient?.medicalRestrictions || [];
-
-  // Today's classes from DB with reference alignment
+  // Upcoming classes from PostgreSQL
+  const upcomingSessions = dashboardData?.upcomingSessions || [];
   const todayClasses =
-    calendars.length > 0
-      ? calendars.slice(0, 3).map((c) => ({
+    upcomingSessions.length > 0
+      ? upcomingSessions.map((c: any) => ({
           id: c.id,
           title: c.title,
           time: c.startTime
@@ -72,36 +70,32 @@ export default function DashboardPage() {
                 hour: "2-digit",
                 minute: "2-digit",
               })
-            : "10:00 AM",
+            : "",
           members: c.attendances?.length
             ? `${c.attendances.length} Members`
-            : "18 Members",
+            : "0 Members",
         }))
-      : [
-          { id: "ref-1", title: "CrossFit WOD", time: "10:00 AM", members: "18 Members" },
-          { id: "ref-2", title: "Strength", time: "12:00 PM", members: "12 Members" },
-          { id: "ref-3", title: "MetCon", time: "06:00 PM", members: "16 Members" },
-        ];
+      : [];
 
   // Members Activity Spline Wave Curve (Weekly)
   const activityData = [
-    { day: "Mon", members: 20 },
-    { day: "Tue", members: 38 },
-    { day: "Wed", members: 48 },
-    { day: "Thu", members: 32 },
-    { day: "Fri", members: 58 },
-    { day: "Sat", members: 72 },
-    { day: "Sun", members: 92 },
+    { day: "Mon", members: 0 },
+    { day: "Tue", members: 0 },
+    { day: "Wed", members: 0 },
+    { day: "Thu", members: 0 },
+    { day: "Fri", members: 0 },
+    { day: "Sat", members: 0 },
+    { day: "Sun", members: 0 },
   ];
 
   // Progress Overview Bar Chart (Monthly)
   const progressData = [
-    { month: "Jan", progress: 30 },
-    { month: "Feb", progress: 45 },
-    { month: "Mar", progress: 52 },
-    { month: "Apr", progress: 68 },
-    { month: "May", progress: 78 },
-    { month: "Jun", progress: 95 },
+    { month: "Jan", progress: 0 },
+    { month: "Feb", progress: 0 },
+    { month: "Mar", progress: 0 },
+    { month: "Apr", progress: 0 },
+    { month: "May", progress: 0 },
+    { month: "Jun", progress: 0 },
   ];
 
   const displayName = user?.name || "Coach Abdullah";
@@ -280,16 +274,22 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-3">
-                {todayClasses.map((cls) => (
-                  <ClassRow
-                    key={cls.id}
-                    id={cls.id}
-                    title={cls.title}
-                    time={cls.time}
-                    members={cls.members}
-                    icon={<Dumbbell className="h-4 w-4" />}
-                  />
-                ))}
+                {todayClasses.length > 0 ? (
+                  todayClasses.map((cls: any) => (
+                    <ClassRow
+                      key={cls.id}
+                      id={cls.id}
+                      title={cls.title}
+                      time={cls.time}
+                      members={cls.members}
+                      icon={<Dumbbell className="h-4 w-4" />}
+                    />
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-xs text-muted font-medium border border-dashed border-line rounded-card">
+                    No upcoming sessions scheduled yet
+                  </div>
+                )}
               </div>
             </div>
 

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { ClientAssessment, ClientProfile } from "@/types";
 import {
   Activity,
@@ -27,7 +26,6 @@ export default function AssessmentsPage() {
   const { user } = useAuth();
 
   const isClient = user?.role === "CLIENT";
-  const myClient = isClient && user ? db.getClients().find(c => c.userId === user.id) : null;
 
   const [assessments, setAssessments] = useState<ClientAssessment[]>([]);
   const [clients, setClients] = useState<ClientProfile[]>([]);
@@ -51,25 +49,31 @@ export default function AssessmentsPage() {
   const [vo2, setVo2] = useState(46.5);
   const [notes, setNotes] = useState("Great performance, noticeable increase in upper body strength and core stability.");
 
-  const loadData = () => {
-    const allClients = db.getClients();
-    setClients(allClients);
+  const loadData = async () => {
+    try {
+      const [clientsRes, assessRes] = await Promise.all([
+        fetch("/api/clients").then((r) => r.json()),
+        fetch(isClient && user ? `/api/assessments?clientId=${user.id}` : selectedClientId !== "ALL" ? `/api/assessments?clientId=${selectedClientId}` : "/api/assessments").then((r) => r.json())
+      ]);
 
-    if (isClient && myClient) {
-      setAssessments(db.getAssessments(myClient.id));
-    } else if (selectedClientId !== "ALL") {
-      setAssessments(db.getAssessments(selectedClientId));
-    } else {
-      setAssessments(db.getAssessments());
+      if (clientsRes.success && Array.isArray(clientsRes.data)) {
+        setClients(clientsRes.data);
+        if (clientsRes.data.length > 0 && !targetClientId) {
+          setTargetClientId(clientsRes.data[0].id);
+        }
+      }
+
+      if (assessRes.success && Array.isArray(assessRes.data)) {
+        setAssessments(assessRes.data);
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading assessments:", err);
     }
   };
 
   useEffect(() => {
     loadData();
-    const handleDbChange = () => loadData();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
-  }, [isClient, myClient?.id, selectedClientId]);
+  }, [isClient, user, selectedClientId]);
 
   const calcImprovement = (initial?: number, current?: number, lowerIsBetter: boolean = false) => {
     if (!initial || !current) return null;
@@ -95,26 +99,36 @@ export default function AssessmentsPage() {
     setIsAddModalOpen(true);
   };
 
-  const handleCreateAssessment = (e: React.FormEvent) => {
+  const handleCreateAssessment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetClientId || !title) return;
 
-    db.createAssessment({
-      clientId: targetClientId,
-      coachId: user?.id || "user-coach-1",
-      date,
-      title,
-      pushupsCount: Number(pushups),
-      pullupsCount: Number(pullups),
-      plankSeconds: Number(plankSec),
-      runningKmTimeSec: Number(runningSec),
-      flexibilityScore: Number(flexibility),
-      vo2Max: Number(vo2),
-      coachNotes: notes
-    });
+    try {
+      const res = await fetch("/api/assessments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: targetClientId,
+          coachId: user?.id,
+          date,
+          title,
+          pushupsCount: Number(pushups),
+          pullupsCount: Number(pullups),
+          plankSeconds: Number(plankSec),
+          runningKmTimeSec: Number(runningSec),
+          flexibilityScore: Number(flexibility),
+          vo2Max: Number(vo2),
+          coachNotes: notes
+        })
+      });
 
-    setIsAddModalOpen(false);
-    loadData();
+      if (res.ok) {
+        setIsAddModalOpen(false);
+        await loadData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error creating assessment:", err);
+    }
   };
 
   const openEditModal = (item: ClientAssessment) => {
@@ -132,33 +146,49 @@ export default function AssessmentsPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateAssessment = (e: React.FormEvent) => {
+  const handleUpdateAssessment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingAssessment) return;
 
-    db.updateAssessment(editingAssessment.id, {
-      clientId: targetClientId,
-      date,
-      title,
-      pushupsCount: Number(pushups),
-      pullupsCount: Number(pullups),
-      plankSeconds: Number(plankSec),
-      runningKmTimeSec: Number(runningSec),
-      flexibilityScore: Number(flexibility),
-      vo2Max: Number(vo2),
-      coachNotes: notes
-    });
+    try {
+      const res = await fetch(`/api/assessments/${editingAssessment.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: targetClientId,
+          date,
+          title,
+          pushupsCount: Number(pushups),
+          pullupsCount: Number(pullups),
+          plankSeconds: Number(plankSec),
+          runningKmTimeSec: Number(runningSec),
+          flexibilityScore: Number(flexibility),
+          vo2Max: Number(vo2),
+          coachNotes: notes
+        })
+      });
 
-    setIsEditModalOpen(false);
-    setEditingAssessment(null);
-    loadData();
+      if (res.ok) {
+        setIsEditModalOpen(false);
+        setEditingAssessment(null);
+        await loadData();
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error updating assessment:", err);
+    }
   };
 
-  const handleDeleteAssessment = () => {
+  const handleDeleteAssessment = async () => {
     if (!deleteConfirmAssessment) return;
-    db.deleteAssessment(deleteConfirmAssessment.id);
-    setDeleteConfirmAssessment(null);
-    loadData();
+    try {
+      await fetch(`/api/assessments/${deleteConfirmAssessment.id}`, {
+        method: "DELETE"
+      });
+      setDeleteConfirmAssessment(null);
+      await loadData();
+    } catch (err) {
+      console.error("[PostgreSQL] Error deleting assessment:", err);
+    }
   };
 
   // For Client comparison: latest vs baseline

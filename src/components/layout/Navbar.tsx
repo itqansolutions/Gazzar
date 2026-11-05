@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { db } from "@/lib/db";
 import { UserRole } from "@/types";
 import GXLogo from "@/components/brand/GXLogo";
 import {
@@ -55,8 +54,7 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }: NavbarProps) 
 
   const currentRoleInfo = user?.role ? roles[user.role] : roles.ADMIN;
 
-  const myClient = user ? db.getClients().find(c => c.userId === user.id) : null;
-  const clientProfileLink = myClient ? `/clients/${myClient.id}` : "/dashboard";
+  const clientProfileLink = user?.id ? `/clients/${user.id}` : "/dashboard";
 
   return (
     <header className="sticky top-0 z-40 bg-card/95 dark:bg-[#0c0f17]/95 backdrop-blur-md border-b border-line dark:border-[#1a1f2e] text-fg transition-colors duration-200">

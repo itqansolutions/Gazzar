@@ -285,6 +285,133 @@ export class WorkoutService {
       orderBy: { scheduledDate: "desc" }
     });
   }
+
+  /**
+   * Fetch single assignment by ID
+   */
+  async getAssignmentById(id: string) {
+    return await prisma.clientWorkoutAssignment.findUnique({
+      where: { id },
+      include: {
+        template: {
+          include: {
+            sport: true,
+            exercises: {
+              include: { exercise: true },
+              orderBy: { orderIndex: "asc" }
+            }
+          }
+        },
+        client: {
+          include: { user: true }
+        },
+        coach: {
+          include: { user: true }
+        },
+        workoutLog: {
+          include: {
+            exercises: {
+              include: {
+                exercise: true,
+                sets: { orderBy: { setNumber: "asc" } }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Save completed workout execution into PostgreSQL
+   */
+  async saveWorkoutExecution(
+    assignmentId: string,
+    data: {
+      durationMinutes: number;
+      overallRpe?: number;
+      clientFeedback?: string;
+      coachFeedback?: string;
+      exercises: Array<{
+        exerciseId: string;
+        sets: Array<{
+          setNumber: number;
+          actualWeightKg?: number;
+          actualReps?: number;
+          actualRpe?: number;
+          isCompleted?: boolean;
+        }>;
+      }>;
+    }
+  ) {
+    const assignment = await prisma.clientWorkoutAssignment.findUnique({
+      where: { id: assignmentId }
+    });
+    if (!assignment) throw new Error("Assignment not found");
+
+    return await prisma.$transaction(async (tx) => {
+      // Mark assignment as completed
+      await tx.clientWorkoutAssignment.update({
+        where: { id: assignmentId },
+        data: {
+          status: AssignmentStatus.COMPLETED,
+          completedAt: new Date()
+        }
+      });
+
+      // Create or update WorkoutLog
+      const log = await tx.workoutLog.upsert({
+        where: { assignmentId },
+        create: {
+          assignmentId,
+          clientId: assignment.clientId,
+          coachId: assignment.coachId,
+          completedAt: new Date(),
+          durationMinutes: data.durationMinutes,
+          overallRpe: data.overallRpe || 8,
+          clientFeedback: data.clientFeedback || null,
+          coachFeedback: data.coachFeedback || null,
+          isCompleted: true
+        },
+        update: {
+          completedAt: new Date(),
+          durationMinutes: data.durationMinutes,
+          overallRpe: data.overallRpe || 8,
+          clientFeedback: data.clientFeedback || null,
+          coachFeedback: data.coachFeedback || null,
+          isCompleted: true
+        }
+      });
+
+      // Create exercise logs and sets
+      if (data.exercises && data.exercises.length > 0) {
+        for (const ex of data.exercises) {
+          const exLog = await tx.workoutExerciseLog.create({
+            data: {
+              workoutLogId: log.id,
+              exerciseId: ex.exerciseId
+            }
+          });
+
+          if (ex.sets && ex.sets.length > 0) {
+            await tx.setLog.createMany({
+              data: ex.sets.map((s) => ({
+                exerciseLogId: exLog.id,
+                setNumber: s.setNumber,
+                actualWeightKg: s.actualWeightKg !== undefined ? Number(s.actualWeightKg) : null,
+                actualReps: s.actualReps !== undefined ? Number(s.actualReps) : null,
+                actualRpe: s.actualRpe !== undefined ? Number(s.actualRpe) : null,
+                isCompleted: s.isCompleted ?? true
+              }))
+            });
+          }
+        }
+      }
+
+      return log;
+    });
+  }
 }
 
 export const workoutService = new WorkoutService();
+

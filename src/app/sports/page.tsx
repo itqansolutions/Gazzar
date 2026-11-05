@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { Sport } from "@/types";
 import {
   Trophy,
@@ -37,15 +36,22 @@ export default function SportsPage() {
   const [formDescription, setFormDescription] = useState("");
   const [formCategories, setFormCategories] = useState("");
 
-  const refreshSports = () => {
-    setSports(db.getSports());
+  const refreshSports = async () => {
+    try {
+      const res = await fetch("/api/sports");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setSports(json.data);
+        }
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading sports:", err);
+    }
   };
 
   useEffect(() => {
     refreshSports();
-    const handleDbChange = () => refreshSports();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
@@ -54,7 +60,7 @@ export default function SportsPage() {
   };
 
   // Handle Add Sport
-  const handleAddSport = (e: React.FormEvent) => {
+  const handleAddSport = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const cats = formCategories
@@ -62,30 +68,37 @@ export default function SportsPage() {
         .map(c => c.trim())
         .filter(Boolean);
 
-      db.createSport({
-        nameAr: formName.trim(),
-        nameEn: formName.trim(),
-        icon: formIcon.trim() || "🏆",
-        imageUrl: formImageUrl.trim() || undefined,
-        descriptionAr: formDescription.trim() || "Certified athletic discipline",
-        descriptionEn: formDescription.trim() || "Certified athletic discipline",
-        categories: cats.length > 0 ? cats : ["Training", "Fitness"]
+      const res = await fetch("/api/sports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formName.trim(),
+          nameAr: formName.trim(),
+          nameEn: formName.trim(),
+          icon: formIcon.trim() || "🏆",
+          imageUrl: formImageUrl.trim() || undefined,
+          description: formDescription.trim() || "Certified athletic discipline",
+          categories: cats.length > 0 ? cats : ["Training", "Fitness"]
+        })
       });
 
-      refreshSports();
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to add sport");
+
+      await refreshSports();
       setIsAddModalOpen(false);
       setFormName("");
       setFormImageUrl("");
       setFormDescription("");
       setFormCategories("");
-      showNotification("Sport added successfully! ✓");
+      showNotification("Sport added successfully to database! ✓");
     } catch (err: any) {
       showNotification(err.message || "Error adding sport", "error");
     }
   };
 
   // Handle Update Sport
-  const handleUpdateSport = (e: React.FormEvent) => {
+  const handleUpdateSport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingSport) return;
 
@@ -95,33 +108,44 @@ export default function SportsPage() {
         .map(c => c.trim())
         .filter(Boolean);
 
-      db.updateSport(editingSport.id, {
-        nameAr: formName.trim(),
-        nameEn: formName.trim(),
-        icon: formIcon.trim() || "🏆",
-        imageUrl: formImageUrl.trim() || undefined,
-        descriptionAr: formDescription.trim(),
-        descriptionEn: formDescription.trim(),
-        categories: cats
+      const res = await fetch(`/api/sports/${editingSport.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formName.trim(),
+          nameAr: formName.trim(),
+          nameEn: formName.trim(),
+          icon: formIcon.trim() || "🏆",
+          description: formDescription.trim()
+        })
       });
 
-      refreshSports();
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to update sport");
+
+      await refreshSports();
       setIsEditModalOpen(false);
       setEditingSport(null);
-      showNotification("Sport updated successfully! ✓");
+      showNotification("Sport updated successfully in database! ✓");
     } catch (err: any) {
       showNotification(err.message || "Error updating sport", "error");
     }
   };
 
   // Handle Delete Sport
-  const handleDeleteSport = () => {
+  const handleDeleteSport = async () => {
     if (!deleteConfirmSport) return;
     try {
-      db.deleteSport(deleteConfirmSport.id);
-      refreshSports();
+      const res = await fetch(`/api/sports/${deleteConfirmSport.id}`, {
+        method: "DELETE"
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to delete sport");
+
+      await refreshSports();
       setDeleteConfirmSport(null);
-      showNotification("Sport deleted successfully");
+      showNotification("Sport deleted successfully from database");
     } catch (err: any) {
       showNotification(err.message || "Error deleting sport", "error");
     }

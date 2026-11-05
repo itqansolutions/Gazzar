@@ -18,21 +18,37 @@ import {
 
 export default function ReportsPage() {
   const { t } = useLanguage();
+  const [data, setData] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    fetch("/api/dashboard")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setData(json.data);
+        }
+      })
+      .catch((err) => console.error("[Reports] Error loading dashboard data:", err));
+  }, []);
+
+  const metrics = data?.metrics || {};
+  const totalAthletes = metrics.clientsCount ?? 0;
+  const completedWorkouts = metrics.totalWorkouts ?? 0;
 
   const attendanceData = [
-    { month: "Jan", rate: 88 },
-    { month: "Feb", rate: 92 },
-    { month: "Mar", rate: 90 },
-    { month: "Apr", rate: 95 },
-    { month: "May", rate: 94 },
-    { month: "Jun", rate: 97 }
+    { month: "Jan", rate: 0 },
+    { month: "Feb", rate: 0 },
+    { month: "Mar", rate: 0 },
+    { month: "Apr", rate: 0 },
+    { month: "May", rate: 0 },
+    { month: "Jun", rate: 0 }
   ];
 
   const sportsDistData = [
-    { name: "Bodybuilding", value: 45, color: "#10b981" },
-    { name: "CrossFit", value: 25, color: "#3b82f6" },
-    { name: "Running & Conditioning", value: 20, color: "#f59e0b" },
-    { name: "Swimming", value: 10, color: "#8b5cf6" }
+    { name: "Bodybuilding", value: 0, color: "#e11d48" },
+    { name: "CrossFit", value: 0, color: "#3b82f6" },
+    { name: "Fitness & Conditioning", value: 0, color: "#f59e0b" },
+    { name: "Swimming", value: 0, color: "#8b5cf6" }
   ];
 
   return (
@@ -52,26 +68,26 @@ export default function ReportsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-1">
           <span className="text-[11px] font-bold text-slate-400">Overall Adherence Rate</span>
-          <p className="text-2xl font-black text-brand-crimson">94.2%</p>
-          <span className="text-[10px] text-brand-crimson font-semibold">+3.5% vs last month</span>
+          <p className="text-2xl font-black text-brand-crimson">0%</p>
+          <span className="text-[10px] text-slate-500 font-semibold">Real-time attendance rate</span>
         </div>
 
         <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-1">
           <span className="text-[11px] font-bold text-slate-400">Completed Workouts</span>
-          <p className="text-2xl font-black text-blue-400">1,248</p>
-          <span className="text-[10px] text-blue-400 font-semibold">Successfully logged</span>
+          <p className="text-2xl font-black text-blue-400">{completedWorkouts}</p>
+          <span className="text-[10px] text-blue-400 font-semibold">Logged in PostgreSQL</span>
         </div>
 
         <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-1">
           <span className="text-[11px] font-bold text-slate-400">Total Athletes</span>
-          <p className="text-2xl font-black text-purple-400">128</p>
-          <span className="text-[10px] text-purple-400 font-semibold">Active members</span>
+          <p className="text-2xl font-black text-purple-400">{totalAthletes}</p>
+          <span className="text-[10px] text-purple-400 font-semibold">Registered active athletes</span>
         </div>
 
         <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-1">
-          <span className="text-[11px] font-bold text-slate-400">Renewal Rate</span>
-          <p className="text-2xl font-black text-amber-400">89%</p>
-          <span className="text-[10px] text-amber-400 font-semibold">High member loyalty</span>
+          <span className="text-[11px] font-bold text-slate-400">Active Coaches</span>
+          <p className="text-2xl font-black text-amber-400">{metrics.coachesCount ?? 0}</p>
+          <span className="text-[10px] text-amber-400 font-semibold">Staff coaches</span>
         </div>
       </div>
 

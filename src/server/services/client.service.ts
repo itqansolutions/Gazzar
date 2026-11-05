@@ -181,7 +181,7 @@ export class ClientService {
     });
 
     if (existingUser) {
-      throw new Error(`البريد الإلكتروني ${normalizedEmail} مسجل بالفعل لمستخدم آخر`);
+      throw new Error(`Email ${normalizedEmail} is already registered to another user`);
     }
 
     // Default password hash (A@123456) or hashed provided password

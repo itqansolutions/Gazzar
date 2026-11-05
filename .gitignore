@@ -36,4 +36,6 @@ prisma/*.db-journal
 
 # Temporary files
 tmp/
+check_hash.mjs
+reset_passwords.mjs
 

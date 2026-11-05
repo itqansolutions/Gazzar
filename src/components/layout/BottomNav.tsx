@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import {
   LayoutDashboard,
   Users,
@@ -24,9 +23,7 @@ export default function BottomNav({ onOpenSidebar }: BottomNavProps) {
   const { user } = useAuth();
 
   const isClient = user?.role === "CLIENT";
-
-  const myClient = user ? db.getClients().find(c => c.userId === user.id) : null;
-  const myProfileHref = myClient ? `/clients/${myClient.id}` : "/dashboard";
+  const myProfileHref = user?.id ? `/clients/${user.id}` : "/dashboard";
 
   const navItems = isClient
     ? [

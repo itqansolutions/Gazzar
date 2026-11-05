@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { ClientWorkoutAssignment, Exercise } from "@/types";
 import {
   Dumbbell,
@@ -63,39 +62,46 @@ export default function WorkoutExecutionPage() {
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
 
   useEffect(() => {
-    const data = db.getAssignmentById(assignmentId) || db.getAssignments()[0];
-    if (data) {
-      setAssignment(data);
+    fetch(`/api/workouts/${assignmentId}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          const data = json.data;
+          setAssignment(data);
 
-      // Initialize sets from template
-      const template = data.template || db.getTemplates()[0];
-      const initialLogs: LocalExerciseLog[] = template.exercises.map(te => {
-        const setsCount = te.targetSets || 3;
-        const targetWt = te.targetWeightKg || 50;
-        const targetRp = te.targetReps || "10";
+          // Initialize sets from template
+          const template = data.template;
+          if (template && template.exercises) {
+            const initialLogs: LocalExerciseLog[] = template.exercises.map((te: any) => {
+              const setsCount = te.targetSets || 3;
+              const targetWt = te.targetWeightKg || 50;
+              const targetRp = te.targetReps || "10";
 
-        const sets: LocalSet[] = [];
-        for (let i = 1; i <= setsCount; i++) {
-          sets.push({
-            setNumber: i,
-            targetWeight: targetWt,
-            targetReps: targetRp,
-            actualWeight: targetWt,
-            actualReps: parseInt(targetRp) || 10,
-            isCompleted: false
-          });
+              const sets: LocalSet[] = [];
+              for (let i = 1; i <= setsCount; i++) {
+                sets.push({
+                  setNumber: i,
+                  targetWeight: targetWt,
+                  targetReps: targetRp,
+                  actualWeight: targetWt,
+                  actualReps: parseInt(targetRp) || 10,
+                  isCompleted: false
+                });
+              }
+
+              return {
+                exerciseId: te.exerciseId,
+                exercise: te.exercise,
+                sets,
+                notes: te.notes || ""
+              };
+            });
+
+            setExerciseLogs(initialLogs);
+          }
         }
-
-        return {
-          exerciseId: te.exerciseId,
-          exercise: te.exercise,
-          sets,
-          notes: te.notes || ""
-        };
-      });
-
-      setExerciseLogs(initialLogs);
-    }
+      })
+      .catch((err) => console.error("[WorkoutExecution] Error loading assignment:", err));
   }, [assignmentId]);
 
   // Workout duration ticker
@@ -140,24 +146,32 @@ export default function WorkoutExecutionPage() {
     setExerciseLogs(next);
   };
 
-  const handleFinishWorkout = () => {
+  const handleFinishWorkout = async () => {
     const durationMin = Math.max(1, Math.round(workoutSeconds / 60));
 
-    db.saveWorkoutExecution(assignment?.id || assignmentId, {
-      durationMinutes: durationMin,
-      overallRpe,
-      clientFeedback,
-      exercises: exerciseLogs.map(el => ({
-        exerciseId: el.exerciseId,
-        sets: el.sets.map(s => ({
-          setNumber: s.setNumber,
-          actualWeightKg: s.actualWeight,
-          actualReps: s.actualReps,
-          actualRpe: overallRpe,
-          isCompleted: s.isCompleted
-        }))
-      }))
-    });
+    try {
+      await fetch(`/api/workouts/${assignment?.id || assignmentId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          durationMinutes: durationMin,
+          overallRpe,
+          clientFeedback,
+          exercises: exerciseLogs.map((el) => ({
+            exerciseId: el.exerciseId,
+            sets: el.sets.map((s) => ({
+              setNumber: s.setNumber,
+              actualWeightKg: s.actualWeight,
+              actualReps: s.actualReps,
+              actualRpe: overallRpe,
+              isCompleted: s.isCompleted
+            }))
+          }))
+        })
+      });
+    } catch (err) {
+      console.error("[WorkoutExecution] Error saving execution:", err);
+    }
 
     setIsCompletedModalOpen(true);
   };

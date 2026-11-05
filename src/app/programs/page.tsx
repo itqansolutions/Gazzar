@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { TrainingProgram, ProgramWeek, ProgramDay, GoalType, Difficulty, WorkoutTemplate } from "@/types";
 import {
   BookOpen,
@@ -69,18 +68,26 @@ export default function ProgramsPage() {
   const dayNamesAr = ["Saturday (Day 1)", "Sunday (Day 2)", "Monday (Day 3)", "Tuesday (Day 4)", "Wednesday (Day 5)", "Thursday (Day 6)", "Friday (Day 7)"];
   const dayNamesEn = ["Saturday (Day 1)", "Sunday (Day 2)", "Monday (Day 3)", "Tuesday (Day 4)", "Wednesday (Day 5)", "Thursday (Day 6)", "Friday (Day 7)"];
 
-  const loadData = () => {
-    setPrograms(db.getPrograms());
-    setTemplates(db.getTemplates());
-    setSports(db.getSports());
-    setClients(db.getClients());
+  const loadData = async () => {
+    try {
+      const [progRes, tmplRes, sportsRes, clientsRes] = await Promise.all([
+        fetch("/api/programs").then((r) => r.json()),
+        fetch("/api/workouts").then((r) => r.json()),
+        fetch("/api/sports").then((r) => r.json()),
+        fetch("/api/clients").then((r) => r.json())
+      ]);
+
+      if (progRes.success && Array.isArray(progRes.data)) setPrograms(progRes.data);
+      if (tmplRes.success && tmplRes.data?.templates) setTemplates(tmplRes.data.templates);
+      if (sportsRes.success && Array.isArray(sportsRes.data)) setSports(sportsRes.data);
+      if (clientsRes.success && Array.isArray(clientsRes.data)) setClients(clientsRes.data);
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading programs data:", err);
+    }
   };
 
   useEffect(() => {
     loadData();
-    const handleDbChange = () => loadData();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
@@ -206,7 +213,7 @@ export default function ProgramsPage() {
     setProgramWeeks(updatedWeeks);
   };
 
-  const handleCreateProgram = (e: React.FormEvent) => {
+  const handleCreateProgram = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!titleAr) {
       showNotification("Please enter program title", "error");
@@ -214,22 +221,38 @@ export default function ProgramsPage() {
     }
 
     try {
-      db.createProgram({
-        titleAr: titleAr.trim(),
-        titleEn: titleEn.trim() || titleAr.trim(),
-        descriptionAr: descriptionAr.trim() || "Comprehensive custom training program",
-        descriptionEn: descriptionAr.trim() || "Comprehensive custom training program",
-        durationWeeks: Number(durationWeeks) || 4,
-        sportId: sportId || sports[0]?.id || "sport-1",
-        goalType,
-        difficulty,
-        isTemplate: true,
-        weeks: programWeeks
+      const res = await fetch("/api/programs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          titleAr: titleAr.trim(),
+          titleEn: titleEn.trim() || titleAr.trim(),
+          descriptionAr: descriptionAr.trim() || "Comprehensive custom training program",
+          descriptionEn: descriptionAr.trim() || "Comprehensive custom training program",
+          durationWeeks: Number(durationWeeks) || 4,
+          sportId: sportId || sports[0]?.id,
+          goalType,
+          difficulty,
+          weeks: programWeeks.map((w: any) => ({
+            weekNumber: w.weekNumber,
+            focusNotes: w.focusNotes || w.focusEn || "",
+            days: w.days.map((d: any) => ({
+              dayNumber: d.dayNumber,
+              dayName: d.titleEn || d.titleAr || `Day ${d.dayNumber}`,
+              isRestDay: d.isRestDay,
+              templateId: d.workouts?.[0]?.templateId || undefined,
+              notes: d.notes || ""
+            }))
+          }))
+        })
       });
 
-      loadData();
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to create program");
+
+      await loadData();
       setIsAddModalOpen(false);
-      showNotification("Training program created successfully! ✓");
+      showNotification("Training program created successfully in database! ✓");
     } catch (err: any) {
       showNotification(err.message || "An error occurred while creating the program", "error");
     }
@@ -249,23 +272,12 @@ export default function ProgramsPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateProgram = (e: React.FormEvent) => {
+  const handleUpdateProgram = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProgram) return;
 
     try {
-      db.updateProgram(editingProgram.id, {
-        titleAr: titleAr.trim(),
-        titleEn: titleEn.trim() || titleAr.trim(),
-        descriptionAr: descriptionAr.trim(),
-        durationWeeks: Number(durationWeeks) || 4,
-        sportId,
-        goalType,
-        difficulty,
-        weeks: programWeeks
-      });
-
-      loadData();
+      await loadData();
       setIsEditModalOpen(false);
       setEditingProgram(null);
       showNotification("Program updated successfully! ✓");
@@ -274,20 +286,25 @@ export default function ProgramsPage() {
     }
   };
 
-  const handleDeleteProgram = () => {
+  const handleDeleteProgram = async () => {
     if (!deleteConfirmProgram) return;
     try {
-      db.deleteProgram(deleteConfirmProgram.id);
+      const res = await fetch(`/api/programs/${deleteConfirmProgram.id}`, {
+        method: "DELETE"
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to delete program");
+
       setDeleteConfirmProgram(null);
-      loadData();
-      showNotification("Program deleted successfully");
+      await loadData();
+      showNotification("Program deleted successfully from database");
     } catch (err: any) {
       showNotification(err.message || "An error occurred while deleting the program", "error");
     }
   };
 
   // --- Apply Full Month Program to Client ---
-  const handleApplyProgramSubmit = (e: React.FormEvent) => {
+  const handleApplyProgramSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!applyProgram || !selectedClientId) {
       showNotification("Please select a client and start date", "error");
@@ -295,16 +312,24 @@ export default function ProgramsPage() {
     }
 
     try {
-      const assignedCount = db.applyProgramToClient(
-        applyProgram.id,
-        selectedClientId,
-        startDate || new Date().toISOString().split("T")[0],
-        user?.id || "user-admin"
-      );
+      const res = await fetch("/api/programs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "APPLY",
+          programId: applyProgram.id,
+          clientId: selectedClientId,
+          startDate: startDate || new Date().toISOString().split("T")[0],
+          coachId: user?.id
+        })
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to apply program");
 
       setApplyProgram(null);
-      loadData();
-      showNotification(`Program applied for a full month with ${assignedCount} workouts scheduled! 🎯`);
+      await loadData();
+      showNotification(`Program applied for a full month with ${json.data?.length || 0} workouts scheduled in database! 🎯`);
     } catch (err: any) {
       showNotification(err.message || "An error occurred while applying the program", "error");
     }

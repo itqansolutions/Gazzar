@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import {
   ClientWorkoutAssignment,
   WorkoutTemplate,
@@ -43,50 +42,66 @@ export default function AssignmentsPage() {
     loadData();
   }, [user]);
 
-  const loadData = () => {
-    let allAssigns = db.getAssignments();
-    if (isClient && user) {
-      const client = db.getClientById(user.id);
-      if (client) {
-        allAssigns = db.getAssignments(client.id);
+  const loadData = async () => {
+    try {
+      const url = isClient && user?.id ? `/api/workouts?clientId=${user.id}` : "/api/workouts";
+      const [workoutsRes, clientsRes, coachesRes] = await Promise.all([
+        fetch(url).then((r) => r.json()),
+        fetch("/api/clients").then((r) => r.json()),
+        fetch("/api/coaches").then((r) => r.json())
+      ]);
+
+      if (workoutsRes.success && workoutsRes.data) {
+        setAssignments(workoutsRes.data.assignments || []);
+        setTemplates(workoutsRes.data.templates || []);
+        if (workoutsRes.data.templates?.length > 0 && !selectedTemplateId) {
+          setSelectedTemplateId(workoutsRes.data.templates[0].id);
+        }
       }
-    }
-    setAssignments(allAssigns);
 
-    const tmpls = db.getTemplates();
-    setTemplates(tmpls);
-    if (tmpls.length > 0 && !selectedTemplateId) {
-      setSelectedTemplateId(tmpls[0].id);
-    }
+      if (clientsRes.success && Array.isArray(clientsRes.data)) {
+        setClients(clientsRes.data);
+        if (clientsRes.data.length > 0 && !selectedClientId) {
+          setSelectedClientId(clientsRes.data[0].id);
+        }
+      }
 
-    const cls = db.getClients();
-    setClients(cls);
-    if (cls.length > 0 && !selectedClientId) {
-      setSelectedClientId(cls[0].id);
-    }
-
-    const chs = db.getCoaches();
-    setCoaches(chs);
-    if (chs.length > 0 && !selectedCoachId) {
-      setSelectedCoachId(chs[0].id);
+      if (coachesRes.success && Array.isArray(coachesRes.data)) {
+        setCoaches(coachesRes.data);
+        if (coachesRes.data.length > 0 && !selectedCoachId) {
+          setSelectedCoachId(coachesRes.data[0].id);
+        }
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading assignments:", err);
     }
   };
 
-  const handleAssign = (e: React.FormEvent) => {
+  const handleAssign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClientId || !selectedTemplateId) return;
 
-    db.assignWorkout({
-      clientId: selectedClientId,
-      coachId: selectedCoachId || "coach-1",
-      templateId: selectedTemplateId,
-      scheduledDate,
-      coachNotes
-    });
+    try {
+      const res = await fetch("/api/workouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: selectedClientId,
+          coachId: selectedCoachId || coaches[0]?.id || "coach-1",
+          templateId: selectedTemplateId,
+          scheduledDate,
+          coachNotes
+        })
+      });
 
-    setSuccessMessage("Workout assigned successfully! 🚀");
-    loadData();
-    setTimeout(() => setSuccessMessage(""), 4000);
+      if (res.ok) {
+        setSuccessMessage("Workout assigned successfully to PostgreSQL! 🚀");
+        await loadData();
+        setTimeout(() => setSuccessMessage(""), 4000);
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error assigning workout:", err);
+    }
   };
 
   const scheduledAssignments = assignments.filter(a => a.status === "SCHEDULED");

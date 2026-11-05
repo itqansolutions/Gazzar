@@ -137,41 +137,7 @@ async function main() {
       }
     });
 
-    // 5. Seed Coach Abdullah User & CoachProfile
-    console.log("[SEED] Verifying Coach Abdullah profile...");
-    const coachUser = await prisma.user.upsert({
-      where: { email: "abdullah@gxfitness.com" },
-      update: {
-        role: "HEAD_COACH",
-        name: "Coach Abdullah Elgazzar",
-        avatar: "/coach_dark_hero.jpg"
-      },
-      create: {
-        email: "abdullah@gxfitness.com",
-        name: "Coach Abdullah Elgazzar",
-        passwordHash,
-        role: "HEAD_COACH",
-        avatar: "/coach_dark_hero.jpg",
-        phone: "+20 100 000 0001"
-      }
-    });
-
-    await prisma.coachProfile.upsert({
-      where: { userId: coachUser.id },
-      update: {
-        specialties: ["CrossFit", "Olympic Lifting", "Strength & Conditioning"],
-        bio: "Founder & Head Coach of GX Fitness Academy. ELFIT athlete and performance director.",
-        yearsOfExperience: 10
-      },
-      create: {
-        userId: coachUser.id,
-        specialties: ["CrossFit", "Olympic Lifting", "Strength & Conditioning"],
-        bio: "Founder & Head Coach of GX Fitness Academy. ELFIT athlete and performance director.",
-        yearsOfExperience: 10
-      }
-    });
-
-    // 6. Seed Standard Exercise Bank
+    // 5. Seed Standard Exercise Bank
     console.log("[SEED] Seeding exercise bank...");
     const initialExercises = [
       {

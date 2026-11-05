@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/db";
 import { User, UserRole } from "@/types";
 import {
   Users,
@@ -37,7 +36,7 @@ export default function UsersPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: "A@123456",
+    password: "G@zzar311311",
     role: "COACH" as UserRole,
     phone: "",
     avatar: "",
@@ -47,17 +46,24 @@ export default function UsersPage() {
     heightCm: 175
   });
 
-  const [newPassword, setNewPassword] = useState("A@123456");
+  const [newPassword, setNewPassword] = useState("G@zzar311311");
 
-  const refreshUsers = () => {
-    setUsers(db.getUsers());
+  const refreshUsers = async () => {
+    try {
+      const res = await fetch("/api/users");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setUsers(json.data);
+        }
+      }
+    } catch (err) {
+      console.error("[PostgreSQL] Error loading users:", err);
+    }
   };
 
   useEffect(() => {
     refreshUsers();
-    const handleDbChange = () => refreshUsers();
-    window.addEventListener("gx_db_change", handleDbChange);
-    return () => window.removeEventListener("gx_db_change", handleDbChange);
   }, []);
 
   const showNotification = (message: string, type: "success" | "error" = "success") => {
@@ -65,7 +71,7 @@ export default function UsersPage() {
     setTimeout(() => setNotification(null), 3500);
   };
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim()) {
       showNotification("Please enter name and email", "error");
@@ -73,25 +79,30 @@ export default function UsersPage() {
     }
 
     try {
-      db.createUser({
-        name: formData.name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        role: formData.role,
-        password: formData.password || "A@123456",
-        phone: formData.phone.trim() || "+20 100 000 0000",
-        avatar: formData.avatar.trim() || undefined,
-        specialties: formData.specialties ? formData.specialties.split(",").map(s => s.trim()) : undefined,
-        yearsOfExperience: Number(formData.yearsOfExperience) || 3,
-        weightKg: Number(formData.weightKg) || 80,
-        heightCm: Number(formData.heightCm) || 175
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          role: formData.role,
+          password: formData.password || "G@zzar311311",
+          phone: formData.phone.trim() || "+20 100 000 0000",
+          avatar: formData.avatar.trim() || undefined
+        })
       });
 
-      refreshUsers();
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to create user");
+      }
+
+      await refreshUsers();
       setIsAddModalOpen(false);
       setFormData({
         name: "",
         email: "",
-        password: "A@123456",
+        password: "G@zzar311311",
         role: "COACH",
         phone: "",
         avatar: "",
@@ -100,25 +111,35 @@ export default function UsersPage() {
         weightKg: 80,
         heightCm: 175
       });
-      showNotification("User created successfully! ✓");
+      showNotification("User created successfully in database! ✓");
     } catch (err: any) {
       showNotification(err.message || "Error creating user", "error");
     }
   };
 
-  const handleUpdateUser = (e: React.FormEvent) => {
+  const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
 
     try {
-      const updatedUser = db.updateUser(selectedUser.id, {
-        name: selectedUser.name.trim(),
-        email: selectedUser.email.trim().toLowerCase(),
-        role: selectedUser.role,
-        phone: selectedUser.phone,
-        avatar: selectedUser.avatar
+      const res = await fetch(`/api/users/${selectedUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: selectedUser.name.trim(),
+          email: selectedUser.email.trim().toLowerCase(),
+          role: selectedUser.role,
+          phone: selectedUser.phone,
+          avatar: selectedUser.avatar
+        })
       });
 
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to update user");
+      }
+
+      const updatedUser = json.data;
       if (currentUser && (currentUser.id === selectedUser.id || currentUser.email.toLowerCase() === selectedUser.email.toLowerCase())) {
         updateCurrentUser({
           name: updatedUser.name,
@@ -129,25 +150,34 @@ export default function UsersPage() {
         });
       }
 
-      refreshUsers();
+      await refreshUsers();
       setIsEditModalOpen(false);
       setSelectedUser(null);
-      showNotification("User updated successfully! ✓");
+      showNotification("User updated successfully in database! ✓");
     } catch (err: any) {
       showNotification(err.message || "Error updating user", "error");
     }
   };
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser || !newPassword.trim()) return;
 
     try {
-      db.updateUser(selectedUser.id, {
-        password: newPassword.trim()
+      const res = await fetch(`/api/users/${selectedUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          password: newPassword.trim()
+        })
       });
 
-      refreshUsers();
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to reset password");
+      }
+
+      await refreshUsers();
       setIsPasswordModalOpen(false);
       setSelectedUser(null);
       setNewPassword("A@123456");
@@ -157,15 +187,23 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteUser = (id: string, name: string) => {
+  const handleDeleteUser = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete "${name}"?`)) {
       return;
     }
 
     try {
-      db.deleteUser(id);
-      refreshUsers();
-      showNotification("User deleted successfully");
+      const res = await fetch(`/api/users/${id}`, {
+        method: "DELETE"
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to delete user");
+      }
+
+      await refreshUsers();
+      showNotification("User deleted successfully from database");
     } catch (err: any) {
       showNotification(err.message || "Cannot delete this user", "error");
     }
