@@ -52,24 +52,45 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(body.password || "Gazzar@2026", 10);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: body.name.trim(),
-        role: body.role,
-        phone: body.phone || null,
-        avatar: body.avatar || null,
-        passwordHash
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        phone: true,
-        avatar: true,
-        createdAt: true
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          name: body.name.trim(),
+          role: body.role,
+          phone: body.phone || null,
+          avatar: body.avatar || null,
+          passwordHash
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          phone: true,
+          avatar: true,
+          createdAt: true
+        }
+      });
+
+      if (body.role === "CLIENT") {
+        await tx.clientProfile.create({
+          data: {
+            userId: newUser.id,
+            status: "ACTIVE"
+          }
+        });
+      } else if (body.role === "COACH" || body.role === "HEAD_COACH") {
+        await tx.coachProfile.create({
+          data: {
+            userId: newUser.id,
+            specialties: ["Strength & Conditioning", "Fitness"],
+            yearsOfExperience: 1
+          }
+        });
       }
+
+      return newUser;
     });
 
     return NextResponse.json({ success: true, data: user }, { status: 201 });

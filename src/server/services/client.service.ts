@@ -102,7 +102,7 @@ export class ClientService {
   /**
    * Fetch a single client 360 profile by ClientProfile.id or User.id
    */
-  async getClientById(id: string) {
+  async getClientById(id: string): Promise<any> {
     const client = await prisma.clientProfile.findFirst({
       where: {
         OR: [{ id }, { userId: id }]
@@ -165,6 +165,22 @@ export class ClientService {
         }
       }
     });
+
+    if (!client) {
+      // Check if user exists with role CLIENT and auto-provision missing ClientProfile
+      const user = await prisma.user.findUnique({
+        where: { id }
+      });
+      if (user && user.role === UserRole.CLIENT) {
+        await prisma.clientProfile.create({
+          data: {
+            userId: user.id,
+            status: "ACTIVE"
+          }
+        });
+        return await this.getClientById(id);
+      }
+    }
 
     return client;
   }

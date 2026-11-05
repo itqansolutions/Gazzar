@@ -60,7 +60,7 @@ export class CoachService {
   /**
    * Fetch single coach profile
    */
-  async getCoachById(id: string) {
+  async getCoachById(id: string): Promise<any> {
     const coach = await prisma.coachProfile.findFirst({
       where: {
         OR: [{ id }, { userId: id }]
@@ -91,6 +91,22 @@ export class CoachService {
         }
       }
     });
+
+    if (!coach) {
+      const user = await prisma.user.findUnique({
+        where: { id }
+      });
+      if (user && (user.role === UserRole.COACH || user.role === UserRole.HEAD_COACH)) {
+        await prisma.coachProfile.create({
+          data: {
+            userId: user.id,
+            specialties: ["General Fitness", "Strength & Conditioning"],
+            yearsOfExperience: 1
+          }
+        });
+        return await this.getCoachById(id);
+      }
+    }
 
     return coach;
   }
