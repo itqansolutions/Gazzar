@@ -68,7 +68,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const secondaryAdminNav = [
     { href: "/users", label: "Users", icon: Users, roles: ["ADMIN", "HEAD_COACH"] },
+    { href: "/templates", label: "Templates", icon: ClipboardList, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/exercises", label: "Exercises", icon: Layers, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+    { href: "/sports", label: "Sports", icon: Trophy, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
+    { href: "/assessments", label: "Assessments", icon: Activity, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/attendance", label: "Attendance", icon: CheckCircle2, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/memberships", label: "Memberships", icon: CreditCard, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/audit-logs", label: "Audit Logs", icon: ShieldAlert, roles: ["ADMIN"] }

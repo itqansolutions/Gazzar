@@ -16,7 +16,8 @@ import {
   CheckCircle,
   Play,
   PlusCircle,
-  Dumbbell
+  Dumbbell,
+  Layers
 } from "lucide-react";
 
 export default function AssignmentsPage() {
@@ -110,19 +111,33 @@ export default function AssignmentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5">
-          <ClipboardList className="w-6 h-6 text-brand-crimson" />
-          <span>{isClient ? "My Workouts & Sessions" : t("navAssignments")}</span>
-          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
-            {assignments.length}
-          </span>
-        </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          {isClient
-            ? "Your active training schedule, live workout logger, and session history"
-            : "Assign workouts to clients with live medical restriction screening & alerts"}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5">
+            <ClipboardList className="w-6 h-6 text-brand-crimson" />
+            <span>{isClient ? "My Workouts & Sessions" : t("navAssignments")}</span>
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+              {assignments.length}
+            </span>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            {isClient
+              ? "Your active training schedule, live workout logger, and session history"
+              : "Assign workouts to clients with live medical restriction screening & alerts"}
+          </p>
+        </div>
+
+        {!isClient && (
+          <div className="flex items-center space-x-2">
+            <Link
+              href="/templates"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+            >
+              <Layers className="w-4 h-4" />
+              <span>Workout Templates ➔</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* --- FOR COACH / ADMIN ONLY: ASSIGN WORKOUT FORM --- */}

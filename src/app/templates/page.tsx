@@ -387,6 +387,13 @@ export default function TemplatesPage() {
         </div>
 
         <div className="flex items-center space-x-2 rtl:space-x-reverse">
+          <Link
+            href="/assignments"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-all"
+          >
+            <Dumbbell className="w-4 h-4 text-brand-crimson" />
+            <span>Assigned Workouts</span>
+          </Link>
           <button
             onClick={openCreateModal}
             className="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all cursor-pointer"
