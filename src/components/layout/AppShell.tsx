@@ -14,10 +14,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isLoginPage = pathname === "/login";
+  const isPublicLanding = pathname === "/";
+  const isResetPassword = pathname?.startsWith("/reset-password");
+  const isPublicWhitelist = isLoginPage || isPublicLanding || isResetPassword;
 
   useEffect(() => {
-    if (!loading && !user && !isLoginPage) {
+    if (!loading && !user && !isPublicWhitelist) {
       router.replace("/login");
+      return;
+    }
+
+    if (!loading && user && isPublicLanding) {
+      router.replace("/dashboard");
       return;
     }
 
@@ -33,13 +41,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         "/sports",
         "/reports",
         "/audit-logs",
-        "/settings"
+        "/settings",
+        "/admin-public"
       ];
 
       const coachRestrictedRoutes = [
         "/users",
         "/reports",
-        "/audit-logs"
+        "/audit-logs",
+        "/admin-public"
       ];
 
       // Note: This is a UI-level UX navigation guard to prevent accidental navigation.
@@ -58,7 +68,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         router.replace("/dashboard");
       }
     }
-  }, [user, loading, isLoginPage, pathname, router]);
+  }, [user, loading, isLoginPage, isPublicLanding, pathname, router]);
 
   if (isLoginPage) {
     return (
@@ -68,7 +78,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (loading || (!user && !isLoginPage)) {
+  // Public layouts: unauthenticated users on "/" or "/reset-password"
+  if ((isPublicLanding || isResetPassword) && !user) {
+    return <>{children}</>;
+  }
+
+  if (loading || (!user && !isLoginPage && !isPublicLanding && !isResetPassword)) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] flex flex-col items-center justify-center space-y-3">
         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-red-600" />
@@ -88,8 +103,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-        <main className="flex-1 lg:ms-[240px] p-4 sm:p-6 lg:p-8 pb-24 lg:pb-12 max-w-7xl w-full mx-auto animate-in fade-in duration-200">
-          {children}
+        <main className="flex-1 lg:ms-[240px] p-4 sm:p-6 lg:p-8 pb-24 lg:pb-12 max-w-7xl w-full mx-auto animate-in fade-in duration-200 flex flex-col justify-between">
+          <div className="flex-1">{children}</div>
+          <footer className="mt-12 pt-6 border-t border-line dark:border-white/[0.06] text-center text-xs text-slate-400 dark:text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 select-none">
+            <span>&copy; {new Date().getFullYear()} GX Fitness Academy</span>
+            <span className="flex items-center">
+              Powered & Designed by{" "}
+              <a
+                href="https://itqansolutions.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-1 font-medium text-slate-600 dark:text-slate-300 hover:text-brand transition-colors"
+              >
+                Itqan Solutions
+              </a>
+            </span>
+          </footer>
         </main>
       </div>
       <BottomNav onOpenSidebar={() => setSidebarOpen(true)} />

@@ -10,8 +10,9 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "node prisma/seed.js",
+    "prisma:seed:demo": "node prisma/seed.js --demo",
     "admin:provision": "tsx scripts/provision-admin.ts",
-    "railway:start": "prisma generate && prisma db push && node prisma/seed.js && next start"
+    "railway:start": "prisma generate && prisma db push && next start"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

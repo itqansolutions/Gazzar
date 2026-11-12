@@ -8,3 +8,4 @@ export * from "./request-security";
 export * from "./user-repository";
 export * from "./auth-service";
 export * from "./admin-provisioning";
+export * from "./route-guard";

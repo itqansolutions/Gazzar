@@ -80,11 +80,48 @@ const initialEquipment = [
 ];
 
 async function main() {
+  const allowDemoSeed =
+    process.argv.includes("--demo") ||
+    process.env.SEED_DEMO_DATA === "true";
+
   console.log("[SEED] Initializing GX Database Seed...");
 
   try {
-    // 1. Seed Sports
-    console.log("[SEED] Seeding sports...");
+    // Reference lookup tables (safe idempotent catalog dictionaries)
+    console.log("[SEED] Verifying reference muscle groups and equipment...");
+    for (const mg of initialMuscleGroups) {
+      await prisma.muscleGroup.upsert({
+        where: { code: mg.code },
+        update: { nameAr: mg.nameAr, nameEn: mg.nameEn },
+        create: mg
+      });
+    }
+
+    for (const eq of initialEquipment) {
+      await prisma.equipment.upsert({
+        where: { id: eq.id },
+        update: { nameAr: eq.nameAr, nameEn: eq.nameEn },
+        create: eq
+      });
+    }
+
+    const [userCount, sportCount, exerciseCount] = await Promise.all([
+      prisma.user.count(),
+      prisma.sport.count(),
+      prisma.exercise.count()
+    ]);
+
+    const isFreshEmptyDatabase = userCount === 0 && sportCount === 0 && exerciseCount === 0;
+
+    if (!allowDemoSeed && !isFreshEmptyDatabase) {
+      console.log(
+        `[SEED] Skipping demo sports/exercises/admin on initialized database (users=${userCount}, sports=${sportCount}, exercises=${exerciseCount}). Pass --demo or SEED_DEMO_DATA=true to opt in.`
+      );
+      return;
+    }
+
+    // 1. Seed Demo Sports
+    console.log("[SEED] Seeding demo sports...");
     for (const s of initialSports) {
       await prisma.sport.upsert({
         where: { id: s.id },
@@ -100,45 +137,25 @@ async function main() {
       });
     }
 
-    // 2. Seed Muscle Groups
-    console.log("[SEED] Seeding muscle groups...");
-    for (const mg of initialMuscleGroups) {
-      await prisma.muscleGroup.upsert({
-        where: { code: mg.code },
-        update: { nameAr: mg.nameAr, nameEn: mg.nameEn },
-        create: mg
+    // 2. Seed/Verify Default Admin only if no ADMIN user exists (never overwrite existing admin password/profile)
+    const existingAdmin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+    if (!existingAdmin) {
+      console.log("[SEED] Creating initial ADMIN account (admin@gx.com)...");
+      const passwordHash = "$2a$10$s.YJQkOnTwqWdvq.9A4bw.S7z7mIHn1NoofWXdeJYELGShNKb4Oze";
+      await prisma.user.create({
+        data: {
+          email: "admin@gx.com",
+          name: "Abdullah Elgazzar",
+          passwordHash,
+          role: "ADMIN"
+        }
       });
+    } else {
+      console.log("[SEED] Existing ADMIN account detected; skipping default admin creation.");
     }
 
-    // 3. Seed Equipment
-    console.log("[SEED] Seeding equipment...");
-    for (const eq of initialEquipment) {
-      await prisma.equipment.upsert({
-        where: { id: eq.id },
-        update: { nameAr: eq.nameAr, nameEn: eq.nameEn },
-        create: eq
-      });
-    }
-
-    // 4. Seed/Verify Admin User
-    console.log("[SEED] Verifying ADMIN account...");
-    const passwordHash = "$2a$10$s.YJQkOnTwqWdvq.9A4bw.S7z7mIHn1NoofWXdeJYELGShNKb4Oze"; // G@zzar311311
-    const adminUser = await prisma.user.upsert({
-      where: { email: "admin@gx.com" },
-      update: {
-        role: "ADMIN",
-        name: "Abdullah Elgazzar"
-      },
-      create: {
-        email: "admin@gx.com",
-        name: "Abdullah Elgazzar",
-        passwordHash,
-        role: "ADMIN"
-      }
-    });
-
-    // 5. Seed Standard Exercise Bank
-    console.log("[SEED] Seeding exercise bank...");
+    // 3. Seed Demo Exercise Bank (+ ExerciseSport join rows)
+    console.log("[SEED] Seeding demo exercise bank...");
     const initialExercises = [
       {
         id: "ex-bench-press",
@@ -299,11 +316,26 @@ async function main() {
         },
         create: ex
       });
+
+      await prisma.exerciseSport.upsert({
+        where: {
+          exerciseId_sportId: {
+            exerciseId: ex.id,
+            sportId: ex.sportId
+          }
+        },
+        update: {},
+        create: {
+          exerciseId: ex.id,
+          sportId: ex.sportId
+        }
+      });
     }
 
-    console.log("[SEED] Database seed completed successfully!");
+    console.log("[SEED] Database demo seed completed successfully!");
   } catch (err) {
     console.error("[SEED] Error during database initialization:", err);
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

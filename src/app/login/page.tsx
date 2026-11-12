@@ -310,6 +310,19 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* System & Design Attribution */}
+        <div className="pt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+          <span>Powered & Designed by </span>
+          <a
+            href="https://itqansolutions.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-slate-700 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+          >
+            Itqan Solutions
+          </a>
+        </div>
+
         {/* Bottom spacing before viewport edge */}
         <div className="h-6 sm:h-8 flex-shrink-0" />
       </div>

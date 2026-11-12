@@ -4,10 +4,16 @@ export class NutritionService {
   /**
    * Get meal plans
    */
-  async getMealPlans(clientId?: string) {
+  async getMealPlans(clientId?: string, allowedClientIds?: string[]) {
     const where: any = {};
+    if (allowedClientIds !== undefined) {
+      where.clientId = { in: allowedClientIds };
+    }
     if (clientId && clientId !== "ALL") {
-      where.OR = [{ clientId }, { client: { userId: clientId } }];
+      where.AND = [
+        ...(where.AND || []),
+        { OR: [{ clientId }, { client: { userId: clientId } }] }
+      ];
     }
 
     return await prisma.mealPlan.findMany({

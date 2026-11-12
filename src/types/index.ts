@@ -87,6 +87,9 @@ export interface ClientProfile {
   progressPhotos?: ClientProgressPhoto[];
   assessments?: ClientAssessment[];
   workoutAssignments?: ClientWorkoutAssignment[];
+  programAssignments?: ProgramAssignment[];
+  nutritionAssignments?: ClientNutritionAssignment[];
+  checkInSchedule?: AthleteCheckInSchedule | null;
   notes?: ClientNote[];
   createdAt: string;
 }
@@ -112,6 +115,15 @@ export interface Sport {
   descriptionAr?: string;
   descriptionEn?: string;
   categories: string[];
+  isActive?: boolean;
+  _count?: {
+    exercises?: number;
+    exerciseSports?: number;
+    templates?: number;
+    programs?: number;
+    clients?: number;
+    sessions?: number;
+  };
 }
 
 export interface MuscleGroup {
@@ -125,6 +137,13 @@ export interface Equipment {
   id: string;
   nameAr: string;
   nameEn: string;
+}
+
+export interface ExerciseSportLink {
+  exerciseId: string;
+  sportId: string;
+  assignedAt: string;
+  sport?: Sport;
 }
 
 export interface Exercise {
@@ -143,12 +162,16 @@ export interface Exercise {
   thumbnailUrl?: string;
   difficulty: Difficulty;
   metricType: MetricType;
-  sportId: string;
-  sport?: Sport;
-  primaryMuscleId?: string;
-  primaryMuscle?: MuscleGroup;
-  equipmentId?: string;
-  equipment?: Equipment;
+  isActive?: boolean;
+  sportId?: string | null;
+  sport?: Sport | null;
+  sportIds?: string[];
+  sports?: Sport[];
+  exerciseSports?: ExerciseSportLink[];
+  primaryMuscleId?: string | null;
+  primaryMuscle?: MuscleGroup | null;
+  equipmentId?: string | null;
+  equipment?: Equipment | null;
   contraindicatedBodyParts: BodyPart[];
 }
 
@@ -158,16 +181,16 @@ export interface WorkoutTemplateExercise {
   exerciseId: string;
   exercise: Exercise;
   orderIndex: number;
-  targetSets?: number;
-  targetReps?: string;
-  targetWeightKg?: number;
-  targetDistanceKm?: number;
-  targetTimeSeconds?: number;
-  targetPace?: string;
-  targetRounds?: number;
-  restSeconds?: number;
-  tempo?: string;
-  notes?: string;
+  targetSets?: number | null;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  restSeconds?: number | null;
+  tempo?: string | null;
+  notes?: string | null;
 }
 
 export interface WorkoutTemplate {
@@ -181,23 +204,172 @@ export interface WorkoutTemplate {
   difficulty: Difficulty;
   creatorId?: string;
   creator?: CoachProfile;
+  isActive?: boolean;
+  _count?: {
+    programWorkouts?: number;
+    assignments?: number;
+    exercises?: number;
+  };
   exercises: WorkoutTemplateExercise[];
   createdAt: string;
+}
+
+export type ProgramLifecycleStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
+
+export type NutritionAssignmentMode = "INHERITED" | "CUSTOM_OVERRIDE" | "MANUAL";
+
+export interface NutritionProgram {
+  id: string;
+  title: string;
+  description?: string | null;
+  goalType?: GoalType | null;
+  dailyCalories?: number | null;
+  proteinGrams?: number | null;
+  carbsGrams?: number | null;
+  fatsGrams?: number | null;
+  waterLiters?: number | null;
+  breakfast?: string | null;
+  lunch?: string | null;
+  dinner?: string | null;
+  snacks?: string | null;
+  notes?: string | null;
+  mealsJson?: NutritionDayPlan[] | NutritionMeal[] | unknown;
+  isActive: boolean;
+  creatorId?: string | null;
+  creator?: CoachProfile | null;
+  _count?: {
+    trainingPrograms?: number;
+    clientAssignments?: number;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface NutritionFoodItem {
+  id: string;
+  nameEn: string;
+  nameAr?: string;
+  servingSize?: number;
+  servingUnit?: string;
+  quantity: number;
+  calories?: number | null;
+  proteinGrams?: number | null;
+  carbsGrams?: number | null;
+  fatsGrams?: number | null;
+  notes?: string | null;
+}
+
+export interface NutritionMeal {
+  id: string;
+  mealName: string;
+  mealTime?: string;
+  instructions?: string | null;
+  foodItems: NutritionFoodItem[];
+}
+
+export interface NutritionDayPlan {
+  dayNumber: number;
+  dayTitle?: string;
+  meals: NutritionMeal[];
+  targetCalories?: number | null;
+  targetProtein?: number | null;
+  targetCarbs?: number | null;
+  targetFats?: number | null;
+  targetWaterLiters?: number | null;
+  notes?: string | null;
+}
+
+export interface LoggedFoodItem {
+  id: string;
+  foodName: string;
+  servingSize?: number;
+  servingUnit?: string;
+  quantity?: number;
+  calories?: number | null;
+  proteinGrams?: number | null;
+  carbsGrams?: number | null;
+  fatsGrams?: number | null;
+  isCustomItem?: boolean;
+}
+
+export interface LoggedMeal {
+  id: string;
+  mealName: string;
+  loggedAt?: string;
+  foodItems: LoggedFoodItem[];
+  calories?: number | null;
+  proteinGrams?: number | null;
+  carbsGrams?: number | null;
+  fatsGrams?: number | null;
+  notes?: string | null;
+}
+
+export interface DailyNutritionLog {
+  id: string;
+  clientId: string;
+  client?: ClientProfile;
+  nutritionAssignmentId?: string | null;
+  nutritionAssignment?: ClientNutritionAssignment | null;
+  date: string;
+  calories: number;
+  proteinGrams: number;
+  carbsGrams: number;
+  fatsGrams: number;
+  waterLiters: number;
+  isManualEntry: boolean;
+  loggedMealsJson?: LoggedMeal[] | unknown;
+  clientNotes?: string | null;
+  coachFeedback?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NutritionAdherenceSummary {
+  clientId: string;
+  dateFrom: string;
+  dateTo: string;
+  totalDays: number;
+  loggedDays: number;
+  missingLogDays: string[];
+  avgCalories: number;
+  avgProtein: number;
+  avgCarbs: number;
+  avgFats: number;
+  avgWater: number;
+  plannedDailyCalories?: number | null;
+  plannedDailyProtein?: number | null;
+  plannedDailyCarbs?: number | null;
+  plannedDailyFats?: number | null;
+  plannedDailyWater?: number | null;
+  calorieAdherencePercentage?: number | null;
+  proteinAdherencePercentage?: number | null;
+  waterAdherencePercentage?: number | null;
+  overallComplianceScore: number;
 }
 
 export interface TrainingProgram {
   id: string;
   titleAr: string;
   titleEn: string;
-  descriptionAr?: string;
-  descriptionEn?: string;
+  descriptionAr?: string | null;
+  descriptionEn?: string | null;
   durationWeeks: number;
   sportId: string;
   sport?: Sport;
   goalType: GoalType;
   difficulty: Difficulty;
-  creatorId?: string;
+  creatorId?: string | null;
+  creator?: CoachProfile | null;
+  nutritionProgramId?: string | null;
+  nutritionProgram?: NutritionProgram | null;
   isTemplate: boolean;
+  isActive?: boolean;
+  status?: ProgramLifecycleStatus;
+  _count?: {
+    weeks?: number;
+    assignments?: number;
+    programAssignments?: number;
+  };
   weeks?: ProgramWeek[];
   createdAt: string;
 }
@@ -206,8 +378,8 @@ export interface ProgramWeek {
   id: string;
   programId: string;
   weekNumber: number;
-  focusAr?: string;
-  focusEn?: string;
+  focusAr?: string | null;
+  focusEn?: string | null;
   days: ProgramDay[];
 }
 
@@ -225,9 +397,72 @@ export interface ProgramWorkout {
   id: string;
   dayId: string;
   templateId: string;
-  template: WorkoutTemplate;
+  template?: WorkoutTemplate;
   orderIndex: number;
 }
+
+export interface ProgramAssignment {
+  id: string;
+  clientId: string;
+  programId: string;
+  coachId: string;
+  startDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+  notes?: string | null;
+  program?: TrainingProgram;
+  createdAt?: string;
+}
+
+export interface ClientNutritionAssignment {
+  id: string;
+  clientId: string;
+  client?: ClientProfile;
+  coachId?: string | null;
+  coach?: CoachProfile | null;
+  nutritionProgramId?: string | null;
+  nutritionProgram?: NutritionProgram | null;
+  programAssignmentId?: string | null;
+  mode: NutritionAssignmentMode;
+  title: string;
+  description?: string | null;
+  dailyCalories?: number | null;
+  proteinGrams?: number | null;
+  carbsGrams?: number | null;
+  fatsGrams?: number | null;
+  waterLiters?: number | null;
+  breakfast?: string | null;
+  lunch?: string | null;
+  dinner?: string | null;
+  snacks?: string | null;
+  notes?: string | null;
+  mealsJson?: unknown;
+  startDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+}
+
+export interface ClientWorkoutAssignmentExercise {
+  id: string;
+  assignmentId: string;
+  exerciseId: string;
+  exercise?: Exercise;
+  exerciseNameEn?: string | null;
+  metricType: MetricType;
+  orderIndex: number;
+  targetSets?: number | null;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  restSeconds?: number | null;
+  tempo?: string | null;
+  notes?: string | null;
+}
+
+export type EffectiveAssignmentStatus = "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED" | "MISSED";
 
 export interface ClientWorkoutAssignment {
   id: string;
@@ -235,14 +470,23 @@ export interface ClientWorkoutAssignment {
   client?: ClientProfile;
   coachId: string;
   coach?: CoachProfile;
+  sourceType?: "INDIVIDUAL" | "TEMPLATE" | "PROGRAM";
+  title?: string | null;
+  description?: string | null;
   templateId?: string;
   template?: WorkoutTemplate;
   programId?: string;
   program?: TrainingProgram;
+  programAssignmentId?: string | null;
+  programWeekNumber?: number | null;
+  programDayNumber?: number | null;
+  programDayTitle?: string | null;
   scheduledDate: string;
   status: AssignmentStatus;
+  effectiveStatus?: EffectiveAssignmentStatus;
   completedAt?: string;
   coachNotes?: string;
+  exercises?: ClientWorkoutAssignmentExercise[];
   workoutLog?: WorkoutLog;
 }
 
@@ -252,10 +496,16 @@ export interface SetLog {
   setNumber: number;
   targetReps?: string;
   targetWeightKg?: number;
+  targetDistanceKm?: number;
+  targetTimeSeconds?: number;
+  targetPace?: string;
+  targetRounds?: number;
   actualReps?: number;
   actualWeightKg?: number;
   actualDistanceKm?: number;
   actualTimeSeconds?: number;
+  actualPace?: string;
+  actualRounds?: number;
   actualRpe?: number;
   isCompleted: boolean;
 }
@@ -298,6 +548,27 @@ export interface ClientMeasurementHistory {
   armsCm?: number;
   thighCm?: number;
   notes?: string;
+}
+
+export interface AthleteCheckInSchedule {
+  id: string;
+  clientId: string;
+  configuredByCoachId?: string | null;
+  weightFrequencyDays?: number | null;
+  measurementFrequencyDays?: number | null;
+  otherReadingFrequencyDays?: number | null;
+  photoFrequencyDays?: number | null;
+  lastWeightAt?: string | null;
+  lastMeasurementAt?: string | null;
+  lastOtherReadingAt?: string | null;
+  lastPhotoAt?: string | null;
+  nextWeightDueAt?: string | null;
+  nextMeasurementDueAt?: string | null;
+  nextOtherReadingDueAt?: string | null;
+  nextPhotoDueAt?: string | null;
+  notes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ClientGoal {

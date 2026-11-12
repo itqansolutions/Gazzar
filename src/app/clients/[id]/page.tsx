@@ -20,7 +20,11 @@ import {
   X,
   Shield,
   CheckCircle,
-  Calendar
+  Calendar,
+  Apple,
+  Clock,
+  Activity,
+  Layers
 } from "lucide-react";
 
 import MeasurementsTab from "@/components/clients/MeasurementsTab";
@@ -28,8 +32,12 @@ import MedicalTab from "@/components/clients/MedicalTab";
 import GoalsTab from "@/components/clients/GoalsTab";
 import CoachesTab from "@/components/clients/CoachesTab";
 import WorkoutsTab from "@/components/clients/WorkoutsTab";
+import NutritionTab from "@/components/clients/NutritionTab";
 import PhotosTab from "@/components/clients/PhotosTab";
 import NotesTab from "@/components/clients/NotesTab";
+import CheckInsTab from "@/components/clients/CheckInsTab";
+import AssessmentsTab from "@/components/clients/AssessmentsTab";
+import ProgramTab from "@/components/clients/ProgramTab";
 
 export default function ClientProfilePage() {
   const params = useParams();
@@ -39,7 +47,19 @@ export default function ClientProfilePage() {
   const { user } = useAuth();
 
   const [client, setClient] = useState<ClientProfile | null>(null);
-  const [activeTab, setActiveTab] = useState<"measurements" | "medical" | "goals" | "coaches" | "workouts" | "photos" | "notes">("measurements");
+  const [activeTab, setActiveTab] = useState<
+    | "checkins"
+    | "program"
+    | "workouts"
+    | "nutrition"
+    | "measurements"
+    | "assessments"
+    | "photos"
+    | "medical"
+    | "goals"
+    | "coaches"
+    | "notes"
+  >("checkins");
 
   // Modals
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
@@ -217,12 +237,16 @@ export default function ClientProfilePage() {
   };
 
   const tabs = [
+    { id: "checkins", label: "Check-in Schedule & Compliance", icon: Clock },
+    { id: "program", label: "Active Training Program", icon: Layers },
+    { id: "workouts", label: "Assigned Workouts", icon: Dumbbell },
+    { id: "nutrition", label: "Nutrition & Macros", icon: Apple },
     { id: "measurements", label: "Measurements & Weight Log", icon: Scale },
+    { id: "assessments", label: "Physical Assessments", icon: Activity, badge: (client.assessments || []).length },
+    { id: "photos", label: "Progress Gallery", icon: Camera },
     { id: "medical", label: "Medical Restrictions & Cues", icon: AlertTriangle, badge: restrictions.length },
     { id: "goals", label: "Training Goals", icon: Award },
     { id: "coaches", label: "Assigned Coaches", icon: Users },
-    { id: "workouts", label: "Assigned Workouts", icon: Dumbbell },
-    { id: "photos", label: "Progress Gallery", icon: Camera },
     ...(isClient ? [] : [{ id: "notes", label: "Coach Notes", icon: FileText }])
   ];
 
@@ -390,6 +414,33 @@ export default function ClientProfilePage() {
 
       {/* Tab Contents View */}
       <div className="animate-in fade-in duration-150">
+        {activeTab === "checkins" && (
+          <CheckInsTab
+            clientId={client.id}
+            isClient={isClient}
+            onOpenMeasurementModal={() => setMeasurementModalOpen(true)}
+            onRefresh={loadClientData}
+          />
+        )}
+
+        {activeTab === "program" && (
+          <ProgramTab
+            clientId={client.id}
+            isClient={isClient}
+            programAssignments={(client as any).programAssignments || []}
+            workoutAssignments={client.workoutAssignments || []}
+          />
+        )}
+
+        {activeTab === "assessments" && (
+          <AssessmentsTab
+            clientId={client.id}
+            assessments={client.assessments || []}
+            isClient={isClient}
+            onRefresh={loadClientData}
+          />
+        )}
+
         {activeTab === "measurements" && (
           <MeasurementsTab
             measurements={measurements}
@@ -432,6 +483,13 @@ export default function ClientProfilePage() {
         {activeTab === "workouts" && (
           <WorkoutsTab
             clientId={client.id}
+          />
+        )}
+
+        {activeTab === "nutrition" && (
+          <NutritionTab
+            clientId={client.id}
+            isClient={isClient}
           />
         )}
 

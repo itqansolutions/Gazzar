@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { ClientWorkoutAssignment, Exercise } from "@/types";
+import { ClientWorkoutAssignment, Exercise, MetricType } from "@/types";
 import {
   Dumbbell,
   CheckCircle2,
@@ -24,16 +24,28 @@ import {
 
 interface LocalSet {
   setNumber: number;
-  targetWeight: number;
+  targetWeight: number | null;
   targetReps: string;
+  targetDistanceKm: number | null;
+  targetTimeSeconds: number | null;
+  targetPace: string | null;
+  targetRounds: number | null;
   actualWeight: number;
   actualReps: number;
+  actualDistanceKm: number;
+  actualTimeSeconds: number;
+  actualPace: string;
+  actualRounds: number;
   isCompleted: boolean;
 }
 
 interface LocalExerciseLog {
   exerciseId: string;
-  exercise: Exercise;
+  exerciseName: string;
+  metricType: MetricType;
+  restSeconds: number;
+  tempo?: string | null;
+  exercise?: Exercise;
   sets: LocalSet[];
   notes: string;
 }
@@ -56,10 +68,15 @@ export default function WorkoutExecutionPage() {
   const [restSecondsLeft, setRestSecondsLeft] = useState(0);
   const [isRestActive, setIsRestActive] = useState(false);
 
-  // Completion Form
+  // Completion / Progress / Skip Form
   const [overallRpe, setOverallRpe] = useState(8);
   const [clientFeedback, setClientFeedback] = useState("");
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
+  const [isSkipModalOpen, setIsSkipModalOpen] = useState(false);
+  const [skipReason, setSkipReason] = useState("");
+  const [savingAction, setSavingAction] = useState<"SAVE_PROGRESS" | "COMPLETE" | "SKIP" | null>(null);
+  const [actionToast, setActionToast] = useState("");
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     fetch(`/api/workouts/${assignmentId}`)
@@ -69,31 +86,78 @@ export default function WorkoutExecutionPage() {
           const data = json.data;
           setAssignment(data);
 
-          // Initialize sets from template
-          const template = data.template;
-          if (template && template.exercises) {
-            const initialLogs: LocalExerciseLog[] = template.exercises.map((te: any) => {
-              const setsCount = te.targetSets || 3;
-              const targetWt = te.targetWeightKg || 50;
-              const targetRp = te.targetReps || "10";
+          if (data.workoutLog) {
+            if (typeof data.workoutLog.overallRpe === "number") {
+              setOverallRpe(data.workoutLog.overallRpe);
+            }
+            if (data.workoutLog.clientFeedback) {
+              setClientFeedback(data.workoutLog.clientFeedback);
+            }
+            if (typeof data.workoutLog.durationMinutes === "number" && data.workoutLog.durationMinutes > 0) {
+              setWorkoutSeconds(data.workoutLog.durationMinutes * 60);
+            }
+          }
+
+          if (data.status === "COMPLETED" || data.status === "SKIPPED") {
+            setIsTimerRunning(false);
+          }
+
+          // Prefer immutable assignment exercise snapshots; fallback to template exercises
+          const sourceExercises: any[] =
+            Array.isArray(data.exercises) && data.exercises.length > 0
+              ? data.exercises
+              : data.template?.exercises || [];
+
+          const savedExercises: any[] = data.workoutLog?.exercises || [];
+
+          if (sourceExercises.length > 0) {
+            const initialLogs: LocalExerciseLog[] = sourceExercises.map((te: any) => {
+              const metricType: MetricType =
+                te.metricType || te.exercise?.metricType || "SETS_REPS_WEIGHT";
+              const savedEx = savedExercises.find((se: any) => se.exerciseId === te.exerciseId);
+              const savedSets: any[] = savedEx?.sets || [];
+              const setsCount =
+                savedSets.length > 0
+                  ? savedSets.length
+                  : metricType === "DISTANCE_TIME_PACE" ||
+                    metricType === "LAPS_TIME" ||
+                    metricType === "ROUNDS_REPS_TIME"
+                  ? te.targetSets || 1
+                  : te.targetSets || 3;
+              const targetWt = te.targetWeightKg ?? null;
+              const targetRp = te.targetReps || (metricType === "SETS_REPS_WEIGHT" ? "10" : "");
 
               const sets: LocalSet[] = [];
               for (let i = 1; i <= setsCount; i++) {
+                const prior = savedSets.find((s: any) => s.setNumber === i);
                 sets.push({
                   setNumber: i,
                   targetWeight: targetWt,
                   targetReps: targetRp,
-                  actualWeight: targetWt,
-                  actualReps: parseInt(targetRp) || 10,
-                  isCompleted: false
+                  targetDistanceKm: te.targetDistanceKm ?? null,
+                  targetTimeSeconds: te.targetTimeSeconds ?? null,
+                  targetPace: te.targetPace ?? null,
+                  targetRounds: te.targetRounds ?? null,
+                  actualWeight: prior?.actualWeightKg ?? targetWt ?? 0,
+                  actualReps: prior?.actualReps ?? (parseInt(targetRp, 10) || 10),
+                  actualDistanceKm: prior?.actualDistanceKm ?? te.targetDistanceKm ?? 0,
+                  actualTimeSeconds: prior?.actualTimeSeconds ?? te.targetTimeSeconds ?? 0,
+                  actualPace: prior?.actualPace ?? te.targetPace ?? "",
+                  actualRounds: prior?.actualRounds ?? te.targetRounds ?? 1,
+                  isCompleted: prior ? Boolean(prior.isCompleted) : false
                 });
               }
 
               return {
                 exerciseId: te.exerciseId,
+                exerciseName:
+                  te.exerciseNameEn || te.exercise?.nameEn || te.exercise?.nameAr || "Exercise",
+                metricType,
+                restSeconds: te.restSeconds || 60,
+                tempo: te.tempo || null,
                 exercise: te.exercise,
                 sets,
-                notes: te.notes || ""
+                notes: te.notes || te.exercise?.instructionsEn || ""
               };
             });
 
@@ -136,44 +200,139 @@ export default function WorkoutExecutionPage() {
     setExerciseLogs(next);
 
     if (targetSet.isCompleted) {
-      startRestTimer(60);
+      startRestTimer(next[exIdx].restSeconds || 60);
     }
   };
 
-  const handleUpdateActual = (exIdx: number, setIdx: number, field: "actualWeight" | "actualReps", val: number) => {
+  const handleUpdateActual = (
+    exIdx: number,
+    setIdx: number,
+    field: "actualWeight" | "actualReps" | "actualDistanceKm" | "actualTimeSeconds" | "actualRounds" | "actualPace",
+    val: number | string
+  ) => {
     const next = [...exerciseLogs];
-    next[exIdx].sets[setIdx][field] = val;
+    (next[exIdx].sets[setIdx] as any)[field] = val;
     setExerciseLogs(next);
   };
 
-  const handleFinishWorkout = async () => {
+  const buildExecutionPayload = (action: "SAVE_PROGRESS" | "COMPLETE") => {
     const durationMin = Math.max(1, Math.round(workoutSeconds / 60));
+    return {
+      action,
+      durationMinutes: durationMin,
+      overallRpe,
+      clientFeedback,
+      exercises: exerciseLogs.map((el) => ({
+        exerciseId: el.exerciseId,
+        sets: el.sets.map((s) => ({
+          setNumber: s.setNumber,
+          targetReps: s.targetReps || null,
+          targetWeightKg: s.targetWeight,
+          targetDistanceKm: s.targetDistanceKm,
+          targetTimeSeconds: s.targetTimeSeconds,
+          targetPace: s.targetPace,
+          targetRounds: s.targetRounds,
+          actualWeightKg:
+            el.metricType === "SETS_REPS_WEIGHT" || el.metricType === "TIME_HOLD" ? s.actualWeight : null,
+          actualReps:
+            el.metricType === "SETS_REPS_WEIGHT" || el.metricType === "ROUNDS_REPS_TIME"
+              ? s.actualReps
+              : null,
+          actualDistanceKm:
+            el.metricType === "DISTANCE_TIME_PACE" || el.metricType === "LAPS_TIME"
+              ? s.actualDistanceKm
+              : null,
+          actualTimeSeconds:
+            el.metricType === "DISTANCE_TIME_PACE" ||
+            el.metricType === "LAPS_TIME" ||
+            el.metricType === "ROUNDS_REPS_TIME" ||
+            el.metricType === "TIME_HOLD"
+              ? s.actualTimeSeconds
+              : null,
+          actualPace: el.metricType === "DISTANCE_TIME_PACE" ? s.actualPace || null : null,
+          actualRounds: el.metricType === "ROUNDS_REPS_TIME" ? s.actualRounds : null,
+          actualRpe: overallRpe,
+          isCompleted: s.isCompleted
+        }))
+      }))
+    };
+  };
 
+  const handleSaveProgress = async () => {
+    setActionError("");
+    setSavingAction("SAVE_PROGRESS");
     try {
-      await fetch(`/api/workouts/${assignment?.id || assignmentId}`, {
+      const res = await fetch(`/api/workouts/${assignment?.id || assignmentId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildExecutionPayload("SAVE_PROGRESS"))
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setActionError(json.error || "Failed to save progress");
+        return;
+      }
+      if (json.data?.assignment) setAssignment(json.data.assignment);
+      setActionToast("Progress saved! You can resume anytime without losing your sets.");
+      setTimeout(() => setActionToast(""), 4000);
+    } catch (err: any) {
+      setActionError(err?.message || "Error saving progress");
+    } finally {
+      setSavingAction(null);
+    }
+  };
+
+  const handleFinishWorkout = async () => {
+    setActionError("");
+    setSavingAction("COMPLETE");
+    try {
+      const res = await fetch(`/api/workouts/${assignment?.id || assignmentId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildExecutionPayload("COMPLETE"))
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setActionError(json.error || "Failed to complete workout");
+        return;
+      }
+      if (json.data?.assignment) setAssignment(json.data.assignment);
+      setIsTimerRunning(false);
+      setIsCompletedModalOpen(true);
+    } catch (err: any) {
+      console.error("[WorkoutExecution] Error saving execution:", err);
+      setActionError(err?.message || "Error completing workout");
+    } finally {
+      setSavingAction(null);
+    }
+  };
+
+  const handleSkipWorkout = async () => {
+    setActionError("");
+    setSavingAction("SKIP");
+    try {
+      const res = await fetch(`/api/workouts/${assignment?.id || assignmentId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          durationMinutes: durationMin,
-          overallRpe,
-          clientFeedback,
-          exercises: exerciseLogs.map((el) => ({
-            exerciseId: el.exerciseId,
-            sets: el.sets.map((s) => ({
-              setNumber: s.setNumber,
-              actualWeightKg: s.actualWeight,
-              actualReps: s.actualReps,
-              actualRpe: overallRpe,
-              isCompleted: s.isCompleted
-            }))
-          }))
+          action: "SKIP",
+          reason: skipReason
         })
       });
-    } catch (err) {
-      console.error("[WorkoutExecution] Error saving execution:", err);
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setActionError(json.error || "Failed to skip workout");
+        return;
+      }
+      if (json.data) setAssignment(json.data);
+      setIsTimerRunning(false);
+      setIsSkipModalOpen(false);
+      setActionToast("Workout marked as skipped.");
+    } catch (err: any) {
+      setActionError(err?.message || "Error skipping workout");
+    } finally {
+      setSavingAction(null);
     }
-
-    setIsCompletedModalOpen(true);
   };
 
   const formatTimer = (totalSeconds: number) => {
@@ -196,48 +355,101 @@ export default function WorkoutExecutionPage() {
       {/* Top Header with Live Timer */}
       <div className="bg-slate-900/95 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-16 z-30">
         <div>
-          <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/40">
-              Live Session
+              {assignment?.effectiveStatus === "COMPLETED"
+                ? "Completed"
+                : assignment?.effectiveStatus === "SKIPPED"
+                ? "Skipped"
+                : assignment?.effectiveStatus === "IN_PROGRESS"
+                ? "In Progress"
+                : "Live Session"}
             </span>
             <span className="text-xs text-slate-400">
-              {assignment?.client?.user.name}
+              {assignment?.client?.user?.name}
             </span>
           </div>
           <h1 className="text-lg sm:text-xl font-black text-white">
-            {assignment?.template?.titleEn || assignment?.template?.titleAr || "Today's Workout"}
+            {assignment?.title || assignment?.template?.titleEn || assignment?.template?.titleAr || "Today's Workout"}
           </h1>
+          {assignment?.coachNotes && (
+            <p className="text-[11px] text-slate-400 mt-1">Coach notes: {assignment.coachNotes}</p>
+          )}
         </div>
 
-        {/* Live Elapsed & Rest Timers */}
-        <div className="flex items-center gap-2">
-          {/* Workout Elapsed Timer */}
+        {/* Live Elapsed & Rest Timers + Actions */}
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center space-x-2 px-3 py-1.5 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-brand-crimson text-sm font-bold">
             <Clock className="w-4 h-4" />
             <span>{formatTimer(workoutSeconds)}</span>
           </div>
 
-          {/* Rest Timer Floating Pill */}
           {isRestActive && (
             <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold animate-pulse">
               <span>Rest: {restSecondsLeft}s</span>
             </div>
           )}
 
-          <button
-            onClick={handleFinishWorkout}
-            className="px-4 py-2 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 active:scale-95"
-          >
-            {t("finishWorkout")} 🏆
-          </button>
+          {assignment?.effectiveStatus !== "SKIPPED" && assignment?.effectiveStatus !== "COMPLETED" && (
+            <>
+              <button
+                type="button"
+                disabled={savingAction !== null}
+                onClick={handleSaveProgress}
+                className="px-3.5 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 disabled:opacity-50"
+              >
+                {savingAction === "SAVE_PROGRESS" ? "Saving..." : "Save Progress"}
+              </button>
+              <button
+                type="button"
+                disabled={savingAction !== null}
+                onClick={() => setIsSkipModalOpen(true)}
+                className="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs border border-slate-700 disabled:opacity-50"
+              >
+                Skip
+              </button>
+            </>
+          )}
+
+          {assignment?.effectiveStatus !== "SKIPPED" && (
+            <button
+              type="button"
+              disabled={savingAction !== null}
+              onClick={handleFinishWorkout}
+              className="px-4 py-2 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 active:scale-95 disabled:opacity-50"
+            >
+              {savingAction === "COMPLETE" ? "Saving..." : `${t("finishWorkout")} 🏆`}
+            </button>
+          )}
         </div>
       </div>
 
+      {actionToast && (
+        <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
+          {actionToast}
+        </div>
+      )}
+      {actionError && (
+        <div className="p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-bold">
+          {actionError}
+        </div>
+      )}
+      {assignment?.effectiveStatus === "SKIPPED" && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+          <strong>Workout Skipped:</strong> {assignment.workoutLog?.clientFeedback || "No reason provided."}
+        </div>
+      )}
+
       {/* Exercises Set Loggers List */}
       <div className="space-y-6">
-        {exerciseLogs.map((el, exIdx) => (
+        {exerciseLogs.map((el, exIdx) => {
+          const isDistance = el.metricType === "DISTANCE_TIME_PACE" || el.metricType === "LAPS_TIME";
+          const isRounds = el.metricType === "ROUNDS_REPS_TIME";
+          const isTimeHold = el.metricType === "TIME_HOLD";
+
+          return (
           <div
-            key={el.exerciseId || exIdx}
+            key={`${el.exerciseId}-${exIdx}`}
             className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4"
           >
             {/* Exercise Header */}
@@ -247,11 +459,18 @@ export default function WorkoutExecutionPage() {
                   {exIdx + 1}
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white">{el.exercise?.nameEn || el.exercise?.nameAr}</h3>
+                  <h3 className="text-sm sm:text-base font-bold text-white">{el.exerciseName}</h3>
+                  {(el.tempo || el.notes) && (
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {el.tempo ? `Tempo: ${el.tempo}` : ""}
+                      {el.tempo && el.notes ? " • " : ""}
+                      {el.notes}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {el.exercise?.contraindicatedBodyParts?.length > 0 && (
+              {(el.exercise?.contraindicatedBodyParts?.length || 0) > 0 && (
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950/40 text-red-300 border border-red-500/30 flex items-center space-x-1">
                   <AlertTriangle className="w-3 h-3 text-red-400" />
                   <span>Injury Alert</span>
@@ -259,13 +478,17 @@ export default function WorkoutExecutionPage() {
               )}
             </div>
 
-            {/* Sets Touch Table (Mobile-First) */}
+            {/* Sets / Intervals Touch Table (Mobile-First) */}
             <div className="space-y-2">
               <div className="grid grid-cols-12 text-[11px] font-bold text-slate-400 px-3 pb-1">
-                <span className="col-span-2 text-start">Set</span>
+                <span className="col-span-2 text-start">{isRounds ? "Block" : "Set"}</span>
                 <span className="col-span-3 text-center">Target</span>
-                <span className="col-span-3 text-center">Actual Weight (KG)</span>
-                <span className="col-span-2 text-center">Actual Reps</span>
+                <span className="col-span-3 text-center">
+                  {isDistance ? "Distance (km)" : isRounds ? "Rounds" : isTimeHold ? "Hold (sec)" : "Actual Weight (KG)"}
+                </span>
+                <span className="col-span-2 text-center">
+                  {isDistance ? "Time (sec)" : isTimeHold ? "Load (kg)" : "Actual Reps"}
+                </span>
                 <span className="col-span-2 text-center">Status</span>
               </div>
 
@@ -278,37 +501,78 @@ export default function WorkoutExecutionPage() {
                       : "bg-slate-950/70 border-slate-800 text-white"
                   }`}
                 >
-                  {/* Set # */}
                   <span className="col-span-2 font-bold text-xs ps-2">
-                    Set {set.setNumber}
+                    #{set.setNumber}
                   </span>
 
-                  {/* Target reference */}
                   <span className="col-span-3 text-center text-xs text-slate-400 font-semibold">
-                    {set.targetWeight}kg × {set.targetReps}
+                    {isDistance
+                      ? `${set.targetDistanceKm ?? 0}km • ${set.targetTimeSeconds ?? 0}s${set.targetPace ? ` @ ${set.targetPace}` : ""}`
+                      : isRounds
+                      ? `${set.targetRounds ?? 1} rds × ${set.targetReps || "-"}`
+                      : isTimeHold
+                      ? `${set.targetTimeSeconds ?? 30}s hold${set.targetWeight ? ` @ ${set.targetWeight}kg` : ""}`
+                      : `${set.targetWeight ?? 0}kg × ${set.targetReps || "-"}`}
                   </span>
 
-                  {/* Actual Weight Input */}
                   <div className="col-span-3 px-1">
-                    <input
-                      type="number"
-                      value={set.actualWeight}
-                      onChange={e => handleUpdateActual(exIdx, setIdx, "actualWeight", Number(e.target.value))}
-                      className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
-                    />
+                    {isDistance ? (
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={set.actualDistanceKm}
+                        onChange={e => handleUpdateActual(exIdx, setIdx, "actualDistanceKm", Number(e.target.value))}
+                        className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      />
+                    ) : isRounds ? (
+                      <input
+                        type="number"
+                        value={set.actualRounds}
+                        onChange={e => handleUpdateActual(exIdx, setIdx, "actualRounds", Number(e.target.value))}
+                        className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      />
+                    ) : isTimeHold ? (
+                      <input
+                        type="number"
+                        value={set.actualTimeSeconds}
+                        onChange={e => handleUpdateActual(exIdx, setIdx, "actualTimeSeconds", Number(e.target.value))}
+                        className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      />
+                    ) : (
+                      <input
+                        type="number"
+                        value={set.actualWeight}
+                        onChange={e => handleUpdateActual(exIdx, setIdx, "actualWeight", Number(e.target.value))}
+                        className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      />
+                    )}
                   </div>
 
-                  {/* Actual Reps Input */}
                   <div className="col-span-2 px-1">
-                    <input
-                      type="number"
-                      value={set.actualReps}
-                      onChange={e => handleUpdateActual(exIdx, setIdx, "actualReps", Number(e.target.value))}
-                      className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
-                    />
+                    {isDistance ? (
+                      <input
+                        type="number"
+                        value={set.actualTimeSeconds}
+                        onChange={e => handleUpdateActual(exIdx, setIdx, "actualTimeSeconds", Number(e.target.value))}
+                        className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      />
+                    ) : isTimeHold ? (
+                      <input
+                        type="number"
+                        value={set.actualWeight}
+                        onChange={e => handleUpdateActual(exIdx, setIdx, "actualWeight", Number(e.target.value))}
+                        className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      />
+                    ) : (
+                      <input
+                        type="number"
+                        value={set.actualReps}
+                        onChange={e => handleUpdateActual(exIdx, setIdx, "actualReps", Number(e.target.value))}
+                        className="w-full text-center py-1.5 rounded-xl bg-slate-900 border border-slate-700 font-bold text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      />
+                    )}
                   </div>
 
-                  {/* Complete Touch Checkmark Button */}
                   <div className="col-span-2 flex justify-center">
                     <button
                       type="button"
@@ -354,7 +618,8 @@ export default function WorkoutExecutionPage() {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Rate of Perceived Exertion (RPE) & Feedback Card */}
@@ -397,13 +662,75 @@ export default function WorkoutExecutionPage() {
           />
         </div>
 
-        <button
-          onClick={handleFinishWorkout}
-          className="w-full py-3.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-extrabold text-sm shadow-xl shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 hover:scale-[1.01] active:scale-95"
-        >
-          {t("finishWorkout")} 🏆
-        </button>
+        {assignment?.effectiveStatus !== "SKIPPED" && (
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            {assignment?.effectiveStatus !== "COMPLETED" && (
+              <>
+                <button
+                  type="button"
+                  disabled={savingAction !== null}
+                  onClick={handleSaveProgress}
+                  className="sm:w-1/3 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-slate-700 disabled:opacity-50"
+                >
+                  {savingAction === "SAVE_PROGRESS" ? "Saving..." : "Save Progress"}
+                </button>
+                <button
+                  type="button"
+                  disabled={savingAction !== null}
+                  onClick={() => setIsSkipModalOpen(true)}
+                  className="sm:w-1/4 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-sm border border-slate-700 disabled:opacity-50"
+                >
+                  Skip Workout
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              disabled={savingAction !== null}
+              onClick={handleFinishWorkout}
+              className="flex-1 py-3.5 rounded-2xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-extrabold text-sm shadow-xl shadow-[0_0_20px_rgba(240,20,37,0.38)] transition-all scale-100 hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+            >
+              {savingAction === "COMPLETE" ? "Saving..." : `${t("finishWorkout")} 🏆`}
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Skip Workout Modal */}
+      {isSkipModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h3 className="text-lg font-black text-white">Skip Workout</h3>
+            <p className="text-xs text-slate-400">
+              Add an optional reason so your coach knows why this session was skipped.
+            </p>
+            <textarea
+              rows={3}
+              value={skipReason}
+              onChange={(e) => setSkipReason(e.target.value)}
+              placeholder="e.g., Travel, soreness, schedule conflict..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-brand-crimson"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsSkipModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={savingAction === "SKIP"}
+                onClick={handleSkipWorkout}
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold disabled:opacity-50"
+              >
+                {savingAction === "SKIP" ? "Skipping..." : "Confirm Skip"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Celebration Completion Modal */}
       {isCompletedModalOpen && (
@@ -437,10 +764,10 @@ export default function WorkoutExecutionPage() {
 
             <div className="flex flex-col gap-2 pt-2">
               <button
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push("/assignments")}
                 className="w-full py-3 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md"
               >
-                Back to Dashboard
+                Back to My Workouts
               </button>
               <button
                 onClick={() => router.push(`/clients/${assignment?.clientId || "client-1"}`)}

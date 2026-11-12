@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { requireAuth } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +11,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
+    const isAdminOrHead =
+      auth.actor.user.role === UserRole.ADMIN || auth.actor.user.role === UserRole.HEAD_COACH;
+    if (!isAdminOrHead && auth.actor.user.id !== id) {
+      return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -41,13 +52,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request, [UserRole.ADMIN, UserRole.HEAD_COACH]);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
 
     const dataToUpdate: any = {};
     if (body.name) dataToUpdate.name = body.name.trim();
     if (body.email) dataToUpdate.email = body.email.toLowerCase().trim();
-    if (body.role) dataToUpdate.role = body.role;
+    if (body.role && auth.actor.user.role === UserRole.ADMIN) dataToUpdate.role = body.role;
     if (body.phone !== undefined) dataToUpdate.phone = body.phone;
     if (body.avatar !== undefined) dataToUpdate.avatar = body.avatar;
     if (body.password) {
@@ -80,6 +94,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request, [UserRole.ADMIN]);
+    if (!auth.ok) return auth.response;
+
     const { id } = await params;
     await prisma.user.delete({
       where: { id }

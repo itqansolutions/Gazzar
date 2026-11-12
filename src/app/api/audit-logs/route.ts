@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const auth = await requireAuth(req, [UserRole.ADMIN, UserRole.HEAD_COACH]);
+    if (!auth.ok) return auth.response;
+
     const logs = await prisma.auditLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 100
@@ -18,12 +23,15 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
     const body = await req.json();
     const log = await prisma.auditLog.create({
       data: {
-        userId: body.userId || null,
-        userName: body.userName || null,
-        userRole: body.userRole || null,
+        userId: auth.actor.user.id,
+        userName: auth.actor.user.name,
+        userRole: auth.actor.user.role,
         action: body.action,
         entityType: body.entityType,
         entityId: body.entityId || null,

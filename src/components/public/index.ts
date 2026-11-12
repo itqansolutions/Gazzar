@@ -1,0 +1,10 @@
+export { default as PublicNavbar } from "./PublicNavbar";
+export { default as HeroSection } from "./HeroSection";
+export { default as AboutSection } from "./AboutSection";
+export { default as SportsSection } from "./SportsSection";
+export { default as ChampionshipsSection } from "./ChampionshipsSection";
+export { default as CoachesSection } from "./CoachesSection";
+export { default as PackagesSection } from "./PackagesSection";
+export { default as OffersSection } from "./OffersSection";
+export { default as FooterSection } from "./FooterSection";
+export { default as FloatingWhatsApp } from "./FloatingWhatsApp";

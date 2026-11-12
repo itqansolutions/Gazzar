@@ -24,7 +24,9 @@ import {
   ClipboardList,
   LogOut,
   User,
-  X
+  X,
+  Globe,
+  Tag
 } from "lucide-react";
 
 interface SidebarProps {
@@ -75,6 +77,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { href: "/attendance", label: "Attendance", icon: CheckCircle2, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/memberships", label: "Memberships", icon: CreditCard, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/audit-logs", label: "Audit Logs", icon: ShieldAlert, roles: ["ADMIN"] }
+  ];
+
+  const cmsAdminNav = [
+    { href: "/admin-public", label: "CMS Overview", icon: Globe },
+    { href: "/admin-public/packages", label: "Public Packages", icon: CreditCard },
+    { href: "/admin-public/championships", label: "Championships", icon: Trophy },
+    { href: "/admin-public/offers", label: "Offers", icon: Tag },
+    { href: "/admin-public/coaches", label: "Public Coaches", icon: UserCheck },
+    { href: "/admin-public/settings", label: "Website Settings", icon: Settings }
   ];
 
   const clientNav = [
@@ -196,12 +207,52 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     );
                   })}
               </div>
+
+              {/* Website CMS Section (ADMIN & HEAD_COACH only) */}
+              {(user?.role === "ADMIN" || user?.role === "HEAD_COACH") && (
+                <div className="pt-3 mt-3 border-t border-line dark:border-[#1a1f2e]/80">
+                  <div className="px-3 flex items-center justify-between mb-1">
+                    <p className="text-[10px] font-bold tracking-wider text-brand uppercase">
+                      Website CMS
+                    </p>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold uppercase">
+                      Public
+                    </span>
+                  </div>
+                  {cmsAdminNav.map((item) => {
+                    const isActive =
+                      pathname === item.href ||
+                      (item.href !== "/admin-public" && pathname.startsWith(item.href));
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onClose}
+                        className={`flex items-center space-x-3 px-3 h-9 rounded-control text-xs font-medium transition-all ${
+                          isActive
+                            ? "bg-red-600 text-white bg-brand text-brand-contrast shadow-md"
+                            : "text-muted hover:bg-raised hover:text-fg"
+                        }`}
+                      >
+                        <Icon
+                          className={`w-4 h-4 flex-shrink-0 ${
+                            isActive ? "text-white" : "text-muted"
+                          }`}
+                        />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
         </div>
 
         {/* Sidebar Footer with Accessible Red Logout Button */}
-        <div className="p-3 border-t border-line dark:border-[#1a1f2e] bg-raised/40">
+        <div className="p-3 border-t border-line dark:border-[#1a1f2e] bg-raised/40 space-y-2">
           <button
             onClick={() => {
               onClose();
@@ -212,6 +263,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <LogOut className="w-4 h-4" />
             <span>Log out</span>
           </button>
+
+          <div className="text-center text-[10px] text-muted select-none pt-0.5">
+            Powered & Designed by{" "}
+            <a
+              href="https://itqansolutions.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-fg hover:text-brand transition-colors"
+            >
+              Itqan Solutions
+            </a>
+          </div>
         </div>
       </aside>
     </>

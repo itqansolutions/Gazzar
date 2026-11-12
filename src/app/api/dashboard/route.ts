@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { getAssignedClientIdsForActor, requireAuth } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const auth = await requireAuth(request);
+    if (!auth.ok) return auth.response;
+
+    const allowedClientIds = await getAssignedClientIdsForActor(auth.actor);
+    const clientWhere = allowedClientIds !== null ? { id: { in: allowedClientIds } } : {};
+
     const [
       clientsCount,
       coachesCount,
@@ -15,13 +22,16 @@ export async function GET() {
       recentClients,
       upcomingSessions
     ] = await Promise.all([
-      prisma.clientProfile.count(),
+      prisma.clientProfile.count({ where: clientWhere }),
       prisma.coachProfile.count(),
       prisma.exercise.count(),
       prisma.workoutTemplate.count(),
-      prisma.clientWorkoutAssignment.count(),
+      prisma.clientWorkoutAssignment.count({
+        where: allowedClientIds !== null ? { clientId: { in: allowedClientIds } } : {}
+      }),
       prisma.sessionCalendar.count(),
       prisma.clientProfile.findMany({
+        where: clientWhere,
         take: 5,
         orderBy: { createdAt: "desc" },
         include: {

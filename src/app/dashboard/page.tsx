@@ -13,6 +13,7 @@ import {
   MembershipsDonut,
   TopPrograms,
   WelcomeHero,
+  SubscriptionCard,
 } from "@/components/dashboard";
 import {
   Users,
@@ -330,8 +331,11 @@ export default function DashboardPage() {
             7. ATHLETE CLIENT SECTION (FOR ATHLETE USERS ONLY)
             ========================================================================= */}
         {isClient && (
-          <div className="bg-card border border-line rounded-card p-5 sm:p-6 shadow-card">
-            <div className="flex items-center justify-between mb-4">
+          <div className="space-y-6">
+            <SubscriptionCard clientId={myClient?.id} />
+
+            <div className="bg-card border border-line rounded-card p-5 sm:p-6 shadow-card">
+              <div className="flex items-center justify-between mb-4">
               <h2 className="text-base sm:text-lg font-bold text-fg tracking-tight">
                 My Training & Medical Status
               </h2>
@@ -371,6 +375,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
+          </div>
           </div>
         )}
       </div>

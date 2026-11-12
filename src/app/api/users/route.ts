@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
+import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { requireAuth } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const auth = await requireAuth(request, [UserRole.ADMIN, UserRole.HEAD_COACH]);
+    if (!auth.ok) return auth.response;
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -33,6 +38,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAuth(request, [UserRole.ADMIN, UserRole.HEAD_COACH]);
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
     if (!body.email || !body.name || !body.role) {
       return NextResponse.json(

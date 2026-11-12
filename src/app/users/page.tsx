@@ -17,7 +17,11 @@ import {
   AlertTriangle,
   X,
   Phone,
-  Mail
+  Mail,
+  Link2,
+  Copy,
+  Check,
+  Share2
 } from "lucide-react";
 
 export default function UsersPage() {
@@ -30,6 +34,14 @@ export default function UsersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [resetLinkModal, setResetLinkModal] = useState<{
+    isOpen: boolean;
+    userName: string;
+    userEmail: string;
+    userPhone?: string;
+    resetUrl: string;
+  } | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -184,6 +196,30 @@ export default function UsersPage() {
       showNotification("Password updated successfully! ✓");
     } catch (err: any) {
       showNotification(err.message || "Error resetting password", "error");
+    }
+  };
+
+  const handleGenerateResetLink = async (user: User) => {
+    try {
+      const res = await fetch("/api/auth/reset-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to generate reset link");
+      }
+      setResetLinkModal({
+        isOpen: true,
+        userName: json.data.userName,
+        userEmail: json.data.userEmail,
+        userPhone: json.data.userPhone,
+        resetUrl: json.data.resetUrl
+      });
+      setCopiedLink(false);
+    } catch (err: any) {
+      showNotification(err.message || "Failed to create reset link", "error");
     }
   };
 
@@ -370,6 +406,14 @@ export default function UsersPage() {
                   </td>
                   <td className="px-4 py-3.5 text-center">
                     <div className="flex items-center justify-center space-x-1.5">
+                      <button
+                        onClick={() => handleGenerateResetLink(u)}
+                        title="Send Password Reset Link"
+                        className="p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                      >
+                        <Link2 className="w-4 h-4" />
+                      </button>
+
                       <button
                         onClick={() => {
                           setSelectedUser(u);
@@ -705,6 +749,95 @@ export default function UsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* PASSWORD RESET LINK MODAL */}
+      {resetLinkModal && resetLinkModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                <Link2 className="w-5 h-5 text-emerald-500" />
+                <span>Athlete Activation Link</span>
+              </h2>
+              <button
+                onClick={() => setResetLinkModal(null)}
+                className="p-1 text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                A single-use password setup link has been created for{" "}
+                <strong className="text-slate-900 dark:text-white">
+                  {resetLinkModal.userName}
+                </strong>{" "}
+                ({resetLinkModal.userEmail}). Share this link with the athlete to let them securely configure their password.
+              </p>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Activation / Reset Link
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={resetLinkModal.resetUrl}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-mono text-slate-900 dark:text-slate-200 select-all"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(resetLinkModal.resetUrl);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2500);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all flex-shrink-0"
+                  >
+                    {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    <span>{copiedLink ? "Copied" : "Copy"}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                {resetLinkModal.userPhone ? (
+                  <a
+                    href={`https://wa.me/${resetLinkModal.userPhone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                      `Hello ${resetLinkModal.userName}, here is your secure password activation link for GX Fitness Academy: ${resetLinkModal.resetUrl} (Valid for 24 hours)`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>Send via WhatsApp to Athlete</span>
+                  </a>
+                ) : (
+                  <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
+                    ℹ️ Athlete has no phone number on file. Copy the link above to send manually.
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-600 dark:text-amber-400">
+                🔒 Security Note: Link expires in 24 hours. The plaintext password is never generated or stored by the system.
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setResetLinkModal(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

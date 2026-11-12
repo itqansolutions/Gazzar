@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { BodyPart, RestrictionSeverity, GoalType, GoalStatus, NoteType } from "@prisma/client";
+import { checkInScheduleService } from "./checkin-schedule.service";
 
 export class HealthService {
   /**
@@ -26,13 +27,16 @@ export class HealthService {
     const heightM = (data.heightCm || client.heightCm || 178) / 100;
     const bmi = Number((data.weightKg / (heightM * heightM)).toFixed(1));
 
-    return await prisma.$transaction(async (tx) => {
-      const measurement = await tx.clientMeasurementHistory.create({
+    const resolvedClientId = client.id;
+    const clientHeightCm = client.heightCm;
+
+    const measurement = await prisma.$transaction(async (tx) => {
+      const created = await tx.clientMeasurementHistory.create({
         data: {
-          clientId: client.id,
+          clientId: resolvedClientId,
           date: data.date ? new Date(data.date) : new Date(),
           weightKg: Number(data.weightKg),
-          heightCm: data.heightCm ? Number(data.heightCm) : client.heightCm,
+          heightCm: data.heightCm ? Number(data.heightCm) : clientHeightCm,
           bmi,
           bodyFatPercentage: data.bodyFatPercentage ? Number(data.bodyFatPercentage) : null,
           muscleMassKg: data.muscleMassKg ? Number(data.muscleMassKg) : null,
@@ -47,15 +51,32 @@ export class HealthService {
 
       // Update current weight and height on client profile
       await tx.clientProfile.update({
-        where: { id: client.id },
+        where: { id: resolvedClientId },
         data: {
           weightKg: Number(data.weightKg),
           ...(data.heightCm && { heightCm: Number(data.heightCm) })
         }
       });
 
-      return measurement;
+      return created;
     });
+
+    try {
+      await checkInScheduleService.recordSubmission(resolvedClientId, "WEIGHT", measurement.date);
+      if (
+        data.waistCm !== undefined ||
+        data.chestCm !== undefined ||
+        data.armsCm !== undefined ||
+        data.thighCm !== undefined ||
+        data.bodyFatPercentage !== undefined
+      ) {
+        await checkInScheduleService.recordSubmission(resolvedClientId, "MEASUREMENT", measurement.date);
+      }
+    } catch (schedErr) {
+      console.error("[HealthService] Error updating check-in schedule for measurement:", schedErr);
+    }
+
+    return measurement;
   }
 
   /**
@@ -162,7 +183,7 @@ export class HealthService {
     });
     if (!client) throw new Error("Client not found");
 
-    return await prisma.clientProgressPhoto.create({
+    const photo = await prisma.clientProgressPhoto.create({
       data: {
         clientId: client.id,
         frontImageUrl: data.frontImageUrl || null,
@@ -173,6 +194,14 @@ export class HealthService {
         date: data.date ? new Date(data.date) : new Date()
       }
     });
+
+    try {
+      await checkInScheduleService.recordSubmission(client.id, "PHOTO", photo.date);
+    } catch (schedErr) {
+      console.error("[HealthService] Error updating check-in schedule for photo:", schedErr);
+    }
+
+    return photo;
   }
 
   /**

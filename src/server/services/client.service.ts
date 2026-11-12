@@ -44,8 +44,12 @@ export class ClientService {
   /**
    * Fetch all clients with related user, sport, and coach assignments
    */
-  async getClients(filters?: { status?: ClientStatus | "ALL"; search?: string }) {
+  async getClients(filters?: { status?: ClientStatus | "ALL"; search?: string; clientIds?: string[] }) {
     const where: any = {};
+
+    if (filters?.clientIds !== undefined) {
+      where.id = { in: filters.clientIds };
+    }
 
     if (filters?.status && filters.status !== "ALL") {
       where.status = filters.status;
@@ -155,6 +159,19 @@ export class ClientService {
           },
           orderBy: { scheduledDate: "desc" }
         },
+        programAssignments: {
+          include: {
+            program: true
+          },
+          orderBy: { startDate: "desc" }
+        },
+        nutritionAssignments: {
+          include: {
+            nutritionProgram: true
+          },
+          orderBy: { startDate: "desc" }
+        },
+        checkInSchedule: true,
         notes: {
           include: {
             author: {

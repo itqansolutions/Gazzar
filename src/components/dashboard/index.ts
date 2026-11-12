@@ -18,3 +18,6 @@ export type { TopProgramsProps, ProgramStat } from "./TopPrograms";
 
 export { WelcomeHero } from "./WelcomeHero";
 export type { WelcomeHeroProps } from "./WelcomeHero";
+
+export { default as SubscriptionCard } from "./SubscriptionCard";
+
