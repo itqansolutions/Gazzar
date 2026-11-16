@@ -20,4 +20,4 @@ export { WelcomeHero } from "./WelcomeHero";
 export type { WelcomeHeroProps } from "./WelcomeHero";
 
 export { default as SubscriptionCard } from "./SubscriptionCard";
-
+export { default as AthleteDashboard } from "./AthleteDashboard";

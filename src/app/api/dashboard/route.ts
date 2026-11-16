@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getAssignedClientIdsForActor, requireAuth } from "@/lib/auth/route-guard";
 
@@ -57,6 +58,84 @@ export async function GET(request: Request) {
       })
     ]);
 
+    let athleteDashboard: any = null;
+
+    if (auth.actor.user.role === UserRole.CLIENT) {
+      const clientProfile = await prisma.clientProfile.findFirst({
+        where: {
+          OR: [
+            ...(auth.actor.clientProfileId ? [{ id: auth.actor.clientProfileId }] : []),
+            { userId: auth.actor.user.id }
+          ]
+        },
+        include: {
+          sport: true,
+          user: true,
+          coachAssignments: {
+            where: { active: true },
+            include: {
+              coach: { include: { user: true } }
+            }
+          }
+        }
+      });
+
+      if (clientProfile) {
+        const [todayWorkout, activeProgramAssignment, activeNutrition, checkInSched, recentAssessment] =
+          await Promise.all([
+            prisma.clientWorkoutAssignment.findFirst({
+              where: {
+                clientId: clientProfile.id,
+                status: { in: ["SCHEDULED", "COMPLETED"] }
+              },
+              orderBy: { scheduledDate: "desc" },
+              include: {
+                template: true,
+                workoutLog: true,
+                exercises: true
+              }
+            }),
+            prisma.programAssignment.findFirst({
+              where: {
+                clientId: clientProfile.id,
+                isActive: true
+              },
+              orderBy: { startDate: "desc" },
+              include: {
+                program: true
+              }
+            }),
+            prisma.clientNutritionAssignment.findFirst({
+              where: {
+                clientId: clientProfile.id,
+                isActive: true
+              },
+              orderBy: { startDate: "desc" },
+              include: {
+                nutritionProgram: true
+              }
+            }),
+            prisma.athleteCheckInSchedule.findUnique({
+              where: { clientId: clientProfile.id }
+            }),
+            prisma.clientAssessment.findFirst({
+              where: { clientId: clientProfile.id },
+              orderBy: { date: "desc" }
+            })
+          ]);
+
+        athleteDashboard = {
+          clientProfile,
+          todayWorkout,
+          activeProgram: activeProgramAssignment?.program || null,
+          programAssignment: activeProgramAssignment,
+          nutritionPlan: activeNutrition?.nutritionProgram || null,
+          checkInSchedule: checkInSched,
+          recentAssessment
+        };
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -68,7 +147,8 @@ export async function GET(request: Request) {
           totalWorkouts: assignmentsCount + sessionsCount
         },
         recentClients,
-        upcomingSessions
+        upcomingSessions,
+        athleteDashboard
       }
     });
   } catch (error: any) {

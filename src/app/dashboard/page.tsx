@@ -14,6 +14,7 @@ import {
   TopPrograms,
   WelcomeHero,
   SubscriptionCard,
+  AthleteDashboard,
 } from "@/components/dashboard";
 import {
   Users,
@@ -101,6 +102,17 @@ export default function DashboardPage() {
 
   const displayName = user?.name || "Coach Abdullah";
   const isLight = theme === "light";
+
+  if (isClient) {
+    return (
+      <div className="atmo -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen relative overflow-hidden">
+        <div className="texture-hatch" aria-hidden="true" />
+        <div className="relative z-10 space-y-6 max-w-7xl mx-auto pb-16 w-full">
+          <AthleteDashboard athleteData={dashboardData?.athleteDashboard} user={user} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="atmo -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen relative overflow-hidden">
