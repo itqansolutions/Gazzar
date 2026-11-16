@@ -100,6 +100,19 @@ enum AssignmentSourceType {
   PROGRAM
 }
 
+enum BlockType {
+  SINGLE
+  SUPERSET
+  CIRCUIT
+  SEQUENCE
+}
+
+enum BlockItemType {
+  EXERCISE
+  REST
+  NOTE
+}
+
 enum NutritionAssignmentMode {
   INHERITED
   CUSTOM_OVERRIDE
@@ -311,10 +324,12 @@ model Exercise {
 
   contraindicatedBodyParts BodyPart[]
 
-  exerciseSports      ExerciseSport[]
-  templateExercises   WorkoutTemplateExercise[]
-  assignmentExercises ClientWorkoutAssignmentExercise[]
-  loggedExercises     WorkoutExerciseLog[]
+  exerciseSports           ExerciseSport[]
+  templateExercises        WorkoutTemplateExercise[]
+  assignmentExercises      ClientWorkoutAssignmentExercise[]
+  loggedExercises          WorkoutExerciseLog[]
+  blockItems               BlockItem[]
+  assignmentBlockItems     AssignmentBlockItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -346,10 +361,12 @@ model WorkoutTemplate {
   creatorId     String?
   creator       CoachProfile? @relation(fields: [creatorId], references: [id])
   isActive      Boolean       @default(true)
+  version       Int           @default(1)
 
   exercises       WorkoutTemplateExercise[]
   programWorkouts ProgramWorkout[]
   assignments     ClientWorkoutAssignment[]
+  blocks          WorkoutBlock[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -424,6 +441,7 @@ model TrainingProgram {
   nutritionProgram   NutritionProgram? @relation(fields: [nutritionProgramId], references: [id], onDelete: SetNull)
   isTemplate         Boolean           @default(true)
   isActive           Boolean           @default(true)
+  masterVersion      Int               @default(1)
 
   weeks              ProgramWeek[]
   assignments        ClientWorkoutAssignment[]
@@ -463,28 +481,33 @@ model ProgramDay {
 }
 
 model ProgramWorkout {
-  id         String          @id @default(uuid())
+  id         String           @id @default(uuid())
   dayId      String
-  day        ProgramDay      @relation(fields: [dayId], references: [id], onDelete: Cascade)
-  templateId String
-  template   WorkoutTemplate @relation(fields: [templateId], references: [id])
-  orderIndex Int             @default(0)
+  day        ProgramDay       @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  templateId String?
+  template   WorkoutTemplate? @relation(fields: [templateId], references: [id])
+  title      String?
+  orderIndex Int              @default(0)
+
+  blocks WorkoutBlock[]
 
   @@map("program_workouts")
 }
 
 model ProgramAssignment {
-  id        String          @id @default(uuid())
-  clientId  String
-  client    ClientProfile   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  programId String
-  program   TrainingProgram @relation(fields: [programId], references: [id])
-  coachId   String
-  coach     CoachProfile    @relation(fields: [coachId], references: [id])
-  startDate DateTime
-  endDate   DateTime?
-  isActive  Boolean         @default(true)
-  notes     String?
+  id                   String          @id @default(uuid())
+  clientId             String
+  client               ClientProfile   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  programId            String
+  program              TrainingProgram @relation(fields: [programId], references: [id])
+  coachId              String
+  coach                CoachProfile    @relation(fields: [coachId], references: [id])
+  startDate            DateTime
+  endDate              DateTime?
+  isActive             Boolean         @default(true)
+  notes                String?
+  sourceMasterVersion  Int?
+  programTitleSnapshot String?
 
   workoutAssignments   ClientWorkoutAssignment[]
   nutritionAssignments ClientNutritionAssignment[]
@@ -514,13 +537,15 @@ model ClientWorkoutAssignment {
   programWeekNumber   Int?
   programDayNumber    Int?
   programDayTitle     String?
+  programWorkoutOrder Int?
   scheduledDate       DateTime
   status              AssignmentStatus     @default(SCHEDULED)
   completedAt         DateTime?
   coachNotes          String?
 
-  exercises  ClientWorkoutAssignmentExercise[]
-  workoutLog WorkoutLog?
+  exercises        ClientWorkoutAssignmentExercise[]
+  assignmentBlocks AssignmentBlock[]
+  workoutLog       WorkoutLog?
 
   createdAt DateTime @default(now())
 
@@ -553,6 +578,107 @@ model ClientWorkoutAssignmentExercise {
   @@map("client_workout_assignment_exercises")
 }
 
+model WorkoutBlock {
+  id                       String           @id @default(uuid())
+  templateId               String?
+  template                 WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  programWorkoutId         String?
+  programWorkout           ProgramWorkout?  @relation(fields: [programWorkoutId], references: [id], onDelete: Cascade)
+  orderIndex               Int              @default(0)
+  type                     BlockType        @default(SINGLE)
+  title                    String?
+  rounds                   Int?
+  durationSeconds          Int?
+  restBetweenRoundsSeconds Int?
+  notes                    String?
+
+  items                    BlockItem[]
+
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+
+  @@index([templateId, orderIndex])
+  @@index([programWorkoutId, orderIndex])
+  @@map("workout_blocks")
+}
+
+model BlockItem {
+  id                String        @id @default(uuid())
+  blockId           String
+  block             WorkoutBlock  @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  orderIndex        Int           @default(0)
+  itemType          BlockItemType @default(EXERCISE)
+  exerciseId        String?
+  exercise          Exercise?     @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  targetSets        Int?
+  targetReps        String?
+  targetWeightKg    Float?
+  targetDistanceKm  Float?
+  targetTimeSeconds Int?
+  targetPace        String?
+  targetRounds      Int?
+  restSeconds       Int?
+  tempo             String?
+  instructions      String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([blockId, orderIndex])
+  @@map("block_items")
+}
+
+model AssignmentBlock {
+  id                       String                  @id @default(uuid())
+  assignmentId             String
+  assignment               ClientWorkoutAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  orderIndex               Int                     @default(0)
+  type                     BlockType               @default(SINGLE)
+  title                    String?
+  rounds                   Int?
+  durationSeconds          Int?
+  restBetweenRoundsSeconds Int?
+  notes                    String?
+
+  items                    AssignmentBlockItem[]
+
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+
+  @@index([assignmentId, orderIndex])
+  @@map("assignment_blocks")
+}
+
+model AssignmentBlockItem {
+  id                   String            @id @default(uuid())
+  assignmentBlockId    String
+  assignmentBlock      AssignmentBlock   @relation(fields: [assignmentBlockId], references: [id], onDelete: Cascade)
+  orderIndex           Int               @default(0)
+  itemType             BlockItemType     @default(EXERCISE)
+  exerciseId           String?
+  exercise             Exercise?         @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  exerciseNameSnapshot String?
+  metricTypeSnapshot   MetricType        @default(SETS_REPS_WEIGHT)
+  targetSets           Int?
+  targetReps           String?
+  targetWeightKg       Float?
+  targetDistanceKm     Float?
+  targetTimeSeconds    Int?
+  targetPace           String?
+  targetRounds         Int?
+  restSeconds          Int?
+  tempo                String?
+  instructions         String?
+
+  setLogs              SetLog[]
+
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([assignmentBlockId, orderIndex])
+  @@map("assignment_block_items")
+}
+
 model WorkoutLog {
   id              String                   @id @default(uuid())
   assignmentId    String?                  @unique
@@ -570,6 +696,7 @@ model WorkoutLog {
   isCompleted     Boolean                  @default(false)
 
   exercises WorkoutExerciseLog[]
+  setLogs   SetLog[]
 
   @@map("workout_logs")
 }
@@ -588,10 +715,23 @@ model WorkoutExerciseLog {
 }
 
 model SetLog {
-  id                String             @id @default(uuid())
-  exerciseLogId     String
-  exerciseLog       WorkoutExerciseLog @relation(fields: [exerciseLogId], references: [id], onDelete: Cascade)
-  setNumber         Int
+  id                    String               @id @default(uuid())
+  exerciseLogId         String?
+  exerciseLog           WorkoutExerciseLog?  @relation(fields: [exerciseLogId], references: [id], onDelete: Cascade)
+  workoutLogId          String?
+  workoutLog            WorkoutLog?          @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
+  assignmentBlockItemId String?
+  assignmentBlockItem   AssignmentBlockItem? @relation(fields: [assignmentBlockItemId], references: [id], onDelete: Restrict)
+  roundNumber           Int                  @default(1)
+  setNumber             Int                  @default(1)
+  isCompleted           Boolean              @default(true)
+  isSkipped             Boolean              @default(false)
+  skipReason            String?
+  startedAt             DateTime?
+  finishedAt            DateTime?
+  coachReview           String?
+  coachReviewedAt       DateTime?
+
   targetReps        String?
   targetWeightKg    Float?
   targetDistanceKm  Float?
@@ -605,8 +745,14 @@ model SetLog {
   actualPace        String?
   actualRounds      Int?
   actualRpe         Int?
-  isCompleted       Boolean            @default(true)
 
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@unique([workoutLogId, assignmentBlockItemId, roundNumber, setNumber], map: "workout_item_round_set_unique")
+  @@index([exerciseLogId])
+  @@index([workoutLogId])
+  @@index([assignmentBlockItemId])
   @@map("set_logs")
 }
 

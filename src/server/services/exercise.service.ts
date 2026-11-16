@@ -321,46 +321,57 @@ export class ExerciseService {
   }
 
   /**
-   * Delete an exercise only when not referenced by templates, assignments, or logs
+   * Delete or deactivate an exercise:
+   * Hard delete only if unreferenced; otherwise deactivate (isActive=false) with clear message.
    */
   async deleteExercise(id: string) {
     const exercise = await prisma.exercise.findUnique({
       where: { id },
-      include: {
-        _count: {
-          select: {
-            templateExercises: true,
-            assignmentExercises: true,
-            loggedExercises: true
-          }
-        }
-      }
+      select: { id: true, nameEn: true, isActive: true }
     });
 
     if (!exercise) {
       throw new ExerciseServiceError("Exercise not found", 404);
     }
 
-    const deps: string[] = [];
-    if (exercise._count.templateExercises > 0) {
-      deps.push(`${exercise._count.templateExercises} workout template(s)`);
-    }
-    if (exercise._count.assignmentExercises > 0) {
-      deps.push(`${exercise._count.assignmentExercises} assignment snapshot(s)`);
-    }
-    if (exercise._count.loggedExercises > 0) {
-      deps.push(`${exercise._count.loggedExercises} workout log(s)`);
+    const [templateExercises, assignmentExercises, loggedExercises, blockRows, assignmentBlockRows] =
+      await Promise.all([
+        prisma.workoutTemplateExercise.count({ where: { exerciseId: id } }),
+        prisma.clientWorkoutAssignmentExercise.count({ where: { exerciseId: id } }),
+        prisma.workoutExerciseLog.count({ where: { exerciseId: id } }),
+        prisma.$queryRaw<Array<{ count: number | bigint }>>`SELECT COUNT(*)::int AS count FROM "block_items" WHERE "exerciseId" = ${id}`,
+        prisma.$queryRaw<Array<{ count: number | bigint }>>`SELECT COUNT(*)::int AS count FROM "assignment_block_items" WHERE "exerciseId" = ${id}`
+      ]);
+
+    const blockItems = Number(blockRows[0]?.count || 0);
+    const assignmentBlockItems = Number(assignmentBlockRows[0]?.count || 0);
+
+    const totalRefs =
+      templateExercises +
+      assignmentExercises +
+      loggedExercises +
+      blockItems +
+      assignmentBlockItems;
+
+    if (totalRefs > 0) {
+      await prisma.exercise.update({
+        where: { id },
+        data: { isActive: false }
+      });
+      return {
+        deleted: false,
+        deactivated: true,
+        message: `Exercise "${exercise.nameEn}" is referenced by ${totalRefs} active item(s) (templates, blocks, or assignments). It has been deactivated instead of deleted to protect historical records.`
+      };
     }
 
-    if (deps.length > 0) {
-      throw new ExerciseServiceError(
-        `Cannot delete "${exercise.nameEn}" because it is referenced by ${deps.join(", ")}. Deactivate it instead to preserve historical records.`,
-        409
-      );
-    }
-
+    await prisma.exerciseSport.deleteMany({ where: { exerciseId: id } });
     await prisma.exercise.delete({ where: { id } });
-    return true;
+    return {
+      deleted: true,
+      deactivated: false,
+      message: `Exercise "${exercise.nameEn}" has been permanently deleted.`
+    };
   }
 
   /**

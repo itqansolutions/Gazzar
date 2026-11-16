@@ -49,12 +49,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const auth = await requireAuth(request, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
+    const auth = await requireAuth(request, [UserRole.ADMIN, UserRole.HEAD_COACH]);
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
-    await exerciseService.deleteExercise(id);
-    return NextResponse.json({ success: true, message: "Exercise deleted successfully" });
+    const result = await exerciseService.deleteExercise(id);
+    return NextResponse.json({ success: true, ...result });
   } catch (err: any) {
     console.error("[API_EXERCISE_ID_DELETE_ERROR]:", err);
     const status = err instanceof ExerciseServiceError ? err.statusCode : 400;

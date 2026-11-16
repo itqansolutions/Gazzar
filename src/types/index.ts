@@ -193,6 +193,46 @@ export interface WorkoutTemplateExercise {
   notes?: string | null;
 }
 
+export type BlockType = "SINGLE" | "SUPERSET" | "CIRCUIT" | "SEQUENCE";
+export type BlockItemType = "EXERCISE" | "REST" | "NOTE";
+
+export interface BlockItem {
+  id: string;
+  blockId: string;
+  orderIndex: number;
+  itemType: BlockItemType;
+  exerciseId?: string | null;
+  exercise?: Exercise | null;
+  targetSets?: number | null;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  restSeconds?: number | null;
+  tempo?: string | null;
+  instructions?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WorkoutBlock {
+  id: string;
+  templateId?: string | null;
+  programWorkoutId?: string | null;
+  orderIndex: number;
+  type: BlockType;
+  title?: string | null;
+  rounds?: number | null;
+  durationSeconds?: number | null;
+  restBetweenRoundsSeconds?: number | null;
+  notes?: string | null;
+  items: BlockItem[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface WorkoutTemplate {
   id: string;
   titleAr: string;
@@ -205,13 +245,17 @@ export interface WorkoutTemplate {
   creatorId?: string;
   creator?: CoachProfile;
   isActive?: boolean;
+  version?: number;
   _count?: {
     programWorkouts?: number;
     assignments?: number;
     exercises?: number;
+    blocks?: number;
   };
   exercises: WorkoutTemplateExercise[];
+  blocks?: WorkoutBlock[];
   createdAt: string;
+  updatedAt?: string;
 }
 
 export type ProgramLifecycleStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";

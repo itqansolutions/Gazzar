@@ -655,13 +655,13 @@ export class ProgramService {
       weekNumber: number;
       dayNumber: number;
       dayTitle: string;
-      templateId: string;
+      templateId: string | null;
       templateTitle: string;
       templateDescription: string | null;
       orderIndex: number;
       scheduledDate: Date;
       dateKey: string;
-      exercises: typeof program.weeks[number]["days"][number]["workouts"][number]["template"]["exercises"];
+      exercises: NonNullable<typeof program.weeks[number]["days"][number]["workouts"][number]["template"]>["exercises"];
     };
 
     const plannedWorkouts: PlannedWorkout[] = [];

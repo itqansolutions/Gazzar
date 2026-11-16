@@ -1,5 +1,12 @@
 import prisma from "@/lib/prisma";
-import { AssignmentSourceType, AssignmentStatus, Difficulty, MetricType } from "@prisma/client";
+import {
+  AssignmentSourceType,
+  AssignmentStatus,
+  Difficulty,
+  MetricType,
+  BlockType,
+  BlockItemType
+} from "@prisma/client";
 import {
   TargetExerciseInput,
   buildAssignmentSnapshotData,
@@ -37,8 +44,35 @@ export function deriveEffectiveStatus(assignment: {
   return "SCHEDULED";
 }
 
+export interface CreateTemplateBlockItemInput {
+  orderIndex?: number;
+  itemType?: BlockItemType;
+  exerciseId?: string | null;
+  targetSets?: number | null;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  restSeconds?: number | null;
+  tempo?: string | null;
+  instructions?: string | null;
+}
+
+export interface CreateTemplateBlockInput {
+  orderIndex?: number;
+  type?: BlockType;
+  title?: string | null;
+  rounds?: number | null;
+  durationSeconds?: number | null;
+  restBetweenRoundsSeconds?: number | null;
+  notes?: string | null;
+  items: CreateTemplateBlockItemInput[];
+}
+
 export interface CreateTemplateInput {
-  titleAr: string;
+  titleAr?: string;
   titleEn: string;
   descriptionAr?: string;
   descriptionEn?: string;
@@ -47,6 +81,7 @@ export interface CreateTemplateInput {
   creatorId?: string;
   isActive?: boolean;
   exercises?: TemplateExerciseInput[];
+  blocks?: CreateTemplateBlockInput[];
 }
 
 export interface UpdateTemplateInput extends Partial<CreateTemplateInput> {}
@@ -92,7 +127,8 @@ const templateInclude = {
     select: {
       programWorkouts: true,
       assignments: true,
-      exercises: true
+      exercises: true,
+      blocks: true
     }
   },
   exercises: {
@@ -104,6 +140,24 @@ const templateInclude = {
           primaryMuscle: true,
           equipment: true
         }
+      }
+    },
+    orderBy: { orderIndex: "asc" as const }
+  },
+  blocks: {
+    include: {
+      items: {
+        include: {
+          exercise: {
+            include: {
+              sport: true,
+              exerciseSports: { include: { sport: true } },
+              primaryMuscle: true,
+              equipment: true
+            }
+          }
+        },
+        orderBy: { orderIndex: "asc" as const }
       }
     },
     orderBy: { orderIndex: "asc" as const }
@@ -190,7 +244,7 @@ export class WorkoutService {
   }
 
   /**
-   * Create template with nested exercises atomically.
+   * Create template with blocks and nested items atomically.
    */
   async createTemplate(data: CreateTemplateInput) {
     const titleEn = (data.titleEn || data.titleAr || "").trim();
@@ -207,7 +261,35 @@ export class WorkoutService {
       throw new WorkoutServiceError("Selected sport does not exist", 400);
     }
 
-    const metricMap = await this.resolveExerciseMetricsMap(data.exercises);
+    // Extract all referenced exercise IDs
+    const blockExerciseIds: string[] = [];
+    if (data.blocks && data.blocks.length > 0) {
+      for (const b of data.blocks) {
+        if (b.items) {
+          for (const item of b.items) {
+            if ((!item.itemType || item.itemType === BlockItemType.EXERCISE) && item.exerciseId) {
+              blockExerciseIds.push(item.exerciseId);
+            }
+          }
+        }
+      }
+    }
+    const legacyExerciseIds = (data.exercises || []).map((e) => e.exerciseId).filter(Boolean);
+    const allUniqueExerciseIds = Array.from(new Set([...blockExerciseIds, ...legacyExerciseIds]));
+
+    const metricMap = new Map<string, MetricType>();
+    if (allUniqueExerciseIds.length > 0) {
+      const found = await prisma.exercise.findMany({
+        where: { id: { in: allUniqueExerciseIds } },
+        select: { id: true, metricType: true }
+      });
+      if (found.length !== allUniqueExerciseIds.length) {
+        throw new WorkoutServiceError("One or more selected exercises no longer exist", 400);
+      }
+      for (const ex of found) {
+        metricMap.set(ex.id, ex.metricType);
+      }
+    }
 
     const templateId = await prisma.$transaction(
       async (tx) => {
@@ -230,10 +312,108 @@ export class WorkoutService {
           }
         });
 
-        if (data.exercises && data.exercises.length > 0) {
+        if (data.blocks && data.blocks.length > 0) {
+          let globalOrder = 1;
+          const legacyItems: any[] = [];
+
+          for (let bIdx = 0; bIdx < data.blocks.length; bIdx++) {
+            const b = data.blocks[bIdx];
+            const block = await tx.workoutBlock.create({
+              data: {
+                templateId: template.id,
+                orderIndex: toOptionalInt(b.orderIndex) ?? bIdx + 1,
+                type: b.type || BlockType.SINGLE,
+                title: toOptionalText(b.title),
+                rounds: toOptionalInt(b.rounds),
+                durationSeconds: toOptionalInt(b.durationSeconds),
+                restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                notes: toOptionalText(b.notes)
+              }
+            });
+
+            if (b.items && b.items.length > 0) {
+              for (let iIdx = 0; iIdx < b.items.length; iIdx++) {
+                const it = b.items[iIdx];
+                const itemType = it.itemType || BlockItemType.EXERCISE;
+                const exerciseId = itemType === BlockItemType.EXERCISE ? it.exerciseId || null : null;
+
+                await tx.blockItem.create({
+                  data: {
+                    blockId: block.id,
+                    orderIndex: toOptionalInt(it.orderIndex) ?? iIdx + 1,
+                    itemType,
+                    exerciseId,
+                    targetSets: toOptionalInt(it.targetSets),
+                    targetReps: toOptionalText(it.targetReps),
+                    targetWeightKg: toOptionalFloat(it.targetWeightKg),
+                    targetDistanceKm: toOptionalFloat(it.targetDistanceKm),
+                    targetTimeSeconds: toOptionalInt(it.targetTimeSeconds),
+                    targetPace: toOptionalText(it.targetPace),
+                    targetRounds: toOptionalInt(it.targetRounds),
+                    restSeconds: toOptionalInt(it.restSeconds),
+                    tempo: toOptionalText(it.tempo),
+                    instructions: toOptionalText(it.instructions)
+                  }
+                });
+
+                if (itemType === BlockItemType.EXERCISE && exerciseId) {
+                  legacyItems.push({
+                    templateId: template.id,
+                    exerciseId,
+                    orderIndex: globalOrder++,
+                    targetSets: toOptionalInt(it.targetSets),
+                    targetReps: toOptionalText(it.targetReps),
+                    targetWeightKg: toOptionalFloat(it.targetWeightKg),
+                    targetDistanceKm: toOptionalFloat(it.targetDistanceKm),
+                    targetTimeSeconds: toOptionalInt(it.targetTimeSeconds),
+                    targetPace: toOptionalText(it.targetPace),
+                    targetRounds: toOptionalInt(it.targetRounds),
+                    restSeconds: toOptionalInt(it.restSeconds),
+                    tempo: toOptionalText(it.tempo),
+                    notes: toOptionalText(it.instructions)
+                  });
+                }
+              }
+            }
+          }
+
+          if (legacyItems.length > 0) {
+            await tx.workoutTemplateExercise.createMany({ data: legacyItems });
+          }
+        } else if (data.exercises && data.exercises.length > 0) {
           await tx.workoutTemplateExercise.createMany({
             data: normalizeTemplateExerciseData(template.id, data.exercises, metricMap)
           });
+
+          for (let eIdx = 0; eIdx < data.exercises.length; eIdx++) {
+            const ex = data.exercises[eIdx];
+            const block = await tx.workoutBlock.create({
+              data: {
+                templateId: template.id,
+                orderIndex: eIdx + 1,
+                type: BlockType.SINGLE,
+                rounds: 1
+              }
+            });
+            await tx.blockItem.create({
+              data: {
+                blockId: block.id,
+                orderIndex: 1,
+                itemType: BlockItemType.EXERCISE,
+                exerciseId: ex.exerciseId,
+                targetSets: toOptionalInt(ex.targetSets),
+                targetReps: toOptionalText(ex.targetReps),
+                targetWeightKg: toOptionalFloat(ex.targetWeightKg),
+                targetDistanceKm: toOptionalFloat(ex.targetDistanceKm),
+                targetTimeSeconds: toOptionalInt(ex.targetTimeSeconds),
+                targetPace: toOptionalText(ex.targetPace),
+                targetRounds: toOptionalInt(ex.targetRounds),
+                restSeconds: toOptionalInt(ex.restSeconds),
+                tempo: toOptionalText(ex.tempo),
+                instructions: toOptionalText(ex.notes)
+              }
+            });
+          }
         }
 
         return template.id;
@@ -245,8 +425,8 @@ export class WorkoutService {
   }
 
   /**
-   * Update template metadata, status, and ordered exercise list.
-   * Existing ClientWorkoutAssignmentExercise snapshots remain completely immutable.
+   * Update template metadata, status, blocks, and ordered items.
+   * Existing ClientWorkoutAssignment snapshots remain completely immutable.
    */
   async updateTemplate(id: string, data: UpdateTemplateInput) {
     const existing = await prisma.workoutTemplate.findUnique({
@@ -264,8 +444,35 @@ export class WorkoutService {
       }
     }
 
-    const metricMap =
-      data.exercises !== undefined ? await this.resolveExerciseMetricsMap(data.exercises) : undefined;
+    // Extract all referenced exercise IDs
+    const blockExerciseIds: string[] = [];
+    if (data.blocks && data.blocks.length > 0) {
+      for (const b of data.blocks) {
+        if (b.items) {
+          for (const item of b.items) {
+            if ((!item.itemType || item.itemType === BlockItemType.EXERCISE) && item.exerciseId) {
+              blockExerciseIds.push(item.exerciseId);
+            }
+          }
+        }
+      }
+    }
+    const legacyExerciseIds = (data.exercises || []).map((e) => e.exerciseId).filter(Boolean);
+    const allUniqueExerciseIds = Array.from(new Set([...blockExerciseIds, ...legacyExerciseIds]));
+
+    const metricMap = new Map<string, MetricType>();
+    if (allUniqueExerciseIds.length > 0) {
+      const found = await prisma.exercise.findMany({
+        where: { id: { in: allUniqueExerciseIds } },
+        select: { id: true, metricType: true }
+      });
+      if (found.length !== allUniqueExerciseIds.length) {
+        throw new WorkoutServiceError("One or more selected exercises no longer exist", 400);
+      }
+      for (const ex of found) {
+        metricMap.set(ex.id, ex.metricType);
+      }
+    }
 
     await prisma.$transaction(
       async (tx) => {
@@ -290,21 +497,124 @@ export class WorkoutService {
         if (data.sportId) updateData.sportId = data.sportId;
         if (data.difficulty) updateData.difficulty = data.difficulty;
         if (data.isActive !== undefined) updateData.isActive = Boolean(data.isActive);
+        updateData.version = { increment: 1 };
 
         await tx.workoutTemplate.update({
           where: { id },
           data: updateData
         });
 
-        if (data.exercises !== undefined) {
-          await tx.workoutTemplateExercise.deleteMany({
-            where: { templateId: id }
-          });
+        if (data.blocks !== undefined) {
+          await tx.workoutBlock.deleteMany({ where: { templateId: id } });
+          await tx.workoutTemplateExercise.deleteMany({ where: { templateId: id } });
+
+          if (data.blocks.length > 0) {
+            let globalOrder = 1;
+            const legacyItems: any[] = [];
+
+            for (let bIdx = 0; bIdx < data.blocks.length; bIdx++) {
+              const b = data.blocks[bIdx];
+              const block = await tx.workoutBlock.create({
+                data: {
+                  templateId: id,
+                  orderIndex: toOptionalInt(b.orderIndex) ?? bIdx + 1,
+                  type: b.type || BlockType.SINGLE,
+                  title: toOptionalText(b.title),
+                  rounds: toOptionalInt(b.rounds),
+                  durationSeconds: toOptionalInt(b.durationSeconds),
+                  restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                  notes: toOptionalText(b.notes)
+                }
+              });
+
+              if (b.items && b.items.length > 0) {
+                for (let iIdx = 0; iIdx < b.items.length; iIdx++) {
+                  const it = b.items[iIdx];
+                  const itemType = it.itemType || BlockItemType.EXERCISE;
+                  const exerciseId = itemType === BlockItemType.EXERCISE ? it.exerciseId || null : null;
+
+                  await tx.blockItem.create({
+                    data: {
+                      blockId: block.id,
+                      orderIndex: toOptionalInt(it.orderIndex) ?? iIdx + 1,
+                      itemType,
+                      exerciseId,
+                      targetSets: toOptionalInt(it.targetSets),
+                      targetReps: toOptionalText(it.targetReps),
+                      targetWeightKg: toOptionalFloat(it.targetWeightKg),
+                      targetDistanceKm: toOptionalFloat(it.targetDistanceKm),
+                      targetTimeSeconds: toOptionalInt(it.targetTimeSeconds),
+                      targetPace: toOptionalText(it.targetPace),
+                      targetRounds: toOptionalInt(it.targetRounds),
+                      restSeconds: toOptionalInt(it.restSeconds),
+                      tempo: toOptionalText(it.tempo),
+                      instructions: toOptionalText(it.instructions)
+                    }
+                  });
+
+                  if (itemType === BlockItemType.EXERCISE && exerciseId) {
+                    legacyItems.push({
+                      templateId: id,
+                      exerciseId,
+                      orderIndex: globalOrder++,
+                      targetSets: toOptionalInt(it.targetSets),
+                      targetReps: toOptionalText(it.targetReps),
+                      targetWeightKg: toOptionalFloat(it.targetWeightKg),
+                      targetDistanceKm: toOptionalFloat(it.targetDistanceKm),
+                      targetTimeSeconds: toOptionalInt(it.targetTimeSeconds),
+                      targetPace: toOptionalText(it.targetPace),
+                      targetRounds: toOptionalInt(it.targetRounds),
+                      restSeconds: toOptionalInt(it.restSeconds),
+                      tempo: toOptionalText(it.tempo),
+                      notes: toOptionalText(it.instructions)
+                    });
+                  }
+                }
+              }
+            }
+
+            if (legacyItems.length > 0) {
+              await tx.workoutTemplateExercise.createMany({ data: legacyItems });
+            }
+          }
+        } else if (data.exercises !== undefined) {
+          await tx.workoutTemplateExercise.deleteMany({ where: { templateId: id } });
+          await tx.workoutBlock.deleteMany({ where: { templateId: id } });
 
           if (data.exercises.length > 0) {
             await tx.workoutTemplateExercise.createMany({
               data: normalizeTemplateExerciseData(id, data.exercises, metricMap)
             });
+
+            for (let eIdx = 0; eIdx < data.exercises.length; eIdx++) {
+              const ex = data.exercises[eIdx];
+              const block = await tx.workoutBlock.create({
+                data: {
+                  templateId: id,
+                  orderIndex: eIdx + 1,
+                  type: BlockType.SINGLE,
+                  rounds: 1
+                }
+              });
+              await tx.blockItem.create({
+                data: {
+                  blockId: block.id,
+                  orderIndex: 1,
+                  itemType: BlockItemType.EXERCISE,
+                  exerciseId: ex.exerciseId,
+                  targetSets: toOptionalInt(ex.targetSets),
+                  targetReps: toOptionalText(ex.targetReps),
+                  targetWeightKg: toOptionalFloat(ex.targetWeightKg),
+                  targetDistanceKm: toOptionalFloat(ex.targetDistanceKm),
+                  targetTimeSeconds: toOptionalInt(ex.targetTimeSeconds),
+                  targetPace: toOptionalText(ex.targetPace),
+                  targetRounds: toOptionalInt(ex.targetRounds),
+                  restSeconds: toOptionalInt(ex.restSeconds),
+                  tempo: toOptionalText(ex.tempo),
+                  instructions: toOptionalText(ex.notes)
+                }
+              });
+            }
           }
         }
       },
@@ -746,6 +1056,9 @@ export class WorkoutService {
     if (!assignment) throw new WorkoutServiceError("Assignment not found", 404);
     if (assignment.status === AssignmentStatus.SKIPPED) {
       throw new WorkoutServiceError("Cannot log execution on a skipped workout", 409);
+    }
+    if (assignment.status === AssignmentStatus.COMPLETED) {
+      throw new WorkoutServiceError("Cannot overwrite or modify an already completed workout session. Completed sessions are immutable.", 409);
     }
 
     const mode = data.mode === "SAVE_PROGRESS" ? "SAVE_PROGRESS" : "COMPLETE";

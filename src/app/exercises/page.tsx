@@ -56,6 +56,9 @@ export default function ExercisesPage() {
   const canManageExercises =
     user?.role === "ADMIN" || user?.role === "HEAD_COACH" || user?.role === "COACH";
 
+  const canDeleteExercises =
+    user?.role === "ADMIN" || user?.role === "HEAD_COACH";
+
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSport, setSelectedSport] = useState("ALL");
@@ -350,7 +353,11 @@ export default function ExercisesPage() {
 
       await loadExercises();
       setDeleteConfirmExercise(null);
-      showNotification("Exercise deleted successfully");
+      if (json.deactivated) {
+        showNotification(json.message || "Exercise was deactivated to preserve historical records", "success");
+      } else {
+        showNotification("Exercise deleted successfully");
+      }
     } catch (err: any) {
       showNotification(err.message || "Error deleting exercise", "error");
     } finally {
@@ -659,17 +666,19 @@ export default function ExercisesPage() {
                           >
                             {isActive ? <Archive className="w-3.5 h-3.5" /> : <RotateCcw className="w-3.5 h-3.5" />}
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeleteError(null);
-                              setDeleteConfirmExercise(ex);
-                            }}
-                            title="Delete Exercise"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {canDeleteExercises && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeleteConfirmExercise(ex);
+                              }}
+                              title="Delete Exercise"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

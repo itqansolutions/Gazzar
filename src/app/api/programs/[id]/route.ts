@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { programService, ProgramServiceError } from "@/server/services/program.service";
 import { requireAuth } from "@/lib/auth/route-guard";
 
@@ -54,6 +55,26 @@ export async function DELETE(
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
+
+    if (auth.actor.user.role === UserRole.COACH) {
+      const existing = await prisma.trainingProgram.findUnique({
+        where: { id },
+        select: { creatorId: true, creator: { select: { userId: true } } }
+      });
+      if (!existing) {
+        return NextResponse.json({ success: false, error: "Training program not found" }, { status: 404 });
+      }
+      const isOwner =
+        existing.creatorId === auth.actor.coachProfileId ||
+        existing.creator?.userId === auth.actor.user.id;
+      if (!isOwner) {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: You may only delete training programs you created" },
+          { status: 403 }
+        );
+      }
+    }
+
     await programService.deleteProgram(id);
     return NextResponse.json({ success: true, message: "Program deleted successfully" });
   } catch (error: any) {

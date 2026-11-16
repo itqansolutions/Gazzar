@@ -12,7 +12,7 @@
     "prisma:seed": "node prisma/seed.js",
     "prisma:seed:demo": "node prisma/seed.js --demo",
     "admin:provision": "tsx scripts/provision-admin.ts",
-    "railway:start": "prisma generate && prisma db push && next start"
+    "railway:start": "prisma generate && prisma migrate deploy && next start"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

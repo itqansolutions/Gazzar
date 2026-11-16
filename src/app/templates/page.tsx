@@ -8,6 +8,10 @@ import {
   WorkoutTemplate,
   Exercise,
   WorkoutTemplateExercise,
+  WorkoutBlock,
+  BlockItem,
+  BlockType,
+  BlockItemType,
   Difficulty,
   ClientProfile,
   MetricType,
@@ -37,30 +41,70 @@ import {
   RotateCcw,
   Route,
   Repeat,
-  Hourglass
+  Hourglass,
+  Coffee,
+  FileText
 } from "lucide-react";
 
 type StatusFilter = "ALL" | "ACTIVE" | "ARCHIVED";
 
-interface BuilderExerciseItem {
+const BLOCK_TYPE_META: Record<BlockType, { label: string; desc: string; badgeClass: string; defaultRounds: number }> = {
+  SINGLE: {
+    label: "Single Exercise",
+    desc: "Standard straight sets",
+    badgeClass: "bg-blue-500/15 text-blue-600 dark:text-blue-300 border-blue-500/30",
+    defaultRounds: 1
+  },
+  SUPERSET: {
+    label: "Superset",
+    desc: "2+ exercises paired back-to-back",
+    badgeClass: "bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-500/30",
+    defaultRounds: 3
+  },
+  CIRCUIT: {
+    label: "Circuit",
+    desc: "3+ exercises performed consecutively in rounds",
+    badgeClass: "bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30",
+    defaultRounds: 3
+  },
+  SEQUENCE: {
+    label: "Sequence",
+    desc: "Timed intervals, EMOM, or movement sequence",
+    badgeClass: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30",
+    defaultRounds: 1
+  }
+};
+
+interface BuilderBlockItem {
   uid: string;
-  exerciseId: string;
-  exerciseNameAr: string;
-  exerciseNameEn: string;
-  metricType: MetricType;
-  sports: Array<{ id: string; nameEn: string; nameAr: string }>;
+  itemType: BlockItemType;
+  exerciseId?: string;
+  exerciseNameAr?: string;
+  exerciseNameEn?: string;
+  metricType?: MetricType;
+  sports?: Array<{ id: string; nameEn: string; nameAr: string }>;
   primaryMuscleName?: string;
-  instructions?: string;
-  targetSets: number | null;
-  targetReps: string;
-  targetWeightKg: number | null;
-  targetDistanceKm: number | null;
-  targetTimeSeconds: number | null;
-  targetPace: string;
-  targetRounds: number | null;
-  restSeconds: number;
-  tempo: string;
+  instructions?: string | null;
+  targetSets?: number | null;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  restSeconds?: number | null;
+  tempo?: string | null;
+}
+
+interface BuilderBlock {
+  uid: string;
+  type: BlockType;
+  title: string;
+  rounds: number | null;
+  durationSeconds: number | null;
+  restBetweenRoundsSeconds: number | null;
   notes: string;
+  items: BuilderBlockItem[];
 }
 
 function createUid(): string {
@@ -226,8 +270,9 @@ export default function TemplatesPage() {
   const [isActiveTemplate, setIsActiveTemplate] = useState(true);
 
   // Builder routine state
-  const [builderExercises, setBuilderExercises] = useState<BuilderExerciseItem[]>([]);
-  const [editingBuilderUid, setEditingBuilderUid] = useState<string | null>(null);
+  const [builderBlocks, setBuilderBlocks] = useState<BuilderBlock[]>([]);
+  const [activeBlockUid, setActiveBlockUid] = useState<string | null>(null);
+  const [editingItemUid, setEditingItemUid] = useState<string | null>(null);
 
   // Exercise picker state inside builder
   const [pickerSportFilter, setPickerSportFilter] = useState<string>("ALL");
@@ -365,7 +410,69 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleAddExerciseToBuilder = () => {
+  const handleAddBlock = (type: BlockType = "SINGLE") => {
+    const meta = BLOCK_TYPE_META[type];
+    const newBlock: BuilderBlock = {
+      uid: createUid(),
+      type,
+      title: `${meta.label} Block`,
+      rounds: meta.defaultRounds,
+      durationSeconds: null,
+      restBetweenRoundsSeconds: type === "SUPERSET" ? 90 : type === "CIRCUIT" ? 120 : 60,
+      notes: "",
+      items: []
+    };
+    setBuilderBlocks((prev) => [...prev, newBlock]);
+    setActiveBlockUid(newBlock.uid);
+  };
+
+  const handleRemoveBlock = (blockUid: string) => {
+    setBuilderBlocks((prev) => {
+      const remaining = prev.filter((b) => b.uid !== blockUid);
+      if (activeBlockUid === blockUid && remaining.length > 0) {
+        setActiveBlockUid(remaining[0].uid);
+      }
+      return remaining;
+    });
+  };
+
+  const handleMoveBlock = (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= builderBlocks.length) return;
+    const updated = [...builderBlocks];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    setBuilderBlocks(updated);
+  };
+
+  const handleUpdateBlock = (blockUid: string, patch: Partial<BuilderBlock>) => {
+    setBuilderBlocks((prev) =>
+      prev.map((b) => (b.uid === blockUid ? { ...b, ...patch } : b))
+    );
+  };
+
+  const handleAddExerciseToBlock = (blockUid?: string) => {
+    let targetUid = blockUid || activeBlockUid;
+    if (!targetUid || !builderBlocks.some((b) => b.uid === targetUid)) {
+      if (builderBlocks.length > 0) {
+        targetUid = builderBlocks[0].uid;
+      } else {
+        const newBlock: BuilderBlock = {
+          uid: createUid(),
+          type: "SINGLE",
+          title: "Single Exercise Block",
+          rounds: 1,
+          durationSeconds: null,
+          restBetweenRoundsSeconds: 60,
+          notes: "",
+          items: []
+        };
+        setBuilderBlocks([newBlock]);
+        setActiveBlockUid(newBlock.uid);
+        targetUid = newBlock.uid;
+      }
+    }
+
     const foundEx = selectedLibraryExercise;
     if (!foundEx) {
       setFormError("Please select an exercise from the library first.");
@@ -374,19 +481,19 @@ export default function TemplatesPage() {
     setFormError(null);
 
     const metric = foundEx.metricType || "SETS_REPS_WEIGHT";
-    const newItem: BuilderExerciseItem = {
+    const newItem: BuilderBlockItem = {
       uid: createUid(),
+      itemType: "EXERCISE",
       exerciseId: foundEx.id,
       exerciseNameAr: foundEx.nameAr || foundEx.nameEn,
       exerciseNameEn: foundEx.nameEn || foundEx.nameAr,
       metricType: metric,
       sports: getExerciseSports(foundEx),
       primaryMuscleName: foundEx.primaryMuscle?.nameEn || foundEx.primaryMuscle?.nameAr,
-      instructions: foundEx.instructionsEn || foundEx.instructionsAr,
       targetSets:
         metric === "SETS_REPS_WEIGHT" || metric === "TIME_HOLD" ? Math.max(1, Number(curSets) || 3) : null,
       targetReps:
-        metric === "SETS_REPS_WEIGHT" || metric === "ROUNDS_REPS_TIME" ? curReps.trim() || "10" : "",
+        metric === "SETS_REPS_WEIGHT" || metric === "ROUNDS_REPS_TIME" ? curReps.trim() || "10" : null,
       targetWeightKg:
         (metric === "SETS_REPS_WEIGHT" || metric === "TIME_HOLD") && curWeight !== ""
           ? Number(curWeight)
@@ -403,62 +510,115 @@ export default function TemplatesPage() {
         curTimeSeconds !== ""
           ? Number(curTimeSeconds)
           : null,
-      targetPace: metric === "DISTANCE_TIME_PACE" ? curPace.trim() : "",
+      targetPace: metric === "DISTANCE_TIME_PACE" ? curPace.trim() || null : null,
       targetRounds: metric === "ROUNDS_REPS_TIME" ? Math.max(1, Number(curRounds) || 4) : null,
       restSeconds: Math.max(0, Number(curRest) || 60),
-      tempo: curTempo.trim(),
-      notes: curNotes.trim()
+      tempo: curTempo.trim() || null,
+      instructions: curNotes.trim() || null
     };
 
-    setBuilderExercises((prev) => [...prev, newItem]);
+    setBuilderBlocks((prev) =>
+      prev.map((b) => (b.uid === targetUid ? { ...b, items: [...b.items, newItem] } : b))
+    );
+    setActiveBlockUid(targetUid);
     setCurNotes("");
     setCurTempo("");
   };
 
-  const handleMoveBuilderExercise = (index: number, direction: -1 | 1) => {
+  const handleAddRestToBlock = (blockUid: string, restSec: number = 60) => {
+    const newItem: BuilderBlockItem = {
+      uid: createUid(),
+      itemType: "REST",
+      restSeconds: restSec,
+      instructions: "Rest & recovery between movements"
+    };
+    setBuilderBlocks((prev) =>
+      prev.map((b) => (b.uid === blockUid ? { ...b, items: [...b.items, newItem] } : b))
+    );
+    setActiveBlockUid(blockUid);
+  };
+
+  const handleAddNoteToBlock = (blockUid: string, noteText: string = "Coaching cue") => {
+    const newItem: BuilderBlockItem = {
+      uid: createUid(),
+      itemType: "NOTE",
+      instructions: noteText
+    };
+    setBuilderBlocks((prev) =>
+      prev.map((b) => (b.uid === blockUid ? { ...b, items: [...b.items, newItem] } : b))
+    );
+    setActiveBlockUid(blockUid);
+  };
+
+  const handleRemoveItem = (blockUid: string, itemUid: string) => {
+    setBuilderBlocks((prev) =>
+      prev.map((b) =>
+        b.uid === blockUid
+          ? { ...b, items: b.items.filter((it) => it.uid !== itemUid) }
+          : b
+      )
+    );
+    if (editingItemUid === itemUid) setEditingItemUid(null);
+  };
+
+  const handleMoveItem = (blockUid: string, index: number, direction: -1 | 1) => {
+    const block = builderBlocks.find((b) => b.uid === blockUid);
+    if (!block) return;
     const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= builderExercises.length) return;
-
-    const updated = [...builderExercises];
-    const [moved] = updated.splice(index, 1);
-    updated.splice(targetIndex, 0, moved);
-    setBuilderExercises(updated);
-    setReorderAnnouncement(
-      `Moved ${moved.exerciseNameEn} to position ${targetIndex + 1} of ${updated.length}`
+    if (targetIndex < 0 || targetIndex >= block.items.length) return;
+    const items = [...block.items];
+    const [moved] = items.splice(index, 1);
+    items.splice(targetIndex, 0, moved);
+    setBuilderBlocks((prev) =>
+      prev.map((b) => (b.uid === blockUid ? { ...b, items } : b))
     );
   };
 
-  const handleUpdateBuilderItem = (uid: string, patch: Partial<BuilderExerciseItem>) => {
-    setBuilderExercises((prev) =>
-      prev.map((item) => (item.uid === uid ? { ...item, ...patch } : item))
+  const handleUpdateItem = (blockUid: string, itemUid: string, patch: Partial<BuilderBlockItem>) => {
+    setBuilderBlocks((prev) =>
+      prev.map((b) =>
+        b.uid === blockUid
+          ? {
+              ...b,
+              items: b.items.map((it) => (it.uid === itemUid ? { ...it, ...patch } : it))
+            }
+          : b
+      )
     );
   };
 
-  const handleRemoveExerciseFromBuilder = (uid: string) => {
-    setBuilderExercises((prev) => prev.filter((item) => item.uid !== uid));
-    if (editingBuilderUid === uid) setEditingBuilderUid(null);
-  };
+  const totalItemsInBuilder = builderBlocks.reduce((acc, b) => acc + b.items.length, 0);
 
-  const serializeBuilderPayload = () =>
-    builderExercises.map((item, idx) => ({
-      exerciseId: item.exerciseId,
-      orderIndex: idx + 1,
-      targetSets: item.targetSets,
-      targetReps: item.targetReps || null,
-      targetWeightKg: item.targetWeightKg,
-      targetDistanceKm: item.targetDistanceKm,
-      targetTimeSeconds: item.targetTimeSeconds,
-      targetPace: item.targetPace || null,
-      targetRounds: item.targetRounds,
-      restSeconds: item.restSeconds,
-      tempo: item.tempo || null,
-      notes: item.notes || null
+  const serializeBlocksPayload = () =>
+    builderBlocks.map((b, bIdx) => ({
+      orderIndex: bIdx + 1,
+      type: b.type,
+      title: b.title.trim() || null,
+      rounds: b.rounds !== null && b.rounds !== undefined && b.rounds !== ("" as any) ? Number(b.rounds) : null,
+      durationSeconds: b.durationSeconds !== null && b.durationSeconds !== undefined && b.durationSeconds !== ("" as any) ? Number(b.durationSeconds) : null,
+      restBetweenRoundsSeconds: b.restBetweenRoundsSeconds !== null && b.restBetweenRoundsSeconds !== undefined && b.restBetweenRoundsSeconds !== ("" as any) ? Number(b.restBetweenRoundsSeconds) : null,
+      notes: b.notes.trim() || null,
+      items: b.items.map((it, iIdx) => ({
+        orderIndex: iIdx + 1,
+        itemType: it.itemType,
+        exerciseId: it.itemType === "EXERCISE" ? it.exerciseId : null,
+        targetSets: it.targetSets !== null && it.targetSets !== undefined && it.targetSets !== ("" as any) ? Number(it.targetSets) : null,
+        targetReps: it.targetReps ? String(it.targetReps).trim() : null,
+        targetWeightKg: it.targetWeightKg !== null && it.targetWeightKg !== undefined && it.targetWeightKg !== ("" as any) ? Number(it.targetWeightKg) : null,
+        targetDistanceKm: it.targetDistanceKm !== null && it.targetDistanceKm !== undefined && it.targetDistanceKm !== ("" as any) ? Number(it.targetDistanceKm) : null,
+        targetTimeSeconds: it.targetTimeSeconds !== null && it.targetTimeSeconds !== undefined && it.targetTimeSeconds !== ("" as any) ? Number(it.targetTimeSeconds) : null,
+        targetPace: it.targetPace ? String(it.targetPace).trim() : null,
+        targetRounds: it.targetRounds !== null && it.targetRounds !== undefined && it.targetRounds !== ("" as any) ? Number(it.targetRounds) : null,
+        restSeconds: it.restSeconds !== null && it.restSeconds !== undefined && it.restSeconds !== ("" as any) ? Number(it.restSeconds) : null,
+        tempo: it.tempo ? String(it.tempo).trim() : null,
+        instructions: it.instructions ? String(it.instructions).trim() : null
+      }))
     }));
 
   const openCreateModal = () => {
     setFormError(null);
     setEditingTemplate(null);
-    setEditingBuilderUid(null);
+    setEditingItemUid(null);
     setTitleAr("");
     setTitleEn("");
     setDescEn("");
@@ -468,7 +628,18 @@ export default function TemplatesPage() {
     setPickerSearch("");
     setDifficulty("INTERMEDIATE");
     setIsActiveTemplate(true);
-    setBuilderExercises([]);
+    const initialBlock: BuilderBlock = {
+      uid: createUid(),
+      type: "SINGLE",
+      title: "Block 1",
+      rounds: 1,
+      durationSeconds: null,
+      restBetweenRoundsSeconds: 60,
+      notes: "",
+      items: []
+    };
+    setBuilderBlocks([initialBlock]);
+    setActiveBlockUid(initialBlock.uid);
     if (exercises.length > 0) {
       const firstActiveEx = exercises.find((e) => e.isActive !== false) || exercises[0];
       handleSelectPickerExercise(firstActiveEx.id);
@@ -478,7 +649,7 @@ export default function TemplatesPage() {
 
   const openEditModal = (tpl: WorkoutTemplate) => {
     setFormError(null);
-    setEditingBuilderUid(null);
+    setEditingItemUid(null);
     setEditingTemplate(tpl);
     setTitleAr(tpl.titleAr || "");
     setTitleEn(tpl.titleEn || "");
@@ -489,28 +660,87 @@ export default function TemplatesPage() {
     setDifficulty(tpl.difficulty);
     setIsActiveTemplate(tpl.isActive ?? true);
 
-    const items: BuilderExerciseItem[] = (tpl.exercises || []).map((te: WorkoutTemplateExercise) => ({
-      uid: te.id || createUid(),
-      exerciseId: te.exerciseId,
-      exerciseNameAr: te.exercise?.nameAr || te.exercise?.nameEn || "Exercise",
-      exerciseNameEn: te.exercise?.nameEn || te.exercise?.nameAr || "Exercise",
-      metricType: te.exercise?.metricType || "SETS_REPS_WEIGHT",
-      sports: getExerciseSports(te.exercise),
-      primaryMuscleName: te.exercise?.primaryMuscle?.nameEn || te.exercise?.primaryMuscle?.nameAr,
-      instructions: te.exercise?.instructionsEn || te.exercise?.instructionsAr,
-      targetSets: te.targetSets ?? null,
-      targetReps: te.targetReps ? String(te.targetReps) : "",
-      targetWeightKg: te.targetWeightKg ?? null,
-      targetDistanceKm: te.targetDistanceKm ?? null,
-      targetTimeSeconds: te.targetTimeSeconds ?? null,
-      targetPace: te.targetPace || "",
-      targetRounds: te.targetRounds ?? null,
-      restSeconds: te.restSeconds ?? 60,
-      tempo: te.tempo || "",
-      notes: te.notes || ""
-    }));
+    if (tpl.blocks && tpl.blocks.length > 0) {
+      const blocks: BuilderBlock[] = tpl.blocks.map((b) => ({
+        uid: b.id || createUid(),
+        type: b.type,
+        title: b.title || "",
+        rounds: b.rounds ?? (b.type === "SUPERSET" || b.type === "CIRCUIT" ? 3 : 1),
+        durationSeconds: b.durationSeconds ?? null,
+        restBetweenRoundsSeconds: b.restBetweenRoundsSeconds ?? null,
+        notes: b.notes || "",
+        items: (b.items || []).map((it) => ({
+          uid: it.id || createUid(),
+          itemType: it.itemType,
+          exerciseId: it.exerciseId || undefined,
+          exerciseNameAr: it.exercise?.nameAr || it.exercise?.nameEn || "Exercise",
+          exerciseNameEn: it.exercise?.nameEn || it.exercise?.nameAr || "Exercise",
+          metricType: it.exercise?.metricType || "SETS_REPS_WEIGHT",
+          sports: getExerciseSports(it.exercise),
+          primaryMuscleName: it.exercise?.primaryMuscle?.nameEn || it.exercise?.primaryMuscle?.nameAr,
+          targetSets: it.targetSets ?? null,
+          targetReps: it.targetReps ? String(it.targetReps) : null,
+          targetWeightKg: it.targetWeightKg ?? null,
+          targetDistanceKm: it.targetDistanceKm ?? null,
+          targetTimeSeconds: it.targetTimeSeconds ?? null,
+          targetPace: it.targetPace || null,
+          targetRounds: it.targetRounds ?? null,
+          restSeconds: it.restSeconds ?? null,
+          tempo: it.tempo || null,
+          instructions: it.instructions || null
+        }))
+      }));
+      setBuilderBlocks(blocks);
+      setActiveBlockUid(blocks[0]?.uid || null);
+    } else if (tpl.exercises && tpl.exercises.length > 0) {
+      const blocks: BuilderBlock[] = [
+        {
+          uid: createUid(),
+          type: "SINGLE",
+          title: "Main Block",
+          rounds: 1,
+          durationSeconds: null,
+          restBetweenRoundsSeconds: 60,
+          notes: "",
+          items: tpl.exercises.map((te) => ({
+            uid: te.id || createUid(),
+            itemType: "EXERCISE",
+            exerciseId: te.exerciseId,
+            exerciseNameAr: te.exercise?.nameAr || te.exercise?.nameEn || "Exercise",
+            exerciseNameEn: te.exercise?.nameEn || te.exercise?.nameAr || "Exercise",
+            metricType: te.exercise?.metricType || "SETS_REPS_WEIGHT",
+            sports: getExerciseSports(te.exercise),
+            primaryMuscleName: te.exercise?.primaryMuscle?.nameEn || te.exercise?.primaryMuscle?.nameAr,
+            targetSets: te.targetSets ?? null,
+            targetReps: te.targetReps ? String(te.targetReps) : null,
+            targetWeightKg: te.targetWeightKg ?? null,
+            targetDistanceKm: te.targetDistanceKm ?? null,
+            targetTimeSeconds: te.targetTimeSeconds ?? null,
+            targetPace: te.targetPace || null,
+            targetRounds: te.targetRounds ?? null,
+            restSeconds: te.restSeconds ?? null,
+            tempo: te.tempo || null,
+            instructions: te.notes || null
+          }))
+        }
+      ];
+      setBuilderBlocks(blocks);
+      setActiveBlockUid(blocks[0]?.uid || null);
+    } else {
+      const initialBlock: BuilderBlock = {
+        uid: createUid(),
+        type: "SINGLE",
+        title: "Block 1",
+        rounds: 1,
+        durationSeconds: null,
+        restBetweenRoundsSeconds: 60,
+        notes: "",
+        items: []
+      };
+      setBuilderBlocks([initialBlock]);
+      setActiveBlockUid(initialBlock.uid);
+    }
 
-    setBuilderExercises(items);
     if (exercises.length > 0) {
       const firstActiveEx = exercises.find((e) => e.isActive !== false) || exercises[0];
       handleSelectPickerExercise(firstActiveEx.id);
@@ -528,8 +758,8 @@ export default function TemplatesPage() {
       setFormError("Template title is required.");
       return;
     }
-    if (builderExercises.length === 0) {
-      setFormError("Add at least one exercise to the workout routine before saving.");
+    if (totalItemsInBuilder === 0) {
+      setFormError("Add at least one exercise or item to the workout blocks before saving.");
       return;
     }
     if (isSubmitting) return;
@@ -551,7 +781,7 @@ export default function TemplatesPage() {
           sportId: sportId || sports[0]?.id || "sport-bodybuilding",
           difficulty,
           isActive: isActiveTemplate,
-          exercises: serializeBuilderPayload()
+          blocks: serializeBlocksPayload()
         })
       });
 
@@ -812,7 +1042,11 @@ export default function TemplatesPage() {
         <div className="space-y-4">
           {filteredTemplates.map((tpl) => {
             const isExpanded = expandedId === tpl.id;
-            const exerciseCount = tpl.exercises?.length || 0;
+            const blockCount = tpl.blocks?.length || 0;
+            const totalItemCount =
+              tpl.blocks && tpl.blocks.length > 0
+                ? tpl.blocks.reduce((acc, b) => acc + (b.items?.length || 0), 0)
+                : tpl.exercises?.length || 0;
             const archived = tpl.isActive === false;
 
             return (
@@ -838,9 +1072,15 @@ export default function TemplatesPage() {
                         <h3 className="text-base font-bold text-slate-900 dark:text-white">
                           {tpl.titleEn || tpl.titleAr}
                         </h3>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">
-                          {exerciseCount} exercises
-                        </span>
+                        {blockCount > 0 ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">
+                            {blockCount} {blockCount === 1 ? "block" : "blocks"} • {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">
+                            {totalItemCount} {totalItemCount === 1 ? "exercise" : "exercises"}
+                          </span>
+                        )}
                         {tpl.sport && (
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             {tpl.sport.nameEn || tpl.sport.nameAr}
@@ -887,7 +1127,7 @@ export default function TemplatesPage() {
                         <button
                           type="button"
                           onClick={() => openEditModal(tpl)}
-                          title="Edit Template & Exercises"
+                          title="Edit Template & Blocks"
                           className="p-2 rounded-xl text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
@@ -927,92 +1167,196 @@ export default function TemplatesPage() {
                   </div>
                 </div>
 
-                {/* Exercises List in Template */}
+                {/* Blocks or Exercises in Template */}
                 {isExpanded && (
                   <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/40">
-                    <div className="space-y-2.5 pt-2">
-                      <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
-                        Ordered Exercise Sequence &amp; Targets:
-                      </p>
-
-                      {tpl.exercises?.map((te, idx) => {
-                        const exSports = getExerciseSports(te.exercise);
-                        const badgeMeta = getMetricBadgeMeta(te.exercise?.metricType || "SETS_REPS_WEIGHT");
-                        const summaryPills = formatTargetSummary({
-                          metricType: te.exercise?.metricType,
-                          targetSets: te.targetSets,
-                          targetReps: te.targetReps,
-                          targetWeightKg: te.targetWeightKg,
-                          targetDistanceKm: te.targetDistanceKm,
-                          targetTimeSeconds: te.targetTimeSeconds,
-                          targetPace: te.targetPace,
-                          targetRounds: te.targetRounds,
-                          restSeconds: te.restSeconds,
-                          tempo: te.tempo
-                        });
-
-                        return (
-                          <div
-                            key={te.id || idx}
-                            className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs"
-                          >
-                            <div className="flex items-start sm:items-center space-x-3 rtl:space-x-reverse">
-                              <span className="w-7 h-7 rounded-xl bg-brand-crimson/15 text-brand-crimson font-extrabold text-xs flex items-center justify-center flex-shrink-0">
-                                #{idx + 1}
-                              </span>
-                              {te.exercise?.thumbnailUrl && (
-                                <img
-                                  src={te.exercise.thumbnailUrl}
-                                  alt={te.exercise?.nameEn || te.exercise?.nameAr}
-                                  className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
-                                />
-                              )}
-                              <div>
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                                    {te.exercise?.nameEn || te.exercise?.nameAr || "Exercise"}
-                                  </h4>
-                                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${badgeMeta.className}`}>
-                                    {badgeMeta.label}
+                    <div className="space-y-3 pt-2">
+                      {tpl.blocks && tpl.blocks.length > 0 ? (
+                        tpl.blocks.map((block, bIdx) => {
+                          const bMeta = BLOCK_TYPE_META[block.type] || BLOCK_TYPE_META.SINGLE;
+                          return (
+                            <div
+                              key={block.id || bIdx}
+                              className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 overflow-hidden shadow-xs"
+                            >
+                              {/* Block Header */}
+                              <div className="px-4 py-2.5 bg-slate-100/70 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border uppercase tracking-wider ${bMeta.badgeClass}`}>
+                                    {bMeta.label}
                                   </span>
+                                  {block.title && (
+                                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                      {block.title}
+                                    </span>
+                                  )}
                                 </div>
-                                {exSports.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {exSports.map((sp) => (
-                                      <span
-                                        key={sp.id}
-                                        className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-semibold text-slate-600 dark:text-slate-300"
+                                <div className="flex items-center space-x-2 rtl:space-x-reverse text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                                  {block.rounds && block.rounds > 1 && (
+                                    <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-300 font-bold border border-purple-500/20">
+                                      🔄 {block.rounds} Rounds
+                                    </span>
+                                  )}
+                                  {block.restBetweenRoundsSeconds && (
+                                    <span>
+                                      ⏱ {block.restBetweenRoundsSeconds}s Rest between rounds
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {block.notes && (
+                                <div className="px-4 py-1.5 bg-brand-crimson/5 border-b border-brand-crimson/15 text-[11px] text-brand-crimson font-medium">
+                                  💡 {block.notes}
+                                </div>
+                              )}
+
+                              {/* Block Items */}
+                              <div className="p-3 space-y-2">
+                                {block.items && block.items.length > 0 ? (
+                                  block.items.map((it, iIdx) => {
+                                    if (it.itemType === "REST") {
+                                      return (
+                                        <div
+                                          key={it.id || iIdx}
+                                          className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center space-x-2.5 rtl:space-x-reverse text-xs"
+                                        >
+                                          <Coffee className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                          <span className="font-bold text-amber-700 dark:text-amber-300">
+                                            Rest: {it.restSeconds ?? 60}s
+                                          </span>
+                                          {it.instructions && (
+                                            <span className="text-slate-600 dark:text-slate-400 text-[11px]">
+                                              — {it.instructions}
+                                            </span>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+                                    if (it.itemType === "NOTE") {
+                                      return (
+                                        <div
+                                          key={it.id || iIdx}
+                                          className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-center space-x-2.5 rtl:space-x-reverse text-xs"
+                                        >
+                                          <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                                          <span className="font-semibold text-purple-700 dark:text-purple-300">
+                                            {it.instructions || "Coaching note"}
+                                          </span>
+                                        </div>
+                                      );
+                                    }
+
+                                    const badgeMeta = getMetricBadgeMeta(it.exercise?.metricType || "SETS_REPS_WEIGHT");
+                                    const summaryPills = formatTargetSummary({
+                                      metricType: it.exercise?.metricType,
+                                      targetSets: it.targetSets,
+                                      targetReps: it.targetReps,
+                                      targetWeightKg: it.targetWeightKg,
+                                      targetDistanceKm: it.targetDistanceKm,
+                                      targetTimeSeconds: it.targetTimeSeconds,
+                                      targetPace: it.targetPace,
+                                      targetRounds: it.targetRounds,
+                                      restSeconds: it.restSeconds,
+                                      tempo: it.tempo
+                                    });
+
+                                    return (
+                                      <div
+                                        key={it.id || iIdx}
+                                        className="p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-2"
                                       >
-                                        {sp.nameEn || sp.nameAr}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                                {te.notes && (
-                                  <p className="text-[11px] text-brand-crimson mt-1">
-                                    💡 {te.notes}
-                                  </p>
+                                        <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
+                                          <span className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center flex-shrink-0">
+                                            {iIdx + 1}
+                                          </span>
+                                          <div>
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                                {it.exercise?.nameEn || it.exercise?.nameAr || "Exercise"}
+                                              </span>
+                                              <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${badgeMeta.className}`}>
+                                                {badgeMeta.label}
+                                              </span>
+                                            </div>
+                                            {it.instructions && (
+                                              <p className="text-[10px] text-brand-crimson mt-0.5">
+                                                💡 {it.instructions}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-1 text-[11px]">
+                                          {summaryPills.map((pill, pIdx) => (
+                                            <span
+                                              key={pIdx}
+                                              className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold"
+                                            >
+                                              {pill}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  })
+                                ) : (
+                                  <p className="text-xs text-slate-400 italic">No items in this block</p>
                                 )}
                               </div>
                             </div>
+                          );
+                        })
+                      ) : (
+                        tpl.exercises?.map((te, idx) => {
+                          const badgeMeta = getMetricBadgeMeta(te.exercise?.metricType || "SETS_REPS_WEIGHT");
+                          const summaryPills = formatTargetSummary({
+                            metricType: te.exercise?.metricType,
+                            targetSets: te.targetSets,
+                            targetReps: te.targetReps,
+                            targetWeightKg: te.targetWeightKg,
+                            targetDistanceKm: te.targetDistanceKm,
+                            targetTimeSeconds: te.targetTimeSeconds,
+                            targetPace: te.targetPace,
+                            targetRounds: te.targetRounds,
+                            restSeconds: te.restSeconds,
+                            tempo: te.tempo
+                          });
 
-                            <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                              {summaryPills.map((pill, pIdx) => (
-                                <span
-                                  key={pIdx}
-                                  className={`px-2.5 py-1 rounded-xl font-bold border text-[11px] ${
-                                    pIdx === 0
-                                      ? "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700"
-                                      : "bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700/70"
-                                  }`}
-                                >
-                                  {pill}
+                          return (
+                            <div
+                              key={te.id || idx}
+                              className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs"
+                            >
+                              <div className="flex items-start sm:items-center space-x-3 rtl:space-x-reverse">
+                                <span className="w-7 h-7 rounded-xl bg-brand-crimson/15 text-brand-crimson font-extrabold text-xs flex items-center justify-center flex-shrink-0">
+                                  #{idx + 1}
                                 </span>
-                              ))}
+                                <div>
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                                      {te.exercise?.nameEn || te.exercise?.nameAr || "Exercise"}
+                                    </h4>
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${badgeMeta.className}`}>
+                                      {badgeMeta.label}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                                {summaryPills.map((pill, pIdx) => (
+                                  <span
+                                    key={pIdx}
+                                    className="px-2.5 py-1 rounded-xl font-bold border text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700"
+                                  >
+                                    {pill}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 )}
@@ -1156,7 +1500,7 @@ export default function TemplatesPage() {
                     <span>Add Exercise from Multi-Sport Library</span>
                   </h4>
                   <span className="text-[11px] font-bold text-brand-crimson">
-                    {builderExercises.length} exercise(s) in routine
+                    {totalItemsInBuilder} item(s) in {builderBlocks.length} block(s)
                   </span>
                 </div>
 
@@ -1477,11 +1821,13 @@ export default function TemplatesPage() {
                       <button
                         type="button"
                         disabled={!selectedLibraryExercise}
-                        onClick={handleAddExerciseToBuilder}
+                        onClick={() => handleAddExerciseToBlock(activeBlockUid || undefined)}
                         className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] disabled:opacity-50 text-white font-bold text-xs shadow-md flex items-center justify-center space-x-1 rtl:space-x-reverse cursor-pointer flex-shrink-0"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>Add Exercise</span>
+                        <span>
+                          Add to {builderBlocks.find((b) => b.uid === activeBlockUid)?.title || "Active Block"}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -1492,293 +1838,478 @@ export default function TemplatesPage() {
                   {reorderAnnouncement}
                 </p>
 
-                {/* Added Exercises Ordered & Inline-Editable List */}
-                {builderExercises.length > 0 && (
-                  <div className="space-y-2 pt-3 border-t border-slate-200 dark:border-slate-800">
-                    <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                      Routine Order (use arrows to reorder, click Edit to adjust targets in place):
-                    </p>
-                    <div className="space-y-2 max-h-64 overflow-y-auto pe-1">
-                      {builderExercises.map((item, idx) => {
-                        const isInlineEditing = editingBuilderUid === item.uid;
-                        const summaryText = formatTargetSummary(item).join(" • ");
-                        const isDist =
-                          item.metricType === "DISTANCE_TIME_PACE" || item.metricType === "LAPS_TIME";
-                        const isRds = item.metricType === "ROUNDS_REPS_TIME";
-                        const isHold = item.metricType === "TIME_HOLD";
+                {/* --- WORKOUT BLOCKS HIERARCHY BUILDER --- */}
+                <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <Layers className="w-4 h-4 text-brand-crimson" />
+                        <span>Workout Blocks ({builderBlocks.length})</span>
+                      </h4>
+                      <p className="text-[10px] text-slate-400">
+                        Group movements into Single Exercises, Supersets, Multi-Round Circuits, or Sequences
+                      </p>
+                    </div>
 
-                        return (
-                          <div
-                            key={item.uid}
-                            className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-2"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className="font-extrabold text-brand-crimson shrink-0">#{idx + 1}</span>
-                                <div className="min-w-0">
-                                  <p className="font-bold text-slate-900 dark:text-white truncate">
-                                    {item.exerciseNameEn || item.exerciseNameAr}
-                                  </p>
-                                  <p className="text-[10px] text-slate-400 truncate">{summaryText}</p>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                  type="button"
-                                  disabled={idx === 0}
-                                  onClick={() => handleMoveBuilderExercise(idx, -1)}
-                                  aria-label={`Move ${item.exerciseNameEn} up`}
-                                  className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
-                                >
-                                  <ArrowUp className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={idx === builderExercises.length - 1}
-                                  onClick={() => handleMoveBuilderExercise(idx, 1)}
-                                  aria-label={`Move ${item.exerciseNameEn} down`}
-                                  className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
-                                >
-                                  <ArrowDown className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setEditingBuilderUid(isInlineEditing ? null : item.uid)
-                                  }
-                                  aria-label={`Edit ${item.exerciseNameEn} targets`}
-                                  className={`p-1 rounded-lg ${
-                                    isInlineEditing
-                                      ? "bg-brand-crimson text-white"
-                                      : "text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800"
-                                  }`}
-                                >
-                                  <Edit className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveExerciseFromBuilder(item.uid)}
-                                  aria-label={`Remove ${item.exerciseNameEn}`}
-                                  className="p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-
-                            {isInlineEditing && (
-                              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                  {isDist ? (
-                                    <>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Distance (km)</label>
-                                        <input
-                                          type="number"
-                                          step="0.1"
-                                          value={item.targetDistanceKm ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetDistanceKm: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Time (sec)</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetTimeSeconds ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetTimeSeconds: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Pace</label>
-                                        <input
-                                          type="text"
-                                          value={item.targetPace}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, { targetPace: e.target.value })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-mono"
-                                        />
-                                      </div>
-                                    </>
-                                  ) : isRds ? (
-                                    <>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Rounds</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetRounds ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetRounds: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Reps</label>
-                                        <input
-                                          type="text"
-                                          value={item.targetReps}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, { targetReps: e.target.value })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-mono"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Cap (sec)</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetTimeSeconds ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetTimeSeconds: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                    </>
-                                  ) : isHold ? (
-                                    <>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Sets</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetSets ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetSets: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Hold (sec)</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetTimeSeconds ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetTimeSeconds: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Load (kg)</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetWeightKg ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetWeightKg: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Sets</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetSets ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetSets: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Reps</label>
-                                        <input
-                                          type="text"
-                                          value={item.targetReps}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, { targetReps: e.target.value })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-mono"
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-[10px] text-slate-400 mb-0.5">Load (kg)</label>
-                                        <input
-                                          type="number"
-                                          value={item.targetWeightKg ?? ""}
-                                          onChange={(e) =>
-                                            handleUpdateBuilderItem(item.uid, {
-                                              targetWeightKg: e.target.value === "" ? null : Number(e.target.value)
-                                            })
-                                          }
-                                          className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                        />
-                                      </div>
-                                    </>
-                                  )}
-
-                                  <div>
-                                    <label className="block text-[10px] text-slate-400 mb-0.5">Rest (sec)</label>
-                                    <input
-                                      type="number"
-                                      step="5"
-                                      value={item.restSeconds}
-                                      onChange={(e) =>
-                                        handleUpdateBuilderItem(item.uid, {
-                                          restSeconds: Number(e.target.value) || 0
-                                        })
-                                      }
-                                      className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                  <input
-                                    type="text"
-                                    placeholder="Tempo (e.g. 3-1-1)"
-                                    value={item.tempo}
-                                    onChange={(e) =>
-                                      handleUpdateBuilderItem(item.uid, { tempo: e.target.value })
-                                    }
-                                    className="px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono"
-                                  />
-                                  <input
-                                    type="text"
-                                    placeholder="Exercise notes / cues"
-                                    value={item.notes}
-                                    onChange={(e) =>
-                                      handleUpdateBuilderItem(item.uid, { notes: e.target.value })
-                                    }
-                                    className="sm:col-span-2 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs"
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                    <div className="flex flex-wrap items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("SINGLE")}
+                        className="px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 font-bold text-[11px] border border-blue-500/30 cursor-pointer"
+                      >
+                        + Single
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("SUPERSET")}
+                        className="px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold text-[11px] border border-purple-500/30 cursor-pointer"
+                      >
+                        + Superset
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("CIRCUIT")}
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-300 font-bold text-[11px] border border-amber-500/30 cursor-pointer"
+                      >
+                        + Circuit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("SEQUENCE")}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold text-[11px] border border-emerald-500/30 cursor-pointer"
+                      >
+                        + Sequence
+                      </button>
                     </div>
                   </div>
-                )}
+
+                  {/* Block Cards List */}
+                  <div className="space-y-3 max-h-[480px] overflow-y-auto pe-1">
+                    {builderBlocks.map((block, bIdx) => {
+                      const isActiveBlock = activeBlockUid === block.uid;
+
+                      return (
+                        <div
+                          key={block.uid}
+                          onClick={() => setActiveBlockUid(block.uid)}
+                          className={`p-3.5 rounded-2xl border transition-all ${
+                            isActiveBlock
+                              ? "bg-white dark:bg-slate-900 border-brand-crimson shadow-md"
+                              : "bg-slate-50/80 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800"
+                          }`}
+                        >
+                          {/* Block Header Row */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-200 dark:border-slate-800">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-brand-crimson text-white text-[11px] font-extrabold flex items-center justify-center shrink-0">
+                                {bIdx + 1}
+                              </span>
+
+                              <select
+                                value={block.type}
+                                onChange={(e) =>
+                                  handleUpdateBlock(block.uid, { type: e.target.value as BlockType })
+                                }
+                                className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100"
+                              >
+                                <option value="SINGLE">Single Exercise</option>
+                                <option value="SUPERSET">Superset (2+ Movements)</option>
+                                <option value="CIRCUIT">Circuit (Rounds Loop)</option>
+                                <option value="SEQUENCE">Sequence / Interval</option>
+                              </select>
+
+                              <input
+                                type="text"
+                                placeholder="Block Title (optional)..."
+                                value={block.title}
+                                onChange={(e) => handleUpdateBlock(block.uid, { title: e.target.value })}
+                                className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold flex-1 min-w-[130px]"
+                              />
+
+                              {isActiveBlock && (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30">
+                                  Active Target
+                                </span>
+                              )}
+                            </div>
+
+                            <div
+                              className="flex items-center gap-1.5 shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="flex items-center gap-1 text-[11px]">
+                                <label className="text-slate-400 font-semibold">Rounds:</label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="20"
+                                  value={block.rounds ?? ""}
+                                  onChange={(e) =>
+                                    handleUpdateBlock(block.uid, {
+                                      rounds: e.target.value === "" ? null : Number(e.target.value)
+                                    })
+                                  }
+                                  className="w-12 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
+                                />
+                              </div>
+
+                              <div className="flex items-center gap-1 text-[11px]">
+                                <label className="text-slate-400 font-semibold">Rest:</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="5"
+                                  placeholder="sec"
+                                  value={block.restBetweenRoundsSeconds ?? ""}
+                                  onChange={(e) =>
+                                    handleUpdateBlock(block.uid, {
+                                      restBetweenRoundsSeconds:
+                                        e.target.value === "" ? null : Number(e.target.value)
+                                    })
+                                  }
+                                  className="w-14 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
+                                />
+                                <span className="text-slate-400 text-[10px]">s</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                disabled={bIdx === 0}
+                                onClick={() => handleMoveBlock(bIdx, -1)}
+                                title="Move Block Up"
+                                className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={bIdx === builderBlocks.length - 1}
+                                onClick={() => handleMoveBlock(bIdx, 1)}
+                                title="Move Block Down"
+                                className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 cursor-pointer"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={builderBlocks.length <= 1}
+                                onClick={() => handleRemoveBlock(block.uid)}
+                                title="Delete Block"
+                                className="p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-30 cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Block Notes Input */}
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              placeholder="Block coaching cue / notes (optional)..."
+                              value={block.notes}
+                              onChange={(e) => handleUpdateBlock(block.uid, { notes: e.target.value })}
+                              className="w-full px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300"
+                            />
+                          </div>
+
+                          {/* Items List Inside Block */}
+                          <div className="mt-2.5 space-y-2">
+                            {block.items.length === 0 ? (
+                              <div className="p-3 text-center rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-slate-400 text-xs">
+                                Empty block. Click &quot;Add Selected Exercise&quot; or add a Rest/Note below.
+                              </div>
+                            ) : (
+                              block.items.map((item, iIdx) => {
+                                const isInlineEditing = editingItemUid === item.uid;
+
+                                return (
+                                  <div
+                                    key={item.uid}
+                                    className="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs space-y-2"
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="font-extrabold text-brand-crimson shrink-0">
+                                          #{iIdx + 1}
+                                        </span>
+                                        {item.itemType === "REST" ? (
+                                          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
+                                            <Coffee className="w-4 h-4 shrink-0" />
+                                            <span>Rest: {item.restSeconds ?? 60}s</span>
+                                            {item.instructions && (
+                                              <span className="text-[11px] font-normal text-slate-400">
+                                                — {item.instructions}
+                                              </span>
+                                            )}
+                                          </div>
+                                        ) : item.itemType === "NOTE" ? (
+                                          <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 font-semibold">
+                                            <FileText className="w-4 h-4 shrink-0" />
+                                            <span>{item.instructions || "Coaching note"}</span>
+                                          </div>
+                                        ) : (
+                                          <div className="min-w-0">
+                                            <p className="font-bold text-slate-900 dark:text-white truncate">
+                                              {item.exerciseNameEn || item.exerciseNameAr || "Exercise"}
+                                            </p>
+                                            <p className="text-[10px] text-slate-400 truncate">
+                                              {formatTargetSummary(item).join(" • ")}
+                                            </p>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      <div
+                                        className="flex items-center gap-1 shrink-0"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <button
+                                          type="button"
+                                          disabled={iIdx === 0}
+                                          onClick={() => handleMoveItem(block.uid, iIdx, -1)}
+                                          className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                                        >
+                                          <ArrowUp className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={iIdx === block.items.length - 1}
+                                          onClick={() => handleMoveItem(block.uid, iIdx, 1)}
+                                          className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                                        >
+                                          <ArrowDown className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setEditingItemUid(isInlineEditing ? null : item.uid)
+                                          }
+                                          className={`p-1 rounded-lg cursor-pointer ${
+                                            isInlineEditing
+                                              ? "bg-brand-crimson text-white"
+                                              : "text-slate-400 hover:text-brand-crimson"
+                                          }`}
+                                        >
+                                          <Edit className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveItem(block.uid, item.uid)}
+                                          className="p-1 rounded-lg text-slate-400 hover:text-red-500 cursor-pointer"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Inline Item Editor */}
+                                    {isInlineEditing && (
+                                      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/80 space-y-2">
+                                        {item.itemType === "REST" ? (
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            <div>
+                                              <label className="block text-[10px] text-slate-400 mb-0.5">
+                                                Rest Duration (sec)
+                                              </label>
+                                              <input
+                                                type="number"
+                                                min="0"
+                                                step="5"
+                                                value={item.restSeconds ?? ""}
+                                                onChange={(e) =>
+                                                  handleUpdateItem(block.uid, item.uid, {
+                                                    restSeconds:
+                                                      e.target.value === "" ? null : Number(e.target.value)
+                                                  })
+                                                }
+                                                className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold"
+                                              />
+                                            </div>
+                                            <div>
+                                              <label className="block text-[10px] text-slate-400 mb-0.5">
+                                                Rest Instructions / Cue
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={item.instructions ?? ""}
+                                                onChange={(e) =>
+                                                  handleUpdateItem(block.uid, item.uid, {
+                                                    instructions: e.target.value
+                                                  })
+                                                }
+                                                className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs"
+                                              />
+                                            </div>
+                                          </div>
+                                        ) : item.itemType === "NOTE" ? (
+                                          <div>
+                                            <label className="block text-[10px] text-slate-400 mb-0.5">
+                                              Note Instructions
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={item.instructions ?? ""}
+                                              onChange={(e) =>
+                                                handleUpdateItem(block.uid, item.uid, {
+                                                  instructions: e.target.value
+                                                })
+                                              }
+                                              className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs"
+                                            />
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                                              <div>
+                                                <label className="block text-[10px] text-slate-400 mb-0.5">
+                                                  Sets
+                                                </label>
+                                                <input
+                                                  type="number"
+                                                  min="1"
+                                                  value={item.targetSets ?? ""}
+                                                  onChange={(e) =>
+                                                    handleUpdateItem(block.uid, item.uid, {
+                                                      targetSets:
+                                                        e.target.value === "" ? null : Number(e.target.value)
+                                                    })
+                                                  }
+                                                  className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="block text-[10px] text-slate-400 mb-0.5">
+                                                  Reps
+                                                </label>
+                                                <input
+                                                  type="text"
+                                                  value={item.targetReps ?? ""}
+                                                  onChange={(e) =>
+                                                    handleUpdateItem(block.uid, item.uid, {
+                                                      targetReps: e.target.value
+                                                    })
+                                                  }
+                                                  className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-center font-mono"
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="block text-[10px] text-slate-400 mb-0.5">
+                                                  Load (kg)
+                                                </label>
+                                                <input
+                                                  type="number"
+                                                  min="0"
+                                                  value={item.targetWeightKg ?? ""}
+                                                  onChange={(e) =>
+                                                    handleUpdateItem(block.uid, item.uid, {
+                                                      targetWeightKg:
+                                                        e.target.value === "" ? null : Number(e.target.value)
+                                                    })
+                                                  }
+                                                  className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="block text-[10px] text-slate-400 mb-0.5">
+                                                  Rest (sec)
+                                                </label>
+                                                <input
+                                                  type="number"
+                                                  min="0"
+                                                  step="5"
+                                                  value={item.restSeconds ?? ""}
+                                                  onChange={(e) =>
+                                                    handleUpdateItem(block.uid, item.uid, {
+                                                      restSeconds:
+                                                        e.target.value === "" ? null : Number(e.target.value)
+                                                    })
+                                                  }
+                                                  className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold"
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="block text-[10px] text-slate-400 mb-0.5">
+                                                  Tempo
+                                                </label>
+                                                <input
+                                                  type="text"
+                                                  placeholder="e.g. 3-1-1"
+                                                  value={item.tempo ?? ""}
+                                                  onChange={(e) =>
+                                                    handleUpdateItem(block.uid, item.uid, {
+                                                      tempo: e.target.value
+                                                    })
+                                                  }
+                                                  className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-center font-mono"
+                                                />
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <input
+                                                type="text"
+                                                placeholder="Instructions / coaching cues..."
+                                                value={item.instructions ?? ""}
+                                                onChange={(e) =>
+                                                  handleUpdateItem(block.uid, item.uid, {
+                                                    instructions: e.target.value
+                                                  })
+                                                }
+                                                className="w-full px-2 py-1 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs"
+                                              />
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+
+                          {/* Block Footer Quick Actions */}
+                          <div
+                            className="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <button
+                                type="button"
+                                disabled={!selectedLibraryExercise}
+                                onClick={() => handleAddExerciseToBlock(block.uid)}
+                                className="px-2.5 py-1 rounded-lg bg-brand-crimson hover:bg-[#FF2D3B] disabled:opacity-50 text-white font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Add Selected Exercise</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleAddRestToBlock(block.uid, 60)}
+                                className="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 font-bold text-[11px] inline-flex items-center gap-1 border border-amber-500/30 cursor-pointer"
+                              >
+                                <Coffee className="w-3 h-3" />
+                                <span>+ Rest (60s)</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleAddNoteToBlock(block.uid, "Coaching cue")}
+                                className="px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-purple-700 dark:text-purple-300 font-bold text-[11px] inline-flex items-center gap-1 border border-purple-500/30 cursor-pointer"
+                              >
+                                <FileText className="w-3 h-3" />
+                                <span>+ Note</span>
+                              </button>
+                            </div>
+
+                            <span className="text-[10px] text-slate-400">
+                              {block.items.length} item(s) in block
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end space-x-2 rtl:space-x-reverse pt-2">

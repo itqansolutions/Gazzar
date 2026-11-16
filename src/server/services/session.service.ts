@@ -103,6 +103,33 @@ export class SessionService {
       }
     });
   }
+
+  /**
+   * Update session metadata
+   */
+  async updateSession(
+    sessionId: string,
+    data: {
+      title?: string;
+      startTime?: string | Date;
+      endTime?: string | Date;
+      location?: string;
+      maxParticipants?: number;
+      sportId?: string;
+    }
+  ) {
+    return await prisma.sessionCalendar.update({
+      where: { id: sessionId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.startTime && { startTime: new Date(data.startTime) }),
+        ...(data.endTime && { endTime: new Date(data.endTime) }),
+        ...(data.location !== undefined && { location: data.location }),
+        ...(data.maxParticipants && { maxParticipants: data.maxParticipants }),
+        ...(data.sportId && { sportId: data.sportId })
+      }
+    });
+  }
 }
 
 export const sessionService = new SessionService();
