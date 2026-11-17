@@ -112,7 +112,7 @@ async function run() {
         nameEn: `Phase3 Kettlebell Swing ${Date.now()}`,
         nameAr: "تأرجح الكتلبل",
         sportId: testSport.id,
-        metricType: MetricType.REPS_WEIGHT,
+        metricType: MetricType.SETS_REPS_WEIGHT,
         difficulty: "INTERMEDIATE"
       }
     });
@@ -123,7 +123,7 @@ async function run() {
         nameEn: `Phase3 Push-up ${Date.now()}`,
         nameAr: "تمرين الضغط",
         sportId: testSport.id,
-        metricType: MetricType.REPS_ONLY,
+        metricType: MetricType.SETS_REPS_WEIGHT,
         difficulty: "BEGINNER"
       }
     });
@@ -134,7 +134,7 @@ async function run() {
         nameEn: `Phase3 Box Jump ${Date.now()}`,
         nameAr: "قفز الصندوق",
         sportId: testSport.id,
-        metricType: MetricType.REPS_ONLY,
+        metricType: MetricType.SETS_REPS_WEIGHT,
         difficulty: "ADVANCED"
       }
     });
