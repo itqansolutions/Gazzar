@@ -2,7 +2,7 @@ import { PrismaClient, UserRole, SessionType, AttendanceStatus, AssignmentStatus
 import { sessionService } from "../src/lib/auth/session-service";
 
 const prisma = new PrismaClient();
-const baseUrl = "http://localhost:3001";
+const baseUrl = process.env.TEST_BASE_URL || "http://localhost:3000";
 
 async function apiCall(path: string, options: { method?: string; body?: any; token?: string }) {
   const headers: Record<string, string> = {};

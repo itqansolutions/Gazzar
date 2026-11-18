@@ -1,11 +1,11 @@
 import { PrismaClient, UserRole, GoalType, NutritionAssignmentMode } from "@prisma/client";
-import { sessionService } from "../src/lib/auth/session-service";
-import { GET as getLegacyNutrition, POST as postLegacyNutrition } from "../src/app/api/nutrition/route";
-import { PATCH as patchLegacyNutrition, DELETE as deleteLegacyNutrition } from "../src/app/api/nutrition/[id]/route";
-import { GET as getNutritionPrograms, POST as postNutritionProgram } from "../src/app/api/nutrition-programs/route";
-import { GET as getNutritionProgramById, PATCH as patchNutritionProgram, DELETE as deleteNutritionProgram } from "../src/app/api/nutrition-programs/[id]/route";
-import { GET as getAssignments, POST as postAssignment } from "../src/app/api/nutrition/assignments/route";
-import { GET as getDailyLogs, POST as postDailyLog } from "../src/app/api/nutrition/daily-logs/route";
+import { sessionService } from "../../src/lib/auth/session-service";
+import { GET as getLegacyNutrition, POST as postLegacyNutrition } from "../../src/app/api/nutrition/route";
+import { PATCH as patchLegacyNutrition, DELETE as deleteLegacyNutrition } from "../../src/app/api/nutrition/[id]/route";
+import { GET as getNutritionPrograms, POST as postNutritionProgram } from "../../src/app/api/nutrition-programs/route";
+import { GET as getNutritionProgramById, PATCH as patchNutritionProgram, DELETE as deleteNutritionProgram } from "../../src/app/api/nutrition-programs/[id]/route";
+import { GET as getAssignments, POST as postAssignment } from "../../src/app/api/nutrition/assignments/route";
+import { GET as getDailyLogs, POST as postDailyLog } from "../../src/app/api/nutrition/daily-logs/route";
 import { NextRequest } from "next/server";
 
 const prisma = new PrismaClient();

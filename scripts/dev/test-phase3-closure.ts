@@ -1,13 +1,13 @@
 import { PrismaClient, UserRole, BlockType, BlockItemType, MetricType } from "@prisma/client";
-import { sessionService } from "../src/lib/auth/session-service";
-import { POST as postTemplate } from "../src/app/api/templates/route";
-import { PATCH as patchTemplate, DELETE as deleteTemplate } from "../src/app/api/templates/[id]/route";
-import { POST as postWorkoutMutation } from "../src/app/api/workouts/[id]/route";
-import { PATCH as patchSession } from "../src/app/api/sessions/route";
-import { DELETE as deleteProgramRoute } from "../src/app/api/programs/[id]/route";
-import { workoutService } from "../src/server/services/workout.service";
-import { exerciseService } from "../src/server/services/exercise.service";
-import { sportService } from "../src/server/services/sport.service";
+import { sessionService } from "../../src/lib/auth/session-service";
+import { POST as postTemplate } from "../../src/app/api/templates/route";
+import { PATCH as patchTemplate, DELETE as deleteTemplate } from "../../src/app/api/templates/[id]/route";
+import { POST as postWorkoutMutation } from "../../src/app/api/workouts/[id]/route";
+import { PATCH as patchSession } from "../../src/app/api/sessions/route";
+import { DELETE as deleteProgramRoute } from "../../src/app/api/programs/[id]/route";
+import { workoutService } from "../../src/server/services/workout.service";
+import { exerciseService } from "../../src/server/services/exercise.service";
+import { sportService } from "../../src/server/services/sport.service";
 import { NextRequest } from "next/server";
 
 const prisma = new PrismaClient();
@@ -211,8 +211,8 @@ async function run() {
       titleEn: "Duplicate Block Order Template",
       sportId: sport.id,
       blocks: [
-        { type: "SINGLE", title: "Block A", order: 1, items: [{ itemType: "EXERCISE", order: 1, exerciseId: ex1.id }] },
-        { type: "SINGLE", title: "Block B", order: 1, items: [{ itemType: "EXERCISE", order: 1, exerciseId: ex2.id }] }
+        { type: "SINGLE", title: "Block A", orderIndex: 1, items: [{ itemType: "EXERCISE", orderIndex: 1, exerciseId: ex1.id }] },
+        { type: "SINGLE", title: "Block B", orderIndex: 1, items: [{ itemType: "EXERCISE", orderIndex: 1, exerciseId: ex2.id }] }
       ]
     });
     const resDupBlockOrder = await postTemplate(reqDupBlockOrder);
@@ -226,10 +226,10 @@ async function run() {
         {
           type: "SINGLE",
           title: "Block Single",
-          order: 1,
+          orderIndex: 1,
           items: [
-            { itemType: "EXERCISE", order: 1, exerciseId: ex1.id },
-            { itemType: "REST", order: 1, restSeconds: 30 }
+            { itemType: "EXERCISE", orderIndex: 1, exerciseId: ex1.id },
+            { itemType: "REST", orderIndex: 1, restSeconds: 30 }
           ]
         }
       ]
@@ -456,8 +456,10 @@ async function run() {
 
     for (const aId of cleanupAssignmentIds) {
       try {
+        await prisma.setLog.deleteMany({ where: { workoutLog: { assignmentId: aId } } });
+        await prisma.workoutLog.deleteMany({ where: { assignmentId: aId } });
         await prisma.clientWorkoutAssignmentExercise.deleteMany({ where: { assignmentId: aId } });
-        await prisma.assignmentBlockItem.deleteMany({ where: { block: { assignmentId: aId } } });
+        await prisma.assignmentBlockItem.deleteMany({ where: { assignmentBlock: { assignmentId: aId } } });
         await prisma.assignmentBlock.deleteMany({ where: { assignmentId: aId } });
         await prisma.clientWorkoutAssignment.delete({ where: { id: aId } });
       } catch (e: any) {
@@ -467,7 +469,13 @@ async function run() {
 
     for (const pId of cleanupProgramIds) {
       try {
+        await prisma.clientWorkoutAssignment.deleteMany({ where: { programAssignment: { programId: pId } } });
         await prisma.programAssignment.deleteMany({ where: { programId: pId } });
+        await prisma.blockItem.deleteMany({ where: { block: { workout: { day: { week: { programId: pId } } } } } });
+        await prisma.workoutBlock.deleteMany({ where: { workout: { day: { week: { programId: pId } } } } });
+        await prisma.programWorkout.deleteMany({ where: { day: { week: { programId: pId } } } });
+        await prisma.programDay.deleteMany({ where: { week: { programId: pId } } });
+        await prisma.programWeek.deleteMany({ where: { programId: pId } });
         await prisma.trainingProgram.delete({ where: { id: pId } });
       } catch (e: any) {
         console.warn(`Could not delete program ${pId}:`, e.message);
@@ -476,6 +484,8 @@ async function run() {
 
     for (const tId of cleanupTemplateIds) {
       try {
+        await prisma.clientWorkoutAssignment.deleteMany({ where: { templateId: tId } });
+        await prisma.blockItem.deleteMany({ where: { block: { templateId: tId } } });
         await prisma.workoutBlock.deleteMany({ where: { templateId: tId } });
         await prisma.workoutTemplateExercise.deleteMany({ where: { templateId: tId } });
         await prisma.workoutTemplate.delete({ where: { id: tId } });
@@ -486,8 +496,11 @@ async function run() {
 
     for (const eId of cleanupExerciseIds) {
       try {
-        await prisma.exerciseSport.deleteMany({ where: { exerciseId: eId } });
+        await prisma.workoutTemplateExercise.deleteMany({ where: { exerciseId: eId } });
+        await prisma.clientWorkoutAssignmentExercise.deleteMany({ where: { exerciseId: eId } });
         await prisma.blockItem.deleteMany({ where: { exerciseId: eId } });
+        await prisma.assignmentBlockItem.deleteMany({ where: { exerciseId: eId } });
+        await prisma.exerciseSport.deleteMany({ where: { exerciseId: eId } });
         await prisma.exercise.delete({ where: { id: eId } });
       } catch (e: any) {
         console.warn(`Could not delete exercise ${eId}:`, e.message);
@@ -496,6 +509,7 @@ async function run() {
 
     for (const sId of cleanupSportIds) {
       try {
+        await prisma.workoutTemplate.deleteMany({ where: { sportId: sId } });
         await prisma.sport.delete({ where: { id: sId } });
       } catch (e: any) {
         console.warn(`Could not delete sport ${sId}:`, e.message);
@@ -505,7 +519,12 @@ async function run() {
     for (const uId of cleanupUserIds) {
       try {
         await prisma.session.deleteMany({ where: { userId: uId } });
-        await prisma.clientCoachAssignment.deleteMany({ where: { clientId: uId } });
+        await prisma.clientCoachAssignment.deleteMany({
+          where: { OR: [{ coach: { userId: uId } }, { client: { userId: uId } }] }
+        });
+        await prisma.clientWorkoutAssignment.deleteMany({
+          where: { OR: [{ client: { userId: uId } }, { coach: { userId: uId } }] }
+        });
         await prisma.clientProfile.deleteMany({ where: { userId: uId } });
         await prisma.coachProfile.deleteMany({ where: { userId: uId } });
         await prisma.user.delete({ where: { id: uId } });
