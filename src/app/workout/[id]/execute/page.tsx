@@ -45,6 +45,8 @@ interface LocalSet {
   isCompleted: boolean;
   isSkipped: boolean;
   skipReason: string;
+  coachReview?: string | null;
+  coachReviewedAt?: Date | string | null;
 }
 
 interface LocalExerciseLog {
@@ -98,6 +100,7 @@ export default function WorkoutExecutionPage() {
   const [savingAction, setSavingAction] = useState<"SAVE_PROGRESS" | "COMPLETE" | "SKIP" | null>(null);
   const [actionToast, setActionToast] = useState("");
   const [actionError, setActionError] = useState("");
+  const [coachFeedback, setCoachFeedback] = useState("");
 
   // Item-level skip modal state
   const [itemSkipTarget, setItemSkipTarget] = useState<{
@@ -121,6 +124,9 @@ export default function WorkoutExecutionPage() {
             }
             if (data.workoutLog.clientFeedback) {
               setClientFeedback(data.workoutLog.clientFeedback);
+            }
+            if (data.workoutLog.coachFeedback) {
+              setCoachFeedback(data.workoutLog.coachFeedback);
             }
             if (typeof data.workoutLog.durationMinutes === "number" && data.workoutLog.durationMinutes > 0) {
               setWorkoutSeconds(data.workoutLog.durationMinutes * 60);
@@ -179,7 +185,9 @@ export default function WorkoutExecutionPage() {
                       actualRounds: priorSetLog?.actualRounds ?? item.targetRounds ?? 1,
                       isCompleted: priorSetLog ? Boolean(priorSetLog.isCompleted) : false,
                       isSkipped: priorSetLog ? Boolean(priorSetLog.isSkipped) : false,
-                      skipReason: priorSetLog?.skipReason || ""
+                      skipReason: priorSetLog?.skipReason || "",
+                      coachReview: priorSetLog?.coachReview || null,
+                      coachReviewedAt: priorSetLog?.coachReviewedAt || null
                     });
                   }
 
@@ -258,7 +266,9 @@ export default function WorkoutExecutionPage() {
                     actualRounds: prior?.actualRounds ?? te.targetRounds ?? 1,
                     isCompleted: prior ? Boolean(prior.isCompleted) : false,
                     isSkipped: prior ? Boolean(prior.isSkipped) : false,
-                    skipReason: prior?.skipReason || ""
+                    skipReason: prior?.skipReason || "",
+                    coachReview: prior?.coachReview || null,
+                    coachReviewedAt: prior?.coachReviewedAt || null
                   });
                 }
 
@@ -916,6 +926,14 @@ export default function WorkoutExecutionPage() {
                                 </button>
                               )}
                             </div>
+
+                            {/* Set-Level Coach Feedback */}
+                            {set.coachReview && (
+                              <div className="col-span-12 mt-1 px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-[11px] text-purple-300 flex items-center gap-1.5">
+                                <MessageSquare className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                <span><strong className="text-purple-200">Coach Feedback:</strong> {set.coachReview}</span>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -1056,6 +1074,26 @@ export default function WorkoutExecutionPage() {
             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:border-brand-crimson disabled:opacity-40"
           />
         </div>
+
+        {/* Coach Session Feedback & Review */}
+        {coachFeedback && (
+          <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs space-y-2">
+            <div className="flex items-center justify-between text-purple-400 font-bold">
+              <span className="flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4" />
+                Coach Review & Feedback
+              </span>
+              {(assignment?.workoutLog as any)?.coachReviewedAt && (
+                <span className="text-[10px] font-mono text-purple-300">
+                  Reviewed {new Date((assignment?.workoutLog as any).coachReviewedAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+            <p className="text-slate-200 text-xs leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-purple-500/20">
+              {coachFeedback}
+            </p>
+          </div>
+        )}
 
         {assignment?.effectiveStatus !== "SKIPPED" && !isCompletedSession && (
           <div className="flex flex-col sm:flex-row gap-2.5">

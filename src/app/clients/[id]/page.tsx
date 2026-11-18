@@ -247,7 +247,7 @@ export default function ClientProfilePage() {
     { id: "medical", label: "Medical Restrictions & Cues", icon: AlertTriangle, badge: restrictions.length },
     { id: "goals", label: "Training Goals", icon: Award },
     { id: "coaches", label: "Assigned Coaches", icon: Users },
-    ...(isClient ? [] : [{ id: "notes", label: "Coach Notes", icon: FileText }])
+    { id: "notes", label: "Coach Notes", icon: FileText, badge: (client.notes || []).length }
   ];
 
   return (
@@ -458,7 +458,10 @@ export default function ClientProfilePage() {
 
         {activeTab === "goals" && (
           <GoalsTab
+            clientId={client.id}
             goals={goals}
+            isClient={isClient}
+            onRefresh={loadClientData}
           />
         )}
 
@@ -501,10 +504,11 @@ export default function ClientProfilePage() {
           />
         )}
 
-        {activeTab === "notes" && !isClient && (
+        {activeTab === "notes" && (
           <NotesTab
             notes={client.notes || []}
             onOpenModal={() => setNoteModalOpen(true)}
+            isClient={isClient}
           />
         )}
       </div>

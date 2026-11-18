@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { UserRole } from "@prisma/client";
 import { healthService, HealthServiceError } from "@/server/services/health.service";
 import { requireAuth, requireClientAccess } from "@/lib/auth/route-guard";
 
@@ -30,7 +31,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const auth = await requireAuth(req);
+    const auth = await requireAuth(req, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
@@ -52,7 +53,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const auth = await requireAuth(req);
+    const auth = await requireAuth(req, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
@@ -78,7 +79,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const auth = await requireAuth(req);
+    const auth = await requireAuth(req, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);

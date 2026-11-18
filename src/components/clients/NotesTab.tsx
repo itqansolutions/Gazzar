@@ -7,9 +7,10 @@ import { PlusCircle, Lock, Globe } from "lucide-react";
 interface NotesTabProps {
   notes: ClientNote[];
   onOpenModal: () => void;
+  isClient?: boolean;
 }
 
-export default function NotesTab({ notes, onOpenModal }: NotesTabProps) {
+export default function NotesTab({ notes, onOpenModal, isClient = false }: NotesTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -18,22 +19,26 @@ export default function NotesTab({ notes, onOpenModal }: NotesTabProps) {
             Coach Notes
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Administrative and technical notes from coaches
+            {isClient
+              ? "Guidance and technical feedback from your coaches"
+              : "Administrative and technical notes from coaches"}
           </p>
         </div>
 
-        <button
-          onClick={onOpenModal}
-          className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center space-x-1 cursor-pointer shadow-md shadow-purple-600/30"
-        >
-          <PlusCircle className="w-3.5 h-3.5" />
-          <span>Add Note</span>
-        </button>
+        {!isClient && (
+          <button
+            onClick={onOpenModal}
+            className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center space-x-1 cursor-pointer shadow-md shadow-purple-600/30"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Add Note</span>
+          </button>
+        )}
       </div>
 
       {notes.length === 0 ? (
         <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs">
-          No notes yet.
+          {isClient ? "No notes from your coach yet." : "No notes yet."}
         </div>
       ) : (
         <div className="space-y-3">
