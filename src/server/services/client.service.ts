@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { ClientStatus, Gender, CoachRoleInClient, UserRole } from "@prisma/client";
+import { ClientStatus, Gender, CoachRoleInClient, UserRole, NoteType } from "@prisma/client";
+import type { AuthActor } from "@/lib/auth/route-guard";
 
 export interface CreateClientInput {
   name: string;
@@ -106,7 +107,7 @@ export class ClientService {
   /**
    * Fetch a single client 360 profile by ClientProfile.id or User.id
    */
-  async getClientById(id: string): Promise<any> {
+  async getClientById(id: string, actor?: AuthActor): Promise<any> {
     const client = await prisma.clientProfile.findFirst({
       where: {
         OR: [{ id }, { userId: id }]
@@ -195,8 +196,12 @@ export class ClientService {
             status: "ACTIVE"
           }
         });
-        return await this.getClientById(id);
+        return await this.getClientById(id, actor);
       }
+    }
+
+    if (client && actor?.user?.role === UserRole.CLIENT && Array.isArray(client.notes)) {
+      client.notes = client.notes.filter((n: any) => n.noteType !== NoteType.PRIVATE_COACH);
     }
 
     return client;

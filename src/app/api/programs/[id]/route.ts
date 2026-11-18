@@ -36,8 +36,28 @@ export async function PATCH(
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
+
+    if (auth.actor.user.role === UserRole.COACH) {
+      const existing = await prisma.trainingProgram.findUnique({
+        where: { id },
+        select: { creatorId: true, creator: { select: { userId: true } } }
+      });
+      if (!existing) {
+        return NextResponse.json({ success: false, error: "Training program not found" }, { status: 404 });
+      }
+      const isOwner =
+        existing.creatorId === auth.actor.coachProfileId ||
+        existing.creator?.userId === auth.actor.user.id;
+      if (!isOwner) {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: You may only edit training programs you created" },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await req.json();
-    const updated = await programService.updateProgram(id, body);
+    const updated = await programService.updateProgram(id, body, auth.actor);
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
     console.error("[PATCH /api/programs/[id]] Error:", error);
@@ -75,7 +95,7 @@ export async function DELETE(
       }
     }
 
-    await programService.deleteProgram(id);
+    await programService.deleteProgram(id, auth.actor);
     return NextResponse.json({ success: true, message: "Program deleted successfully" });
   } catch (error: any) {
     console.error("[DELETE /api/programs/[id]] Error:", error);

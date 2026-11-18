@@ -483,6 +483,7 @@ export default function ClientProfilePage() {
         {activeTab === "workouts" && (
           <WorkoutsTab
             clientId={client.id}
+            isClient={isClient}
           />
         )}
 

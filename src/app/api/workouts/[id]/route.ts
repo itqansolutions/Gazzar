@@ -49,8 +49,18 @@ async function handleWorkoutMutation(
     const body = await req.json();
     const action = typeof body?.action === "string" ? body.action.toUpperCase() : "COMPLETE";
 
+    if (action === "RESET_TO_MASTER") {
+      const reset = await workoutService.resetAssignmentToMaster(id, auth.actor);
+      return NextResponse.json({ success: true, data: reset });
+    }
+
+    if (action === "CUSTOMIZE" || (body?.blocks && !["COMPLETE", "SAVE_PROGRESS", "SKIP", "COACH_FEEDBACK"].includes(action))) {
+      const customized = await workoutService.customizeAssignment(id, body, auth.actor);
+      return NextResponse.json({ success: true, data: customized });
+    }
+
     if (action === "SKIP") {
-      const skipped = await workoutService.skipWorkout(id, body.reason);
+      const skipped = await workoutService.skipWorkout(id, body.reason, auth.actor);
       return NextResponse.json({ success: true, data: skipped });
     }
 
@@ -66,10 +76,14 @@ async function handleWorkoutMutation(
     }
 
     const mode = action === "SAVE_PROGRESS" ? "SAVE_PROGRESS" : "COMPLETE";
-    const result = await workoutService.saveWorkoutExecution(id, {
-      ...body,
-      mode
-    });
+    const result = await workoutService.saveWorkoutExecution(
+      id,
+      {
+        ...body,
+        mode
+      },
+      auth.actor
+    );
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     console.error("[MUTATE /api/workouts/[id]] Error:", error);
@@ -94,3 +108,33 @@ export async function PATCH(
 ) {
   return handleWorkoutMutation(req, context);
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await requireAuth(req);
+    if (!auth.ok) return auth.response;
+
+    const { id } = await params;
+    const assignment = await workoutService.getAssignmentById(id);
+    if (!assignment) {
+      return NextResponse.json({ success: false, error: "Assignment not found" }, { status: 404 });
+    }
+
+    const access = await requireClientAccess(auth.actor, assignment.clientId);
+    if (!access.ok) return access.response;
+
+    await workoutService.deleteAssignment(id, auth.actor);
+    return NextResponse.json({ success: true, message: "Assignment deleted" });
+  } catch (error: any) {
+    console.error("[DELETE /api/workouts/[id]] Error:", error);
+    const status =
+      error?.name === "WorkoutServiceError" && typeof error.statusCode === "number"
+        ? error.statusCode
+        : 400;
+    return NextResponse.json({ success: false, error: error.message }, { status });
+  }
+}
+

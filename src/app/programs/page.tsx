@@ -135,7 +135,7 @@ function hydrateBuilderWeeks(prog: TrainingProgram): BuilderWeek[] {
         ? []
         : (d.workouts || []).map((pw, pIdx) => ({
             uid: makeUid(`pw-edit-${pw.id || pIdx}`),
-            templateId: pw.templateId
+            templateId: pw.templateId || ""
           }))
     }))
   }));
@@ -960,6 +960,9 @@ export default function ProgramsPage() {
                         </h3>
                         {getStatusBadge(effectiveStatus)}
                         {getDifficultyBadge(prog.difficulty)}
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          v{prog.masterVersion ?? 1}
+                        </span>
                         {prog.sport && (
                           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                             {prog.sport.nameEn || prog.sport.nameAr}
@@ -996,19 +999,29 @@ export default function ProgramsPage() {
 
                   {/* Card Actions */}
                   <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                    <Link
+                      href={`/assignments?programId=${prog.id}&mode=PROGRAM`}
+                      className={`px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center gap-1.5 transition-all cursor-pointer ${
+                        effectiveStatus !== "ACTIVE" ? "opacity-40 pointer-events-none" : ""
+                      }`}
+                      title={
+                        effectiveStatus === "ACTIVE"
+                          ? "Assign program to athlete via Assignments"
+                          : "Activate program before assigning to an athlete"
+                      }
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Assign to Athlete</span>
+                    </Link>
+
                     <button
                       type="button"
                       disabled={effectiveStatus !== "ACTIVE"}
                       onClick={() => openApplyModal(prog)}
-                      title={
-                        effectiveStatus === "ACTIVE"
-                          ? "Assign program to athlete from a start date"
-                          : "Activate program before applying to an athlete"
-                      }
-                      className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                      title="Quick inline program apply modal"
+                      className="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-[10px] font-bold disabled:opacity-40"
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Apply to Athlete</span>
+                      Quick Modal
                     </button>
 
                     <button

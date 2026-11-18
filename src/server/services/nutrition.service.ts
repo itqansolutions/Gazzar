@@ -1,5 +1,11 @@
 import prisma from "@/lib/prisma";
 
+/**
+ * @deprecated The MealPlan model and NutritionService are DEPRECATED in Phase 4.
+ * Replaced by NutritionProgramService (managing NutritionProgram for reusable library templates
+ * and ClientNutritionAssignment for athlete assignments with immutable snapshots).
+ * Do NOT use MealPlan for new features. The table will be dropped in a future cleanup phase.
+ */
 export class NutritionService {
   /**
    * Get meal plans

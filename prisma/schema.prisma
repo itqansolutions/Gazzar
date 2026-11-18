@@ -877,20 +877,49 @@ model ClientAssessment {
   @@map("client_assessments")
 }
 
+enum EventType {
+  GROUP_CLASS
+  CHAMPIONSHIP
+  CAMP
+  SEMINAR_WORKSHOP
+  GENERAL_EVENT
+}
+
+enum EventMode {
+  ONLINE
+  IN_PERSON
+}
+
+enum AudienceScope {
+  WHOLE_ACADEMY
+  BY_SPORT
+  COACH_ROSTER
+  SELECTED_ATHLETES
+}
+
 model SessionCalendar {
-  id              String       @id @default(uuid())
+  id              String        @id @default(uuid())
   coachId         String
-  coach           CoachProfile @relation(fields: [coachId], references: [id])
-  sportId         String
-  sport           Sport        @relation(fields: [sportId], references: [id])
+  coach           CoachProfile  @relation(fields: [coachId], references: [id])
+  sportId         String?
+  sport           Sport?        @relation(fields: [sportId], references: [id])
   title           String
-  sessionType     SessionType  @default(INDIVIDUAL)
+  sessionType     SessionType   @default(INDIVIDUAL)
+  eventType       EventType     @default(GROUP_CLASS)
+  eventMode       EventMode     @default(ONLINE)
+  onlineLink      String?
+  location        String?
+  description     String?
+  audienceScope   AudienceScope @default(WHOLE_ACADEMY)
+  isAllDay        Boolean       @default(false)
   startTime       DateTime
   endTime         DateTime
-  location        String?
-  maxParticipants Int          @default(1)
+  maxParticipants Int           @default(1)
 
-  attendances SessionAttendance[]
+  attendances     SessionAttendance[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now()) @updatedAt
 
   @@map("session_calendars")
 }

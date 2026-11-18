@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { Difficulty, MetricType, BodyPart } from "@prisma/client";
+import { auditService } from "./audit.service";
 
 export class ExerciseServiceError extends Error {
   statusCode: number;
@@ -324,7 +325,7 @@ export class ExerciseService {
    * Delete or deactivate an exercise:
    * Hard delete only if unreferenced; otherwise deactivate (isActive=false) with clear message.
    */
-  async deleteExercise(id: string) {
+  async deleteExercise(id: string, actor?: any) {
     const exercise = await prisma.exercise.findUnique({
       where: { id },
       select: { id: true, nameEn: true, isActive: true }
@@ -358,6 +359,16 @@ export class ExerciseService {
         where: { id },
         data: { isActive: false }
       });
+
+      await auditService.log({
+        actor,
+        action: "DEACTIVATE_EXERCISE",
+        entityType: "Exercise",
+        entityId: id,
+        oldValues: { nameEn: exercise.nameEn, isActive: exercise.isActive },
+        newValues: { isActive: false, reason: `Referenced by ${totalRefs} active item(s)` }
+      });
+
       return {
         deleted: false,
         deactivated: true,
@@ -367,6 +378,15 @@ export class ExerciseService {
 
     await prisma.exerciseSport.deleteMany({ where: { exerciseId: id } });
     await prisma.exercise.delete({ where: { id } });
+
+    await auditService.log({
+      actor,
+      action: "DELETE_EXERCISE",
+      entityType: "Exercise",
+      entityId: id,
+      oldValues: { nameEn: exercise.nameEn, isActive: exercise.isActive }
+    });
+
     return {
       deleted: true,
       deactivated: false,

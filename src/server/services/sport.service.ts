@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { auditService } from "./audit.service";
 
 export class SportServiceError extends Error {
   statusCode: number;
@@ -146,7 +147,7 @@ export class SportService {
     });
   }
 
-  async updateSport(id: string, input: UpdateSportInput) {
+  async updateSport(id: string, input: UpdateSportInput, actor?: any) {
     const existing = await prisma.sport.findUnique({ where: { id } });
     if (!existing) {
       throw new SportServiceError("Sport not found", 404);
@@ -191,7 +192,7 @@ export class SportService {
       dataToUpdate.isActive = Boolean(input.isActive);
     }
 
-    return await prisma.sport.update({
+    const updated = await prisma.sport.update({
       where: { id },
       data: dataToUpdate,
       include: {
@@ -207,9 +208,20 @@ export class SportService {
         }
       }
     });
+
+    await auditService.log({
+      actor,
+      action: input.isActive === false && existing.isActive !== false ? "DEACTIVATE_SPORT" : "UPDATE_SPORT",
+      entityType: "Sport",
+      entityId: id,
+      oldValues: { nameEn: existing.nameEn, isActive: existing.isActive },
+      newValues: { nameEn: dataToUpdate.nameEn ?? existing.nameEn, isActive: dataToUpdate.isActive ?? existing.isActive }
+    });
+
+    return updated;
   }
 
-  async deleteSport(id: string) {
+  async deleteSport(id: string, actor?: any) {
     const sport = await prisma.sport.findUnique({
       where: { id },
       include: {
@@ -246,6 +258,15 @@ export class SportService {
     }
 
     await prisma.sport.delete({ where: { id } });
+
+    await auditService.log({
+      actor,
+      action: "DELETE_SPORT",
+      entityType: "Sport",
+      entityId: id,
+      oldValues: { nameEn: sport.nameEn, isActive: sport.isActive }
+    });
+
     return true;
   }
 }

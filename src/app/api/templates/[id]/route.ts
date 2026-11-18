@@ -36,7 +36,7 @@ export async function PATCH(
 
     const { id } = await Promise.resolve(params);
     const body = await request.json();
-    const updated = await workoutService.updateTemplate(id, body);
+    const updated = await workoutService.updateTemplate(id, body, auth.actor);
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
     console.error("[API_TEMPLATE_ID_PATCH_ERROR]:", err);
@@ -56,7 +56,7 @@ export async function DELETE(
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
-    await workoutService.deleteTemplate(id);
+    await workoutService.deleteTemplate(id, auth.actor);
     return NextResponse.json({ success: true, message: "Template deleted successfully" });
   } catch (err: any) {
     console.error("[API_TEMPLATE_ID_DELETE_ERROR]:", err);

@@ -31,10 +31,13 @@ export async function POST(req: NextRequest) {
     if (!auth.ok) return auth.response;
 
     const body = await req.json();
-    const created = await nutritionProgramService.createNutritionProgram({
-      ...body,
-      creatorId: body.creatorId || auth.actor.coachProfileId || undefined
-    });
+    const created = await nutritionProgramService.createNutritionProgram(
+      {
+        ...body,
+        creatorId: body.creatorId || auth.actor.coachProfileId || undefined
+      },
+      auth.actor
+    );
 
     return NextResponse.json({ success: true, data: created }, { status: 201 });
   } catch (err: any) {

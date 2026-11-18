@@ -1111,6 +1111,14 @@ export default function TemplatesPage() {
                   <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     {canManageTemplates && (
                       <>
+                        <Link
+                          href={`/assignments?templateId=${tpl.id}&mode=TEMPLATE`}
+                          className="px-3.5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Assign to Athlete 🎯</span>
+                        </Link>
+
                         <button
                           type="button"
                           onClick={() => {
@@ -1118,10 +1126,10 @@ export default function TemplatesPage() {
                             setCoachNotes("");
                             if (clients.length > 0) setSelectedClientId(clients[0].id);
                           }}
-                          className="px-3.5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer"
+                          title="Quick inline assign modal"
+                          className="px-2 py-1.5 rounded-xl text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-[10px] font-bold"
                         >
-                          <Send className="w-3.5 h-3.5" />
-                          <span>Assign to Client 🎯</span>
+                          Quick Modal
                         </button>
 
                         <button

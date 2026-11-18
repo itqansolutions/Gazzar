@@ -59,11 +59,14 @@ export async function POST(req: NextRequest) {
     const access = await requireClientAccess(auth.actor, body.clientId);
     if (!access.ok) return access.response;
 
-    const assessment = await healthService.createAssessment({
-      ...body,
-      clientId: access.client.id,
-      coachId: body.coachId || auth.actor.coachProfileId || undefined
-    });
+    const assessment = await healthService.createAssessment(
+      {
+        ...body,
+        clientId: access.client.id,
+        coachId: body.coachId || auth.actor.coachProfileId || undefined
+      },
+      auth.actor
+    );
     return NextResponse.json({ success: true, data: assessment }, { status: 201 });
   } catch (error: any) {
     console.error("[POST /api/assessments] Error:", error);

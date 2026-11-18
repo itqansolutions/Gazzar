@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 import { GoalType, NutritionAssignmentMode, Prisma } from "@prisma/client";
 import { toOptionalFloat, toOptionalInt, toOptionalText } from "./assignment-snapshot";
 import { getCalendarDayBounds, parseCalendarDate } from "@/lib/date-utils";
+import { auditService } from "./audit.service";
+import type { AuthActor } from "@/lib/auth/route-guard";
 
 export class NutritionProgramServiceError extends Error {
   statusCode: number;
@@ -156,19 +158,19 @@ export class NutritionProgramService {
     });
   }
 
-  async createNutritionProgram(data: NutritionProgramInput) {
+  async createNutritionProgram(data: NutritionProgramInput, actor?: AuthActor) {
     const title = toOptionalText(data.title);
     if (!title) {
       throw new NutritionProgramServiceError("Nutrition program title is required", 400);
     }
 
-    let creatorId = data.creatorId || null;
+    let creatorId = data.creatorId || actor?.coachProfileId || null;
     if (creatorId) {
       const coach = await prisma.coachProfile.findUnique({ where: { id: creatorId }, select: { id: true } });
       if (!coach) creatorId = null;
     }
 
-    return await prisma.nutritionProgram.create({
+    const created = await prisma.nutritionProgram.create({
       data: {
         title,
         description: toOptionalText(data.description),
@@ -188,19 +190,40 @@ export class NutritionProgramService {
         creatorId
       }
     });
+
+    await auditService.log({
+      actor,
+      action: "CREATE_NUTRITION_PROGRAM",
+      entityType: "NutritionProgram",
+      entityId: created.id,
+      newValues: {
+        title: created.title,
+        dailyCalories: created.dailyCalories,
+        goalType: created.goalType,
+        creatorId: created.creatorId
+      }
+    });
+
+    return created;
   }
 
-  async updateNutritionProgram(id: string, data: Partial<NutritionProgramInput>) {
-    const existing = await prisma.nutritionProgram.findUnique({ where: { id }, select: { id: true } });
+  async updateNutritionProgram(id: string, data: Partial<NutritionProgramInput>, actor?: AuthActor) {
+    const existing = await prisma.nutritionProgram.findUnique({ where: { id } });
     if (!existing) {
       throw new NutritionProgramServiceError("Nutrition program not found", 404);
+    }
+
+    if (actor?.user?.role === "COACH") {
+      if (existing.creatorId && existing.creatorId !== actor.coachProfileId) {
+        throw new NutritionProgramServiceError("Forbidden: Coaches may only modify their own nutrition programs", 403);
+      }
     }
 
     if (data.title !== undefined && !toOptionalText(data.title)) {
       throw new NutritionProgramServiceError("Nutrition program title cannot be empty", 400);
     }
 
-    return await prisma.nutritionProgram.update({
+    const updated = await prisma.nutritionProgram.update({
       where: { id },
       data: {
         ...(data.title !== undefined && { title: data.title.trim() }),
@@ -222,9 +245,26 @@ export class NutritionProgramService {
         ...(data.isActive !== undefined && { isActive: Boolean(data.isActive) })
       }
     });
+
+    const isArchive = data.isActive === false && existing.isActive !== false;
+    const isReactivate = data.isActive === true && existing.isActive === false;
+    await auditService.log({
+      actor,
+      action: isArchive
+        ? "ARCHIVE_NUTRITION_PROGRAM"
+        : isReactivate
+        ? "REACTIVATE_NUTRITION_PROGRAM"
+        : "UPDATE_NUTRITION_PROGRAM",
+      entityType: "NutritionProgram",
+      entityId: id,
+      oldValues: { title: existing.title, isActive: existing.isActive },
+      newValues: { title: updated.title, isActive: updated.isActive }
+    });
+
+    return updated;
   }
 
-  async deleteNutritionProgram(id: string) {
+  async deleteNutritionProgram(id: string, actor?: AuthActor) {
     const existing = await prisma.nutritionProgram.findUnique({
       where: { id },
       include: {
@@ -240,6 +280,12 @@ export class NutritionProgramService {
       throw new NutritionProgramServiceError("Nutrition program not found", 404);
     }
 
+    if (actor?.user?.role === "COACH") {
+      if (existing.creatorId && existing.creatorId !== actor.coachProfileId) {
+        throw new NutritionProgramServiceError("Forbidden: Coaches may only delete their own nutrition programs", 403);
+      }
+    }
+
     const refs = existing._count.trainingPrograms + existing._count.clientAssignments;
     if (refs > 0) {
       throw new NutritionProgramServiceError(
@@ -248,7 +294,17 @@ export class NutritionProgramService {
       );
     }
 
-    return await prisma.nutritionProgram.delete({ where: { id } });
+    await prisma.nutritionProgram.delete({ where: { id } });
+
+    await auditService.log({
+      actor,
+      action: "DELETE_NUTRITION_PROGRAM",
+      entityType: "NutritionProgram",
+      entityId: id,
+      oldValues: { title: existing.title, creatorId: existing.creatorId }
+    });
+
+    return { success: true };
   }
 
   /* ================= ATHLETE ASSIGNMENT MODES ================= */

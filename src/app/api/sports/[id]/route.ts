@@ -33,7 +33,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await req.json();
-    const updated = await sportService.updateSport(id, body);
+    const updated = await sportService.updateSport(id, body, auth.actor);
 
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
@@ -52,7 +52,7 @@ export async function DELETE(
     if (!auth.ok) return auth.response;
 
     const { id } = await params;
-    await sportService.deleteSport(id);
+    await sportService.deleteSport(id, auth.actor);
 
     return NextResponse.json({ success: true, message: "Sport deleted successfully" });
   } catch (err: any) {

@@ -7,13 +7,14 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const auth = await requireAuth(req);
     if (!auth.ok) return auth.response;
 
-    const access = await requireClientAccess(auth.actor, params.id);
+    const { id } = await Promise.resolve(params);
+    const access = await requireClientAccess(auth.actor, id);
     if (!access.ok) return access.response;
 
     const result = await checkInScheduleService.getSchedule(access.client.id);
@@ -29,20 +30,22 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const auth = await requireAuth(req, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
     if (!auth.ok) return auth.response;
 
-    const access = await requireClientAccess(auth.actor, params.id);
+    const { id } = await Promise.resolve(params);
+    const access = await requireClientAccess(auth.actor, id);
     if (!access.ok) return access.response;
 
     const body = await req.json();
     const result = await checkInScheduleService.upsertSchedule(
       access.client.id,
       body,
-      auth.actor.coachProfileId
+      auth.actor.coachProfileId,
+      auth.actor
     );
 
     return NextResponse.json({ success: true, data: result });
@@ -57,7 +60,7 @@ export async function POST(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
-  return POST(req, { params });
+  return POST(req, context);
 }

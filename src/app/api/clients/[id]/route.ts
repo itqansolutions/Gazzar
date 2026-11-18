@@ -5,15 +5,19 @@ import { requireAuth, requireClientAccess } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> | { id: string } }
+) {
   try {
     const auth = await requireAuth(request);
     if (!auth.ok) return auth.response;
 
-    const access = await requireClientAccess(auth.actor, params.id);
+    const { id } = await Promise.resolve(params);
+    const access = await requireClientAccess(auth.actor, id);
     if (!access.ok) return access.response;
 
-    const client = await clientService.getClientById(access.client.id);
+    const client = await clientService.getClientById(access.client.id, auth.actor);
     if (!client) {
       return NextResponse.json({ success: false, message: "Client not found" }, { status: 404 });
     }
@@ -24,12 +28,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> | { id: string } }
+) {
   try {
     const auth = await requireAuth(request, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
     if (!auth.ok) return auth.response;
 
-    const access = await requireClientAccess(auth.actor, params.id);
+    const { id } = await Promise.resolve(params);
+    const access = await requireClientAccess(auth.actor, id);
     if (!access.ok) return access.response;
 
     const body = await request.json();
@@ -41,12 +49,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> | { id: string } }
+) {
   try {
     const auth = await requireAuth(request, [UserRole.ADMIN, UserRole.HEAD_COACH]);
     if (!auth.ok) return auth.response;
 
-    await clientService.deleteClient(params.id);
+    const { id } = await Promise.resolve(params);
+    await clientService.deleteClient(id);
     return NextResponse.json({ success: true, message: "Client deleted successfully" });
   } catch (err: any) {
     console.error("[API_CLIENT_ID_DELETE_ERROR]:", err);

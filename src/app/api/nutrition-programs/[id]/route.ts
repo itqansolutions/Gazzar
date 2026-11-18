@@ -38,7 +38,7 @@ export async function PATCH(
 
     const { id } = await Promise.resolve(params);
     const body = await req.json();
-    const updated = await nutritionProgramService.updateNutritionProgram(id, body);
+    const updated = await nutritionProgramService.updateNutritionProgram(id, body, auth.actor);
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
     console.error("[PATCH /api/nutrition-programs/[id]] Error:", err);
@@ -56,7 +56,7 @@ export async function DELETE(
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
-    await nutritionProgramService.deleteNutritionProgram(id);
+    await nutritionProgramService.deleteNutritionProgram(id, auth.actor);
     return NextResponse.json({ success: true, message: "Nutrition program deleted successfully" });
   } catch (err: any) {
     console.error("[DELETE /api/nutrition-programs/[id]] Error:", err);

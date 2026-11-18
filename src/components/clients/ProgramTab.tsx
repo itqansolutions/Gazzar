@@ -35,7 +35,7 @@ export default function ProgramTab({
           <p>No active training program assigned to this athlete yet.</p>
           {!isClient && (
             <Link
-              href={`/assignments?clientId=${clientId}`}
+              href={`/assignments?athleteId=${clientId}&mode=PROGRAM`}
               className="inline-flex items-center space-x-1.5 rtl:space-x-reverse px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold transition-transform hover:scale-105 shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
             >
               <Dumbbell className="w-3.5 h-3.5" />

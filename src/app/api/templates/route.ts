@@ -29,10 +29,13 @@ export async function POST(request: Request) {
     if (!auth.ok) return auth.response;
 
     const body = await request.json();
-    const newTemplate = await workoutService.createTemplate({
-      ...body,
-      creatorId: body.creatorId || auth.actor.coachProfileId || undefined
-    });
+    const newTemplate = await workoutService.createTemplate(
+      {
+        ...body,
+        creatorId: body.creatorId || auth.actor.coachProfileId || undefined
+      },
+      auth.actor
+    );
     return NextResponse.json({ success: true, data: newTemplate }, { status: 201 });
   } catch (err: any) {
     console.error("[API_TEMPLATES_POST_ERROR]:", err);

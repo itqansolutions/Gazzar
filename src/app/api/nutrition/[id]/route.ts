@@ -6,6 +6,9 @@ import { requireAuth, requireClientAccess } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * @deprecated MealPlan API is DEPRECATED in Phase 4.
+ */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,13 +28,19 @@ export async function PATCH(
 
     const body = await req.json();
     const updated = await nutritionService.updateMealPlan(id, body);
-    return NextResponse.json({ success: true, data: updated });
+    const res = NextResponse.json({ success: true, data: updated });
+    res.headers.set("X-API-Deprecated", "true");
+    res.headers.set("Warning", '299 - "MealPlan API is deprecated. Use /api/nutrition/assignments instead."');
+    return res;
   } catch (error: any) {
     console.error("[PATCH /api/nutrition/[id]] Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 400 });
   }
 }
 
+/**
+ * @deprecated MealPlan API is DEPRECATED in Phase 4.
+ */
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -50,7 +59,10 @@ export async function DELETE(
     if (!access.ok) return access.response;
 
     await nutritionService.deleteMealPlan(id);
-    return NextResponse.json({ success: true, message: "Meal plan deleted successfully" });
+    const res = NextResponse.json({ success: true, message: "Meal plan deleted successfully" });
+    res.headers.set("X-API-Deprecated", "true");
+    res.headers.set("Warning", '299 - "MealPlan API is deprecated. Use /api/nutrition/assignments instead."');
+    return res;
   } catch (error: any) {
     console.error("[DELETE /api/nutrition/[id]] Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 400 });

@@ -1,4 +1,8 @@
 import prisma from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
+import { AuthActor } from "@/lib/auth/route-guard";
+import { auditService } from "./audit.service";
+import { HealthServiceError } from "./health.service";
 
 export interface UpsertCheckInScheduleInput {
   weightFrequencyDays?: number | null;
@@ -152,8 +156,28 @@ export class CheckInScheduleService {
   async upsertSchedule(
     clientId: string,
     input: UpsertCheckInScheduleInput,
-    configuredByCoachId?: string | null
+    configuredByCoachIdOrActor?: string | null | AuthActor,
+    maybeActor?: AuthActor
   ) {
+    let configuredByCoachId: string | null = null;
+    let actor: AuthActor | undefined = undefined;
+
+    if (
+      configuredByCoachIdOrActor &&
+      typeof configuredByCoachIdOrActor === "object" &&
+      "user" in configuredByCoachIdOrActor
+    ) {
+      actor = configuredByCoachIdOrActor as AuthActor;
+      configuredByCoachId = actor.coachProfileId;
+    } else {
+      configuredByCoachId = (configuredByCoachIdOrActor as string) || null;
+      actor = maybeActor;
+    }
+
+    if (actor && actor.user.role === UserRole.CLIENT) {
+      throw new HealthServiceError("Athletes are not allowed to configure check-in schedules", 403);
+    }
+
     const client = await prisma.clientProfile.findFirst({
       where: { OR: [{ id: clientId }, { userId: clientId }] },
       include: { checkInSchedule: true }
@@ -221,6 +245,21 @@ export class CheckInScheduleService {
         ...(input.notes !== undefined && { notes: input.notes })
       }
     });
+
+    if (actor) {
+      await auditService.log({
+        actor,
+        action: "CONFIGURE_CHECKIN_SCHEDULE",
+        entityType: "AthleteCheckInSchedule",
+        entityId: savedSchedule.id,
+        newValues: {
+          clientId: client.id,
+          weightFrequencyDays: savedSchedule.weightFrequencyDays,
+          measurementFrequencyDays: savedSchedule.measurementFrequencyDays,
+          photoFrequencyDays: savedSchedule.photoFrequencyDays
+        }
+      });
+    }
 
     return await this.getSchedule(client.id);
   }

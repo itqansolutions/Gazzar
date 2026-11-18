@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   ClientProfile,
@@ -135,9 +136,15 @@ function formatTargetSummary(ex: any): string {
   return parts.join(" × ") || "Strength";
 }
 
-export default function AssignmentsPage() {
+function AssignmentsContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const isClient = user?.role === "CLIENT";
+
+  const queryAthleteId = searchParams.get("athleteId") || searchParams.get("clientId") || "";
+  const queryTemplateId = searchParams.get("templateId") || "";
+  const queryProgramId = searchParams.get("programId") || "";
+  const queryMode = searchParams.get("mode") || "";
 
   const [assignments, setAssignments] = useState<ClientWorkoutAssignment[]>([]);
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
@@ -148,7 +155,7 @@ export default function AssignmentsPage() {
   const [loading, setLoading] = useState(true);
 
   // Filters
-  const [filterClientId, setFilterClientId] = useState("ALL");
+  const [filterClientId, setFilterClientId] = useState(queryAthleteId || "ALL");
   const [filterCoachId, setFilterCoachId] = useState("ALL");
   const [filterSource, setFilterSource] = useState("ALL");
   const [filterStatus, setFilterStatus] = useState<EffectiveAssignmentStatus | "ALL">("ALL");
@@ -157,9 +164,16 @@ export default function AssignmentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Assign Modal
-  const [isAssignOpen, setIsAssignOpen] = useState(false);
-  const [assignMode, setAssignMode] = useState<AssignMode>("TEMPLATE");
-  const [formClientId, setFormClientId] = useState("");
+  const [isAssignOpen, setIsAssignOpen] = useState(Boolean(queryAthleteId || queryTemplateId || queryProgramId || queryMode));
+  const [assignMode, setAssignMode] = useState<AssignMode>(() => {
+    if (queryMode) {
+      const u = queryMode.toUpperCase();
+      if (u === "INDIVIDUAL" || u === "TEMPLATE" || u === "PROGRAM") return u as AssignMode;
+    }
+    if (queryProgramId) return "PROGRAM";
+    return "TEMPLATE";
+  });
+  const [formClientId, setFormClientId] = useState(queryAthleteId || "");
   const [formCoachId, setFormCoachId] = useState("");
   const [formDate, setFormDate] = useState(getCairoDateKey());
   const [formTitle, setFormTitle] = useState("");
@@ -170,10 +184,10 @@ export default function AssignmentsPage() {
   const [draftExercises, setDraftExercises] = useState<IndividualExerciseDraft[]>([]);
 
   // Mode B: Template
-  const [formTemplateId, setFormTemplateId] = useState("");
+  const [formTemplateId, setFormTemplateId] = useState(queryTemplateId || "");
 
   // Mode C: Program
-  const [formProgramId, setFormProgramId] = useState("");
+  const [formProgramId, setFormProgramId] = useState(queryProgramId || "");
   const [programPreview, setProgramPreview] = useState<any | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [skipProgramConflicts, setSkipProgramConflicts] = useState(false);
@@ -190,6 +204,36 @@ export default function AssignmentsPage() {
   const [savingFeedback, setSavingFeedback] = useState(false);
 
   const todayKey = useMemo(() => getCairoDateKey(), []);
+
+  // Sync deep link query params on change
+  useEffect(() => {
+    const qAthlete = searchParams.get("athleteId") || searchParams.get("clientId");
+    const qTemplate = searchParams.get("templateId");
+    const qProgram = searchParams.get("programId");
+    const qMode = searchParams.get("mode");
+
+    if (qAthlete) {
+      setFormClientId(qAthlete);
+      setFilterClientId(qAthlete);
+    }
+    if (qTemplate) {
+      setFormTemplateId(qTemplate);
+      if (!qMode) setAssignMode("TEMPLATE");
+    }
+    if (qProgram) {
+      setFormProgramId(qProgram);
+      if (!qMode) setAssignMode("PROGRAM");
+    }
+    if (qMode) {
+      const u = qMode.toUpperCase();
+      if (u === "INDIVIDUAL" || u === "TEMPLATE" || u === "PROGRAM") {
+        setAssignMode(u as AssignMode);
+      }
+    }
+    if (qAthlete || qTemplate || qProgram || qMode) {
+      setIsAssignOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!user) return;
@@ -1511,3 +1555,18 @@ export default function AssignmentsPage() {
     </div>
   );
 }
+
+export default function AssignmentsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-bold">
+          Loading assignments and schedule...
+        </div>
+      }
+    >
+      <AssignmentsContent />
+    </Suspense>
+  );
+}
+

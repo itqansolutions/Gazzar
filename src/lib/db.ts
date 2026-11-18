@@ -919,7 +919,7 @@ class CoachingStore {
           ...d,
           workouts: d.workouts.map(pw => ({
             ...pw,
-            template: this.getTemplateById(pw.templateId)!
+            template: pw.templateId ? this.getTemplateById(pw.templateId) : undefined
           }))
         }))
       }))
@@ -982,7 +982,7 @@ class CoachingStore {
               id: `assign-wo-${Date.now()}-${createdCount}`,
               clientId,
               coachId: coachId || "user-admin",
-              templateId: pw.templateId,
+              templateId: pw.templateId || undefined,
               programId: program.id,
               scheduledDate: dateString,
               status: "SCHEDULED"

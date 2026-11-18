@@ -22,6 +22,12 @@ export type AssignmentStatus = "SCHEDULED" | "COMPLETED" | "SKIPPED" | "MISSED";
 
 export type SessionType = "INDIVIDUAL" | "GROUP" | "ASSESSMENT" | "RECOVERY";
 
+export type EventType = "GROUP_CLASS" | "CHAMPIONSHIP" | "CAMP" | "SEMINAR_WORKSHOP" | "GENERAL_EVENT";
+
+export type EventMode = "ONLINE" | "IN_PERSON";
+
+export type AudienceScope = "WHOLE_ACADEMY" | "BY_SPORT" | "COACH_ROSTER" | "SELECTED_ATHLETES";
+
 export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
 
 export type MembershipPlan = "MONTHLY" | "THREE_MONTHS" | "SIX_MONTHS" | "ANNUAL" | "PERSONAL_TRAINING" | "GROUP_CLASS";
@@ -409,6 +415,7 @@ export interface TrainingProgram {
   isTemplate: boolean;
   isActive?: boolean;
   status?: ProgramLifecycleStatus;
+  masterVersion?: number;
   _count?: {
     weeks?: number;
     assignments?: number;
@@ -440,9 +447,11 @@ export interface ProgramDay {
 export interface ProgramWorkout {
   id: string;
   dayId: string;
-  templateId: string;
+  templateId?: string | null;
   template?: WorkoutTemplate;
+  title?: string | null;
   orderIndex: number;
+  blocks?: WorkoutBlock[];
 }
 
 export interface ProgramAssignment {
@@ -454,6 +463,8 @@ export interface ProgramAssignment {
   endDate?: string | null;
   isActive: boolean;
   notes?: string | null;
+  sourceMasterVersion?: number | null;
+  programTitleSnapshot?: string | null;
   program?: TrainingProgram;
   createdAt?: string;
 }
@@ -508,6 +519,44 @@ export interface ClientWorkoutAssignmentExercise {
 
 export type EffectiveAssignmentStatus = "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED" | "MISSED";
 
+export interface AssignmentBlockItem {
+  id: string;
+  assignmentBlockId: string;
+  orderIndex: number;
+  itemType: BlockItemType;
+  exerciseId?: string | null;
+  exercise?: Exercise | null;
+  exerciseNameSnapshot?: string | null;
+  metricTypeSnapshot: MetricType;
+  targetSets?: number | null;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  restSeconds?: number | null;
+  tempo?: string | null;
+  instructions?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AssignmentBlock {
+  id: string;
+  assignmentId: string;
+  orderIndex: number;
+  type: BlockType;
+  title?: string | null;
+  rounds?: number | null;
+  durationSeconds?: number | null;
+  restBetweenRoundsSeconds?: number | null;
+  notes?: string | null;
+  items: AssignmentBlockItem[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ClientWorkoutAssignment {
   id: string;
   clientId: string;
@@ -519,39 +568,52 @@ export interface ClientWorkoutAssignment {
   description?: string | null;
   templateId?: string;
   template?: WorkoutTemplate;
+  workoutTemplate?: WorkoutTemplate;
   programId?: string;
   program?: TrainingProgram;
+  trainingProgram?: TrainingProgram;
   programAssignmentId?: string | null;
   programWeekNumber?: number | null;
   programDayNumber?: number | null;
   programDayTitle?: string | null;
+  programWorkoutOrder?: number | null;
   scheduledDate: string;
   status: AssignmentStatus;
   effectiveStatus?: EffectiveAssignmentStatus;
   completedAt?: string;
   coachNotes?: string;
   exercises?: ClientWorkoutAssignmentExercise[];
+  assignmentBlocks?: AssignmentBlock[];
   workoutLog?: WorkoutLog;
 }
 
 export interface SetLog {
   id: string;
-  exerciseLogId?: string;
+  exerciseLogId?: string | null;
+  workoutLogId?: string | null;
+  assignmentBlockItemId?: string | null;
+  roundNumber?: number;
   setNumber: number;
-  targetReps?: string;
-  targetWeightKg?: number;
-  targetDistanceKm?: number;
-  targetTimeSeconds?: number;
-  targetPace?: string;
-  targetRounds?: number;
-  actualReps?: number;
-  actualWeightKg?: number;
-  actualDistanceKm?: number;
-  actualTimeSeconds?: number;
-  actualPace?: string;
-  actualRounds?: number;
-  actualRpe?: number;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  actualReps?: number | null;
+  actualWeightKg?: number | null;
+  actualDistanceKm?: number | null;
+  actualTimeSeconds?: number | null;
+  actualPace?: string | null;
+  actualRounds?: number | null;
+  actualRpe?: number | null;
   isCompleted: boolean;
+  isSkipped?: boolean;
+  skipReason?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  coachReview?: string | null;
+  coachReviewedAt?: string | null;
 }
 
 export interface WorkoutExerciseLog {
@@ -575,7 +637,8 @@ export interface WorkoutLog {
   clientFeedback?: string;
   coachFeedback?: string;
   isCompleted: boolean;
-  exercises: WorkoutExerciseLog[];
+  exercises?: WorkoutExerciseLog[];
+  setLogs?: SetLog[];
 }
 
 export interface ClientMeasurementHistory {
@@ -674,15 +737,28 @@ export interface SessionCalendar {
   id: string;
   coachId: string;
   coach?: CoachProfile;
-  sportId: string;
-  sport?: Sport;
+  sportId?: string | null;
+  sport?: Sport | null;
   title: string;
   sessionType: SessionType;
+  eventType?: EventType;
+  eventMode?: EventMode;
+  onlineLink?: string | null;
+  location?: string | null;
+  description?: string | null;
+  audienceScope?: AudienceScope;
+  isAllDay?: boolean;
   startTime: string;
   endTime: string;
-  location?: string;
   maxParticipants: number;
   attendances?: SessionAttendance[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UnifiedCalendarData {
+  events: SessionCalendar[];
+  workouts: ClientWorkoutAssignment[];
 }
 
 export interface SessionAttendance {

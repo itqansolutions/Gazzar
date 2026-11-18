@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
-import prisma from "@/lib/prisma";
-import { sessionService } from "@/server/services/session.service";
+import { sessionService, SessionServiceError } from "@/server/services/session.service";
 import { requireAuth, requireClientAccess } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
@@ -11,11 +10,24 @@ export async function GET(req: NextRequest) {
     const auth = await requireAuth(req);
     if (!auth.ok) return auth.response;
 
-    const sessions = await sessionService.getSessions();
+    const { searchParams } = new URL(req.url);
+    const startDate = searchParams.get("startDate") || undefined;
+    const endDate = searchParams.get("endDate") || undefined;
+    const coachId = searchParams.get("coachId") || undefined;
+    const sportId = searchParams.get("sportId") || undefined;
+
+    const sessions = await sessionService.getSessions({
+      startDate,
+      endDate,
+      coachId,
+      sportId
+    });
+
     return NextResponse.json({ success: true, data: sessions });
   } catch (error: any) {
     console.error("[GET /api/sessions] Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const status = error instanceof SessionServiceError ? error.statusCode : 500;
+    return NextResponse.json({ success: false, error: error.message }, { status });
   }
 }
 
@@ -26,22 +38,12 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    // If COACH, ensure coachId is assigned to their own coach profile if not explicitly provided
-    let coachId = body.coachId;
-    if (auth.actor.user.role === UserRole.COACH) {
-      if (!coachId && auth.actor.coachProfileId) {
-        coachId = auth.actor.coachProfileId;
-      }
-    }
-
-    const session = await sessionService.createSession({
-      ...body,
-      coachId: coachId || body.coachId
-    });
+    const session = await sessionService.createSession(body, auth.actor);
     return NextResponse.json({ success: true, data: session }, { status: 201 });
   } catch (error: any) {
     console.error("[POST /api/sessions] Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    const status = error instanceof SessionServiceError ? error.statusCode : 400;
+    return NextResponse.json({ success: false, error: error.message }, { status });
   }
 }
 
@@ -64,37 +66,39 @@ export async function PATCH(req: NextRequest) {
         body.sessionId,
         body.clientId,
         body.status,
-        body.notes
+        body.notes,
+        auth.actor
       );
       return NextResponse.json({ success: true, data: attendance });
     }
 
-    // 2. If updating session metadata (title, timing, location, etc.):
-    const session = await prisma.sessionCalendar.findUnique({
-      where: { id: body.sessionId },
-      include: { coach: true }
-    });
-
-    if (!session) {
-      return NextResponse.json({ success: false, error: "Session not found" }, { status: 404 });
-    }
-
-    if (auth.actor.user.role === UserRole.COACH) {
-      const isOwner =
-        session.coachId === auth.actor.coachProfileId ||
-        session.coach?.userId === auth.actor.user.id;
-      if (!isOwner) {
-        return NextResponse.json(
-          { success: false, error: "Forbidden: You may only modify session details for sessions you coach" },
-          { status: 403 }
-        );
-      }
-    }
-
-    const updated = await sessionService.updateSession(body.sessionId, body);
+    // 2. If updating session metadata:
+    const updated = await sessionService.updateSession(body.sessionId, body, auth.actor);
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
     console.error("[PATCH /api/sessions] Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    const status = error instanceof SessionServiceError ? error.statusCode : 400;
+    return NextResponse.json({ success: false, error: error.message }, { status });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const auth = await requireAuth(req, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
+    if (!auth.ok) return auth.response;
+
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get("id") || searchParams.get("sessionId");
+
+    if (!sessionId) {
+      return NextResponse.json({ success: false, error: "sessionId query parameter is required" }, { status: 400 });
+    }
+
+    const result = await sessionService.deleteSession(sessionId, auth.actor);
+    return NextResponse.json({ success: true, data: result });
+  } catch (error: any) {
+    console.error("[DELETE /api/sessions] Error:", error);
+    const status = error instanceof SessionServiceError ? error.statusCode : 400;
+    return NextResponse.json({ success: false, error: error.message }, { status });
   }
 }

@@ -7,9 +7,10 @@ import { toCalendarDateKey } from "@/lib/date-utils";
 
 interface WorkoutsTabProps {
   clientId: string;
+  isClient?: boolean;
 }
 
-export default function WorkoutsTab({ clientId }: WorkoutsTabProps) {
+export default function WorkoutsTab({ clientId, isClient = false }: WorkoutsTabProps) {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,13 +28,24 @@ export default function WorkoutsTab({ clientId }: WorkoutsTabProps) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-          Assigned Workouts
-        </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Scheduled training sessions and active workout tracking
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            Assigned Workouts
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Scheduled training sessions and active workout tracking
+          </p>
+        </div>
+        {!isClient && (
+          <Link
+            href={`/assignments?athleteId=${clientId}&mode=TEMPLATE`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold transition-all shadow-sm self-start sm:self-auto cursor-pointer"
+          >
+            <Dumbbell className="w-3.5 h-3.5" />
+            <span>Assign Workout</span>
+          </Link>
+        )}
       </div>
 
       {loading ? (
@@ -41,8 +53,17 @@ export default function WorkoutsTab({ clientId }: WorkoutsTabProps) {
           Loading assigned workouts...
         </div>
       ) : assignments.length === 0 ? (
-        <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs">
-          No workouts assigned yet.
+        <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs space-y-3">
+          <p>No workouts assigned yet.</p>
+          {!isClient && (
+            <Link
+              href={`/assignments?athleteId=${clientId}&mode=TEMPLATE`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+            >
+              <Dumbbell className="w-3.5 h-3.5" />
+              <span>Assign First Workout</span>
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

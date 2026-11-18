@@ -5,10 +5,15 @@ import {
   Difficulty,
   GoalType,
   NutritionAssignmentMode,
-  Prisma
+  Prisma,
+  BlockType,
+  BlockItemType,
+  MetricType
 } from "@prisma/client";
 import { buildAssignmentSnapshotData, toOptionalFloat, toOptionalInt, toOptionalText } from "./assignment-snapshot";
 import { addCalendarDays, parseCalendarDate, toCalendarDateKey } from "@/lib/date-utils";
+import { auditService } from "./audit.service";
+import type { AuthActor } from "@/lib/auth/route-guard";
 
 export type ProgramLifecycleStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
 
@@ -26,20 +31,56 @@ export class ProgramServiceError extends Error {
   }
 }
 
+export interface ProgramBlockItemInput {
+  id?: string;
+  orderIndex?: number;
+  itemType?: BlockItemType;
+  exerciseId?: string | null;
+  targetSets?: number | null;
+  targetReps?: string | null;
+  targetWeightKg?: number | null;
+  targetDistanceKm?: number | null;
+  targetTimeSeconds?: number | null;
+  targetPace?: string | null;
+  targetRounds?: number | null;
+  restSeconds?: number | null;
+  tempo?: string | null;
+  instructions?: string | null;
+}
+
+export interface ProgramWorkoutBlockInput {
+  id?: string;
+  orderIndex?: number;
+  type?: BlockType;
+  title?: string | null;
+  rounds?: number | null;
+  durationSeconds?: number | null;
+  restBetweenRoundsSeconds?: number | null;
+  notes?: string | null;
+  items?: ProgramBlockItemInput[];
+}
+
+export interface ProgramWorkoutInput {
+  id?: string;
+  templateId?: string | null;
+  title?: string | null;
+  orderIndex?: number;
+  blocks?: ProgramWorkoutBlockInput[];
+}
+
 export interface ProgramDayInput {
+  id?: string;
   dayNumber?: number;
   dayName?: string;
   titleAr?: string;
   titleEn?: string;
   isRestDay?: boolean;
   templateId?: string | null;
-  workouts?: Array<{
-    templateId: string;
-    orderIndex?: number;
-  }>;
+  workouts?: ProgramWorkoutInput[];
 }
 
 export interface ProgramWeekInput {
+  id?: string;
   weekNumber?: number;
   focusNotes?: string | null;
   focusAr?: string | null;
@@ -134,8 +175,26 @@ const programInclude = {
                       }
                     },
                     orderBy: { orderIndex: "asc" as const }
+                  },
+                  blocks: {
+                    include: {
+                      items: {
+                        include: { exercise: true },
+                        orderBy: { orderIndex: "asc" as const }
+                      }
+                    },
+                    orderBy: { orderIndex: "asc" as const }
                   }
                 }
+              },
+              blocks: {
+                include: {
+                  items: {
+                    include: { exercise: true },
+                    orderBy: { orderIndex: "asc" as const }
+                  }
+                },
+                orderBy: { orderIndex: "asc" as const }
               }
             },
             orderBy: { orderIndex: "asc" as const }
@@ -148,17 +207,58 @@ const programInclude = {
   }
 };
 
+type NormalizedBlockItem = {
+  id?: string;
+  orderIndex: number;
+  itemType: BlockItemType;
+  exerciseId: string | null;
+  targetSets: number | null;
+  targetReps: string | null;
+  targetWeightKg: number | null;
+  targetDistanceKm: number | null;
+  targetTimeSeconds: number | null;
+  targetPace: string | null;
+  targetRounds: number | null;
+  restSeconds: number | null;
+  tempo: string | null;
+  instructions: string | null;
+};
+
+type NormalizedBlock = {
+  id?: string;
+  orderIndex: number;
+  type: BlockType;
+  title: string | null;
+  rounds: number | null;
+  durationSeconds: number | null;
+  restBetweenRoundsSeconds: number | null;
+  notes: string | null;
+  items: NormalizedBlockItem[];
+};
+
+type NormalizedWorkout = {
+  id?: string;
+  templateId: string | null;
+  title: string | null;
+  orderIndex: number;
+  blocks?: NormalizedBlock[];
+};
+
+type NormalizedDay = {
+  id?: string;
+  dayNumber: number;
+  titleEn: string;
+  titleAr: string;
+  isRestDay: boolean;
+  workouts: NormalizedWorkout[];
+};
+
 type NormalizedWeek = {
+  id?: string;
   weekNumber: number;
   focusEn: string | null;
   focusAr: string | null;
-  days: Array<{
-    dayNumber: number;
-    titleEn: string;
-    titleAr: string;
-    isRestDay: boolean;
-    workouts: Array<{ templateId: string; orderIndex: number }>;
-  }>;
+  days: NormalizedDay[];
 };
 
 async function normalizeAndValidateWeeks(
@@ -168,31 +268,94 @@ async function normalizeAndValidateWeeks(
   if (!weeksInput || weeksInput.length === 0) return [];
 
   const allTemplateIds = new Set<string>();
+  const allExerciseIds = new Set<string>();
+
   const normalized: NormalizedWeek[] = weeksInput.map((w, wIdx) => {
     const focus = toOptionalText(w.focusEn ?? w.focusAr ?? w.focusNotes);
-    const days = (w.days || []).map((d, dIdx) => {
+    const days: NormalizedDay[] = (w.days || []).map((d, dIdx) => {
       const isRestDay = Boolean(d.isRestDay);
       const rawTitle =
         toOptionalText(d.titleEn ?? d.titleAr ?? d.dayName) ||
         (isRestDay ? "Rest & Recovery" : `Day ${dIdx + 1}`);
 
-      const workouts: Array<{ templateId: string; orderIndex: number }> = [];
+      const workouts: NormalizedWorkout[] = [];
       if (!isRestDay) {
         if (Array.isArray(d.workouts) && d.workouts.length > 0) {
           d.workouts.forEach((pw, idx) => {
-            if (pw.templateId && pw.templateId.trim()) {
-              allTemplateIds.add(pw.templateId.trim());
-              workouts.push({ templateId: pw.templateId.trim(), orderIndex: idx });
+            const templateId = pw.templateId && pw.templateId.trim() ? pw.templateId.trim() : null;
+            if (templateId) {
+              allTemplateIds.add(templateId);
             }
+
+            let normalizedBlocks: NormalizedBlock[] | undefined = undefined;
+            if (Array.isArray(pw.blocks)) {
+              normalizedBlocks = pw.blocks.map((b, bIdx) => {
+                const bOrder = b.orderIndex !== undefined && b.orderIndex !== null ? Number(b.orderIndex) : bIdx + 1;
+                const items: NormalizedBlockItem[] = (b.items || []).map((it, iIdx) => {
+                  const iOrder =
+                    it.orderIndex !== undefined && it.orderIndex !== null ? Number(it.orderIndex) : iIdx + 1;
+                  const itemType = it.itemType || BlockItemType.EXERCISE;
+                  const exerciseId =
+                    itemType === BlockItemType.EXERCISE && it.exerciseId && it.exerciseId.trim()
+                      ? it.exerciseId.trim()
+                      : null;
+                  if (exerciseId) {
+                    allExerciseIds.add(exerciseId);
+                  }
+                  return {
+                    id: it.id || undefined,
+                    orderIndex: iOrder,
+                    itemType,
+                    exerciseId,
+                    targetSets: toOptionalInt(it.targetSets),
+                    targetReps: toOptionalText(it.targetReps),
+                    targetWeightKg: toOptionalFloat(it.targetWeightKg),
+                    targetDistanceKm: toOptionalFloat(it.targetDistanceKm),
+                    targetTimeSeconds: toOptionalInt(it.targetTimeSeconds),
+                    targetPace: toOptionalText(it.targetPace),
+                    targetRounds: toOptionalInt(it.targetRounds),
+                    restSeconds: toOptionalInt(it.restSeconds),
+                    tempo: toOptionalText(it.tempo),
+                    instructions: toOptionalText(it.instructions)
+                  };
+                });
+
+                return {
+                  id: b.id || undefined,
+                  orderIndex: bOrder,
+                  type: b.type || BlockType.SINGLE,
+                  title: toOptionalText(b.title),
+                  rounds: toOptionalInt(b.rounds),
+                  durationSeconds: toOptionalInt(b.durationSeconds),
+                  restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                  notes: toOptionalText(b.notes),
+                  items
+                };
+              });
+            }
+
+            workouts.push({
+              id: pw.id || undefined,
+              templateId,
+              title: toOptionalText(pw.title),
+              orderIndex: pw.orderIndex !== undefined && pw.orderIndex !== null ? Number(pw.orderIndex) : idx,
+              blocks: normalizedBlocks
+            });
           });
         } else if (d.templateId && d.templateId.trim()) {
-          allTemplateIds.add(d.templateId.trim());
-          workouts.push({ templateId: d.templateId.trim(), orderIndex: 0 });
+          const tid = d.templateId.trim();
+          allTemplateIds.add(tid);
+          workouts.push({
+            templateId: tid,
+            title: null,
+            orderIndex: 0
+          });
         }
       }
 
       return {
-        dayNumber: dIdx + 1,
+        id: d.id || undefined,
+        dayNumber: d.dayNumber !== undefined && d.dayNumber !== null ? Number(d.dayNumber) : dIdx + 1,
         titleEn: rawTitle,
         titleAr: toOptionalText(d.titleAr) || rawTitle,
         isRestDay,
@@ -201,7 +364,8 @@ async function normalizeAndValidateWeeks(
     });
 
     return {
-      weekNumber: wIdx + 1,
+      id: w.id || undefined,
+      weekNumber: w.weekNumber !== undefined && w.weekNumber !== null ? Number(w.weekNumber) : wIdx + 1,
       focusEn: focus,
       focusAr: toOptionalText(w.focusAr) || focus,
       days
@@ -221,44 +385,491 @@ async function normalizeAndValidateWeeks(
     }
   }
 
+  if (allExerciseIds.size > 0) {
+    const existingExercises = await tx.exercise.findMany({
+      where: { id: { in: Array.from(allExerciseIds) } },
+      select: { id: true }
+    });
+    const foundExSet = new Set(existingExercises.map((e) => e.id));
+    for (const eid of Array.from(allExerciseIds)) {
+      if (!foundExSet.has(eid)) {
+        throw new ProgramServiceError(`Referenced exercise "${eid}" does not exist`, 400);
+      }
+    }
+  }
+
   return normalized;
 }
 
-async function persistWeeksTree(
+/**
+ * Detect whether incoming weeks payload contains structural alterations compared to existing database state.
+ * Structural changes:
+ * - Added/removed/reordered weeks, days, workouts, blocks, items
+ * - Toggled isRestDay
+ * - Changed workout templateId, block type/rounds/duration/rest, or item targets/metrics
+ * Non-structural changes (do not increment version):
+ * - Program/week/day/workout title or description changes, week focus notes
+ */
+function detectStructuralChange(
+  existingWeeks: Array<{
+    id: string;
+    weekNumber: number;
+    days: Array<{
+      id: string;
+      dayNumber: number;
+      isRestDay: boolean;
+      workouts: Array<{
+        id: string;
+        templateId: string | null;
+        title: string | null;
+        orderIndex: number;
+        blocks: Array<{
+          id: string;
+          orderIndex: number;
+          type: BlockType;
+          rounds: number | null;
+          durationSeconds: number | null;
+          restBetweenRoundsSeconds: number | null;
+          items: Array<{
+            id: string;
+            orderIndex: number;
+            itemType: BlockItemType;
+            exerciseId: string | null;
+            targetSets: number | null;
+            targetReps: string | null;
+            targetWeightKg: number | null;
+            targetDistanceKm: number | null;
+            targetTimeSeconds: number | null;
+            targetPace: string | null;
+            targetRounds: number | null;
+            restSeconds: number | null;
+            tempo: string | null;
+            instructions: string | null;
+          }>;
+        }>;
+      }>;
+    }>;
+  }>,
+  incomingWeeks: NormalizedWeek[]
+): boolean {
+  if (existingWeeks.length !== incomingWeeks.length) return true;
+
+  for (let wIdx = 0; wIdx < incomingWeeks.length; wIdx++) {
+    const exW = existingWeeks[wIdx];
+    const inW = incomingWeeks[wIdx];
+    if (exW.weekNumber !== inW.weekNumber) return true;
+    if (exW.days.length !== inW.days.length) return true;
+
+    for (let dIdx = 0; dIdx < inW.days.length; dIdx++) {
+      const exD = exW.days[dIdx];
+      const inD = inW.days[dIdx];
+      if (exD.dayNumber !== inD.dayNumber) return true;
+      if (exD.isRestDay !== inD.isRestDay) return true;
+
+      if (!inD.isRestDay) {
+        if (exD.workouts.length !== inD.workouts.length) return true;
+
+        for (let woIdx = 0; woIdx < inD.workouts.length; woIdx++) {
+          const exWo = exD.workouts[woIdx];
+          const inWo = inD.workouts[woIdx];
+
+          if (exWo.templateId !== inWo.templateId) return true;
+          if (exWo.orderIndex !== inWo.orderIndex) return true;
+
+          if (inWo.blocks && inWo.blocks.length > 0) {
+            if (exWo.blocks.length !== inWo.blocks.length) return true;
+
+            for (let bIdx = 0; bIdx < inWo.blocks.length; bIdx++) {
+              const exB = exWo.blocks[bIdx];
+              const inB = inWo.blocks[bIdx];
+
+              if (exB.type !== inB.type) return true;
+              if (exB.orderIndex !== inB.orderIndex) return true;
+              if ((exB.rounds ?? null) !== (inB.rounds ?? null)) return true;
+              if ((exB.durationSeconds ?? null) !== (inB.durationSeconds ?? null)) return true;
+              if ((exB.restBetweenRoundsSeconds ?? null) !== (inB.restBetweenRoundsSeconds ?? null)) return true;
+
+              if (exB.items.length !== inB.items.length) return true;
+
+              for (let iIdx = 0; iIdx < inB.items.length; iIdx++) {
+                const exI = exB.items[iIdx];
+                const inI = inB.items[iIdx];
+
+                if (exI.orderIndex !== inI.orderIndex) return true;
+                if (exI.itemType !== inI.itemType) return true;
+                if ((exI.exerciseId ?? null) !== (inI.exerciseId ?? null)) return true;
+                if ((exI.targetSets ?? null) !== (inI.targetSets ?? null)) return true;
+                if ((exI.targetReps ?? null) !== (inI.targetReps ?? null)) return true;
+                if ((exI.targetWeightKg ?? null) !== (inI.targetWeightKg ?? null)) return true;
+                if ((exI.targetDistanceKm ?? null) !== (inI.targetDistanceKm ?? null)) return true;
+                if ((exI.targetTimeSeconds ?? null) !== (inI.targetTimeSeconds ?? null)) return true;
+                if ((exI.targetPace ?? null) !== (inI.targetPace ?? null)) return true;
+                if ((exI.targetRounds ?? null) !== (inI.targetRounds ?? null)) return true;
+                if ((exI.restSeconds ?? null) !== (inI.restSeconds ?? null)) return true;
+                if ((exI.tempo ?? null) !== (inI.tempo ?? null)) return true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Structural Diff & Upsert:
+ * Synchronizes the entire program hierarchy (weeks, days, workouts, blocks, items)
+ * preserving stable database primary keys (UUIDs) without cascading delete wipes.
+ */
+async function syncWeeksTree(
   tx: Prisma.TransactionClient,
   programId: string,
-  weeks: NormalizedWeek[]
+  incomingWeeks: NormalizedWeek[]
 ) {
-  for (const w of weeks) {
-    const createdWeek = await tx.programWeek.create({
-      data: {
-        programId,
-        weekNumber: w.weekNumber,
-        focusEn: w.focusEn,
-        focusAr: w.focusAr
+  const existingWeeks = await tx.programWeek.findMany({
+    where: { programId },
+    include: {
+      days: {
+        include: {
+          workouts: {
+            include: {
+              blocks: {
+                include: { items: true },
+                orderBy: { orderIndex: "asc" }
+              }
+            },
+            orderBy: { orderIndex: "asc" }
+          }
+        },
+        orderBy: { dayNumber: "asc" }
       }
-    });
+    },
+    orderBy: { weekNumber: "asc" }
+  });
 
-    for (const d of w.days) {
-      const createdDay = await tx.programDay.create({
+  const existingWeekMap = new Map(existingWeeks.map((w) => [w.id, w]));
+  const existingWeekByNumber = new Map(existingWeeks.map((w) => [w.weekNumber, w]));
+  const usedWeekIds = new Set<string>();
+
+  for (const inW of incomingWeeks) {
+    let weekRecord = (inW.id && existingWeekMap.get(inW.id)) || existingWeekByNumber.get(inW.weekNumber);
+
+    if (weekRecord) {
+      usedWeekIds.add(weekRecord.id);
+      weekRecord = await tx.programWeek.update({
+        where: { id: weekRecord.id },
         data: {
-          weekId: createdWeek.id,
-          dayNumber: d.dayNumber,
-          titleEn: d.titleEn,
-          titleAr: d.titleAr,
-          isRestDay: d.isRestDay
+          weekNumber: inW.weekNumber,
+          focusEn: inW.focusEn,
+          focusAr: inW.focusAr
+        },
+        include: {
+          days: {
+            include: {
+              workouts: {
+                include: {
+                  blocks: {
+                    include: { items: true }
+                  }
+                }
+              }
+            }
+          }
         }
       });
+    } else {
+      weekRecord = await tx.programWeek.create({
+        data: {
+          programId,
+          weekNumber: inW.weekNumber,
+          focusEn: inW.focusEn,
+          focusAr: inW.focusAr
+        },
+        include: {
+          days: {
+            include: {
+              workouts: {
+                include: {
+                  blocks: {
+                    include: { items: true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+      usedWeekIds.add(weekRecord.id);
+    }
 
-      if (!d.isRestDay && d.workouts.length > 0) {
-        await tx.programWorkout.createMany({
-          data: d.workouts.map((pw) => ({
-            dayId: createdDay.id,
-            templateId: pw.templateId,
-            orderIndex: pw.orderIndex
-          }))
+    const existingDays = weekRecord.days || [];
+    const existingDayMap = new Map(existingDays.map((d) => [d.id, d]));
+    const existingDayByNumber = new Map(existingDays.map((d) => [d.dayNumber, d]));
+    const usedDayIds = new Set<string>();
+
+    for (const inD of inW.days) {
+      let dayRecord = (inD.id && existingDayMap.get(inD.id)) || existingDayByNumber.get(inD.dayNumber);
+
+      if (dayRecord) {
+        usedDayIds.add(dayRecord.id);
+        dayRecord = await tx.programDay.update({
+          where: { id: dayRecord.id },
+          data: {
+            dayNumber: inD.dayNumber,
+            titleEn: inD.titleEn,
+            titleAr: inD.titleAr,
+            isRestDay: inD.isRestDay
+          },
+          include: {
+            workouts: {
+              include: {
+                blocks: {
+                  include: { items: true }
+                }
+              }
+            }
+          }
         });
+      } else {
+        dayRecord = await tx.programDay.create({
+          data: {
+            weekId: weekRecord.id,
+            dayNumber: inD.dayNumber,
+            titleEn: inD.titleEn,
+            titleAr: inD.titleAr,
+            isRestDay: inD.isRestDay
+          },
+          include: {
+            workouts: {
+              include: {
+                blocks: {
+                  include: { items: true }
+                }
+              }
+            }
+          }
+        });
+        usedDayIds.add(dayRecord.id);
       }
+
+      const existingWorkouts = dayRecord.workouts || [];
+      const existingWorkoutMap = new Map(existingWorkouts.map((wo) => [wo.id, wo]));
+      const existingWorkoutByOrder = new Map(existingWorkouts.map((wo) => [wo.orderIndex, wo]));
+      const usedWorkoutIds = new Set<string>();
+
+      if (!inD.isRestDay && inD.workouts.length > 0) {
+        for (const inWo of inD.workouts) {
+          let workoutRecord =
+            (inWo.id && existingWorkoutMap.get(inWo.id)) || existingWorkoutByOrder.get(inWo.orderIndex);
+
+          if (workoutRecord) {
+            usedWorkoutIds.add(workoutRecord.id);
+            workoutRecord = await tx.programWorkout.update({
+              where: { id: workoutRecord.id },
+              data: {
+                templateId: inWo.templateId,
+                title: inWo.title,
+                orderIndex: inWo.orderIndex
+              },
+              include: {
+                blocks: {
+                  include: { items: true }
+                }
+              }
+            });
+          } else {
+            workoutRecord = await tx.programWorkout.create({
+              data: {
+                dayId: dayRecord.id,
+                templateId: inWo.templateId,
+                title: inWo.title,
+                orderIndex: inWo.orderIndex
+              },
+              include: {
+                blocks: {
+                  include: { items: true }
+                }
+              }
+            });
+            usedWorkoutIds.add(workoutRecord.id);
+
+            // If new workout was created from a template without explicit blocks,
+            // copy blocks & items from template to create independent master content
+            if (!inWo.blocks && inWo.templateId) {
+              const tmplBlocks = await tx.workoutBlock.findMany({
+                where: { templateId: inWo.templateId },
+                include: { items: { orderBy: { orderIndex: "asc" } } },
+                orderBy: { orderIndex: "asc" }
+              });
+
+              for (const tb of tmplBlocks) {
+                const createdBlock = await tx.workoutBlock.create({
+                  data: {
+                    programWorkoutId: workoutRecord.id,
+                    orderIndex: tb.orderIndex,
+                    type: tb.type,
+                    title: tb.title,
+                    rounds: tb.rounds,
+                    durationSeconds: tb.durationSeconds,
+                    restBetweenRoundsSeconds: tb.restBetweenRoundsSeconds,
+                    notes: tb.notes
+                  }
+                });
+
+                if (tb.items.length > 0) {
+                  await tx.blockItem.createMany({
+                    data: tb.items.map((ti) => ({
+                      blockId: createdBlock.id,
+                      orderIndex: ti.orderIndex,
+                      itemType: ti.itemType,
+                      exerciseId: ti.exerciseId,
+                      targetSets: ti.targetSets,
+                      targetReps: ti.targetReps,
+                      targetWeightKg: ti.targetWeightKg,
+                      targetDistanceKm: ti.targetDistanceKm,
+                      targetTimeSeconds: ti.targetTimeSeconds,
+                      targetPace: ti.targetPace,
+                      targetRounds: ti.targetRounds,
+                      restSeconds: ti.restSeconds,
+                      tempo: ti.tempo,
+                      instructions: ti.instructions
+                    }))
+                  });
+                }
+              }
+            }
+          }
+
+          // If explicit blocks were provided for this workout, sync them
+          if (inWo.blocks && inWo.blocks.length > 0) {
+            const existingBlocks = workoutRecord.blocks || [];
+            const existingBlockMap = new Map(existingBlocks.map((b) => [b.id, b]));
+            const existingBlockByOrder = new Map(existingBlocks.map((b) => [b.orderIndex, b]));
+            const usedBlockIds = new Set<string>();
+
+            for (const inB of inWo.blocks) {
+              let blockRecord =
+                (inB.id && existingBlockMap.get(inB.id)) || existingBlockByOrder.get(inB.orderIndex);
+
+              if (blockRecord) {
+                usedBlockIds.add(blockRecord.id);
+                blockRecord = await tx.workoutBlock.update({
+                  where: { id: blockRecord.id },
+                  data: {
+                    orderIndex: inB.orderIndex,
+                    type: inB.type,
+                    title: inB.title,
+                    rounds: inB.rounds,
+                    durationSeconds: inB.durationSeconds,
+                    restBetweenRoundsSeconds: inB.restBetweenRoundsSeconds,
+                    notes: inB.notes
+                  },
+                  include: { items: true }
+                });
+              } else {
+                blockRecord = await tx.workoutBlock.create({
+                  data: {
+                    programWorkoutId: workoutRecord.id,
+                    orderIndex: inB.orderIndex,
+                    type: inB.type,
+                    title: inB.title,
+                    rounds: inB.rounds,
+                    durationSeconds: inB.durationSeconds,
+                    restBetweenRoundsSeconds: inB.restBetweenRoundsSeconds,
+                    notes: inB.notes
+                  },
+                  include: { items: true }
+                });
+                usedBlockIds.add(blockRecord.id);
+              }
+
+              const existingItems = blockRecord.items || [];
+              const existingItemMap = new Map(existingItems.map((i) => [i.id, i]));
+              const existingItemByOrder = new Map(existingItems.map((i) => [i.orderIndex, i]));
+              const usedItemIds = new Set<string>();
+
+              for (const inI of inB.items) {
+                let itemRecord =
+                  (inI.id && existingItemMap.get(inI.id)) || existingItemByOrder.get(inI.orderIndex);
+
+                if (itemRecord) {
+                  usedItemIds.add(itemRecord.id);
+                  await tx.blockItem.update({
+                    where: { id: itemRecord.id },
+                    data: {
+                      orderIndex: inI.orderIndex,
+                      itemType: inI.itemType,
+                      exerciseId: inI.exerciseId,
+                      targetSets: inI.targetSets,
+                      targetReps: inI.targetReps,
+                      targetWeightKg: inI.targetWeightKg,
+                      targetDistanceKm: inI.targetDistanceKm,
+                      targetTimeSeconds: inI.targetTimeSeconds,
+                      targetPace: inI.targetPace,
+                      targetRounds: inI.targetRounds,
+                      restSeconds: inI.restSeconds,
+                      tempo: inI.tempo,
+                      instructions: inI.instructions
+                    }
+                  });
+                } else {
+                  const createdItem = await tx.blockItem.create({
+                    data: {
+                      blockId: blockRecord.id,
+                      orderIndex: inI.orderIndex,
+                      itemType: inI.itemType,
+                      exerciseId: inI.exerciseId,
+                      targetSets: inI.targetSets,
+                      targetReps: inI.targetReps,
+                      targetWeightKg: inI.targetWeightKg,
+                      targetDistanceKm: inI.targetDistanceKm,
+                      targetTimeSeconds: inI.targetTimeSeconds,
+                      targetPace: inI.targetPace,
+                      targetRounds: inI.targetRounds,
+                      restSeconds: inI.restSeconds,
+                      tempo: inI.tempo,
+                      instructions: inI.instructions
+                    }
+                  });
+                  usedItemIds.add(createdItem.id);
+                }
+              }
+
+              for (const exI of existingItems) {
+                if (!usedItemIds.has(exI.id)) {
+                  await tx.blockItem.delete({ where: { id: exI.id } });
+                }
+              }
+            }
+
+            for (const exB of existingBlocks) {
+              if (!usedBlockIds.has(exB.id)) {
+                await tx.workoutBlock.delete({ where: { id: exB.id } });
+              }
+            }
+          }
+        }
+      }
+
+      for (const exWo of existingWorkouts) {
+        if (!usedWorkoutIds.has(exWo.id)) {
+          await tx.programWorkout.delete({ where: { id: exWo.id } });
+        }
+      }
+    }
+
+    for (const exD of existingDays) {
+      if (!usedDayIds.has(exD.id)) {
+        await tx.programDay.delete({ where: { id: exD.id } });
+      }
+    }
+  }
+
+  for (const exW of existingWeeks) {
+    if (!usedWeekIds.has(exW.id)) {
+      await tx.programWeek.delete({ where: { id: exW.id } });
     }
   }
 }
@@ -272,7 +883,7 @@ function decorateProgram<T extends { isActive: boolean; isTemplate: boolean }>(p
 
 export class ProgramService {
   /**
-   * Get all training programs with sports, optional nutrition program, weeks, days, and status.
+   * Get all training programs with sports, optional nutrition program, weeks, days, blocks, items, and status.
    */
   async getPrograms(filter?: {
     status?: ProgramLifecycleStatus;
@@ -319,7 +930,7 @@ export class ProgramService {
   }
 
   /**
-   * Get single program by ID with structured weeks, days, workout templates, and nutrition plan.
+   * Get single program by ID with structured weeks, days, workouts, blocks, items, and nutrition plan.
    */
   async getProgramById(id: string) {
     const program = await prisma.trainingProgram.findUnique({
@@ -330,25 +941,33 @@ export class ProgramService {
   }
 
   /**
-   * Create training program with structured weeks, days, optional multi-template workouts,
+   * Create training program with structured weeks, days, workouts, blocks, items,
    * lifecycle status (DRAFT | ACTIVE | ARCHIVED), and optional nutrition linkage.
+   * masterVersion initializes to 1.
    */
-  async createProgram(data: {
-    titleAr?: string;
-    titleEn?: string;
-    descriptionAr?: string | null;
-    descriptionEn?: string | null;
-    durationWeeks?: number;
-    sportId?: string;
-    goalType?: GoalType;
-    difficulty?: Difficulty;
-    creatorId?: string;
-    nutritionProgramId?: string | null;
-    status?: ProgramLifecycleStatus;
-    isActive?: boolean;
-    isTemplate?: boolean;
-    weeks?: ProgramWeekInput[];
-  }) {
+  async createProgram(
+    data: {
+      titleAr?: string;
+      titleEn?: string;
+      descriptionAr?: string | null;
+      descriptionEn?: string | null;
+      durationWeeks?: number;
+      sportId?: string;
+      goalType?: GoalType;
+      difficulty?: Difficulty;
+      creatorId?: string;
+      nutritionProgramId?: string | null;
+      status?: ProgramLifecycleStatus;
+      isActive?: boolean;
+      isTemplate?: boolean;
+      weeks?: ProgramWeekInput[];
+    },
+    actor?: AuthActor
+  ) {
+    if (actor?.user?.role === "CLIENT") {
+      throw new ProgramServiceError("Forbidden: Clients cannot manage training programs", 403);
+    }
+
     const titleEn = toOptionalText(data.titleEn) || toOptionalText(data.titleAr);
     const titleAr = toOptionalText(data.titleAr) || titleEn;
     if (!titleEn || !titleAr) {
@@ -378,7 +997,7 @@ export class ProgramService {
       }
     }
 
-    let creatorId = data.creatorId || null;
+    let creatorId = data.creatorId || actor?.coachProfileId || null;
     if (creatorId) {
       const coach = await prisma.coachProfile.findUnique({ where: { id: creatorId }, select: { id: true } });
       if (!coach) creatorId = null;
@@ -411,12 +1030,13 @@ export class ProgramService {
             creatorId,
             nutritionProgramId: nutritionProgramId || null,
             isActive: statusFlags.isActive,
-            isTemplate: statusFlags.isTemplate
+            isTemplate: statusFlags.isTemplate,
+            masterVersion: 1
           }
         });
 
         if (normalizedWeeks.length > 0) {
-          await persistWeeksTree(tx, program.id, normalizedWeeks);
+          await syncWeeksTree(tx, program.id, normalizedWeeks);
         }
 
         return program.id;
@@ -429,11 +1049,27 @@ export class ProgramService {
       include: programInclude
     });
 
+    await auditService.log({
+      actor,
+      action: "CREATE_PROGRAM",
+      entityType: "TrainingProgram",
+      entityId: created.id,
+      newValues: {
+        titleEn: created.titleEn,
+        durationWeeks: created.durationWeeks,
+        sportId: created.sportId,
+        creatorId: created.creatorId,
+        masterVersion: created.masterVersion
+      }
+    });
+
     return decorateProgram(created);
   }
 
   /**
-   * Update training program metadata, status, optional nutrition linkage, and full weekly schedule.
+   * Update training program metadata, status, optional nutrition linkage, and weekly schedule.
+   * Uses diff/upsert pattern to preserve stable IDs across weeks, days, workouts, blocks, and items.
+   * Increments masterVersion by exactly 1 ONLY when structural changes occur (max 1 increment per save).
    */
   async updateProgram(
     id: string,
@@ -451,14 +1087,39 @@ export class ProgramService {
       isActive?: boolean;
       isTemplate?: boolean;
       weeks?: ProgramWeekInput[];
-    }
+    },
+    actor?: AuthActor
   ) {
+    if (actor?.user?.role === "CLIENT") {
+      throw new ProgramServiceError("Forbidden: Clients cannot manage training programs", 403);
+    }
+
     const existing = await prisma.trainingProgram.findUnique({
       where: { id },
-      select: { id: true, isActive: true, isTemplate: true, titleEn: true, titleAr: true }
+      select: {
+        id: true,
+        isActive: true,
+        isTemplate: true,
+        titleEn: true,
+        titleAr: true,
+        creatorId: true,
+        creator: { select: { userId: true } },
+        masterVersion: true,
+        durationWeeks: true
+      }
     });
     if (!existing) {
       throw new ProgramServiceError("Training program not found", 404);
+    }
+
+    if (actor?.user?.role === "COACH") {
+      const isOwner =
+        existing.creatorId === actor.coachProfileId ||
+        existing.creator?.userId === actor.user.id ||
+        existing.creatorId === actor.user.id;
+      if (!isOwner) {
+        throw new ProgramServiceError("Forbidden: Coaches may only modify their own training programs", 403);
+      }
     }
 
     if (data.sportId !== undefined) {
@@ -503,10 +1164,46 @@ export class ProgramService {
           })
         : undefined;
 
+    let isStructuralChange = false;
+    let nextMasterVersion = existing.masterVersion;
+
     await prisma.$transaction(
       async (tx) => {
         const hasWeeks = Array.isArray(data.weeks);
-        const normalizedWeeks = hasWeeks ? await normalizeAndValidateWeeks(tx, data.weeks) : [];
+        let normalizedWeeks: NormalizedWeek[] = [];
+
+        if (hasWeeks) {
+          normalizedWeeks = await normalizeAndValidateWeeks(tx, data.weeks);
+
+          const currentWeeksForDiff = await tx.programWeek.findMany({
+            where: { programId: id },
+            include: {
+              days: {
+                include: {
+                  workouts: {
+                    include: {
+                      blocks: {
+                        include: { items: true },
+                        orderBy: { orderIndex: "asc" }
+                      }
+                    },
+                    orderBy: { orderIndex: "asc" }
+                  }
+                },
+                orderBy: { dayNumber: "asc" }
+              }
+            },
+            orderBy: { weekNumber: "asc" }
+          });
+
+          isStructuralChange = detectStructuralChange(currentWeeksForDiff, normalizedWeeks);
+        } else if (data.durationWeeks !== undefined && data.durationWeeks !== existing.durationWeeks) {
+          isStructuralChange = true;
+        }
+
+        if (isStructuralChange) {
+          nextMasterVersion = existing.masterVersion + 1;
+        }
 
         const updateData: Prisma.TrainingProgramUncheckedUpdateInput = {
           ...(nextTitleEn && { titleEn: nextTitleEn }),
@@ -526,6 +1223,7 @@ export class ProgramService {
           ...(data.difficulty !== undefined && { difficulty: data.difficulty }),
           ...(resolvedNutritionId !== undefined && { nutritionProgramId: resolvedNutritionId }),
           ...(statusFlags && { isActive: statusFlags.isActive, isTemplate: statusFlags.isTemplate }),
+          ...(isStructuralChange && { masterVersion: nextMasterVersion }),
           ...(hasWeeks
             ? { durationWeeks: Math.max(1, normalizedWeeks.length || Number(data.durationWeeks) || 1) }
             : data.durationWeeks !== undefined
@@ -539,14 +1237,38 @@ export class ProgramService {
         });
 
         if (hasWeeks) {
-          await tx.programWeek.deleteMany({ where: { programId: id } });
-          if (normalizedWeeks.length > 0) {
-            await persistWeeksTree(tx, id, normalizedWeeks);
-          }
+          await syncWeeksTree(tx, id, normalizedWeeks);
         }
       },
       { maxWait: 10000, timeout: 30000 }
     );
+
+    if (isStructuralChange) {
+      await auditService.log({
+        actor,
+        action: "UPDATE_PROGRAM_VERSION",
+        entityType: "TrainingProgram",
+        entityId: id,
+        oldValues: { masterVersion: existing.masterVersion },
+        newValues: { masterVersion: nextMasterVersion }
+      });
+    }
+
+    await auditService.log({
+      actor,
+      action: "UPDATE_PROGRAM",
+      entityType: "TrainingProgram",
+      entityId: id,
+      oldValues: {
+        titleEn: existing.titleEn,
+        masterVersion: existing.masterVersion
+      },
+      newValues: {
+        titleEn: nextTitleEn || existing.titleEn,
+        masterVersion: nextMasterVersion,
+        isStructuralChange
+      }
+    });
 
     const updated = await prisma.trainingProgram.findUniqueOrThrow({
       where: { id },
@@ -559,10 +1281,15 @@ export class ProgramService {
   /**
    * Safe delete program: prevents silent corruption by returning 409 Conflict if linked to client assignments.
    */
-  async deleteProgram(id: string) {
+  async deleteProgram(id: string, actor?: AuthActor) {
+    if (actor?.user?.role === "CLIENT") {
+      throw new ProgramServiceError("Forbidden: Clients cannot manage training programs", 403);
+    }
+
     const existing = await prisma.trainingProgram.findUnique({
       where: { id },
       include: {
+        creator: { select: { userId: true } },
         _count: {
           select: {
             assignments: true,
@@ -575,6 +1302,16 @@ export class ProgramService {
       throw new ProgramServiceError("Training program not found", 404);
     }
 
+    if (actor?.user?.role === "COACH") {
+      const isOwner =
+        !existing.creatorId ||
+        existing.creatorId === actor.coachProfileId ||
+        existing.creator?.userId === actor.user.id;
+      if (!isOwner) {
+        throw new ProgramServiceError("Forbidden: Coaches may only delete their own training programs", 403);
+      }
+    }
+
     const totalRefs = existing._count.assignments + existing._count.programAssignments;
     if (totalRefs > 0) {
       throw new ProgramServiceError(
@@ -583,9 +1320,112 @@ export class ProgramService {
       );
     }
 
-    return await prisma.trainingProgram.delete({
+    const deleted = await prisma.trainingProgram.delete({
       where: { id }
     });
+
+    await auditService.log({
+      actor,
+      action: "DELETE_PROGRAM",
+      entityType: "TrainingProgram",
+      entityId: id,
+      oldValues: {
+        titleEn: existing.titleEn,
+        masterVersion: existing.masterVersion
+      }
+    });
+
+    return deleted;
+  }
+
+  /**
+   * Duplicate training program with full hierarchy (weeks, days, workouts, blocks, items).
+   * Sets masterVersion to 1 and appends "(Copy)" to the title.
+   */
+  async duplicateProgram(id: string, actor?: AuthActor) {
+    if (actor?.user?.role === "CLIENT") {
+      throw new ProgramServiceError("Forbidden: Clients cannot manage training programs", 403);
+    }
+
+    const source = await this.getProgramById(id);
+    if (!source) {
+      throw new ProgramServiceError("Training program not found", 404);
+    }
+
+    const newTitleEn = `${source.titleEn} (Copy)`;
+    const newTitleAr = source.titleAr ? `${source.titleAr} (نسخة)` : newTitleEn;
+
+    const weeksInput: ProgramWeekInput[] = (source.weeks || []).map((w) => ({
+      weekNumber: w.weekNumber,
+      focusEn: w.focusEn,
+      focusAr: w.focusAr,
+      days: (w.days || []).map((d) => ({
+        dayNumber: d.dayNumber,
+        titleEn: d.titleEn,
+        titleAr: d.titleAr,
+        isRestDay: d.isRestDay,
+        workouts: (d.workouts || []).map((wo) => ({
+          templateId: wo.templateId,
+          title: wo.title,
+          orderIndex: wo.orderIndex,
+          blocks: (wo.blocks || []).map((b) => ({
+            orderIndex: b.orderIndex,
+            type: b.type,
+            title: b.title,
+            rounds: b.rounds,
+            durationSeconds: b.durationSeconds,
+            restBetweenRoundsSeconds: b.restBetweenRoundsSeconds,
+            notes: b.notes,
+            items: (b.items || []).map((it) => ({
+              orderIndex: it.orderIndex,
+              itemType: it.itemType,
+              exerciseId: it.exerciseId,
+              targetSets: it.targetSets,
+              targetReps: it.targetReps,
+              targetWeightKg: it.targetWeightKg,
+              targetDistanceKm: it.targetDistanceKm,
+              targetTimeSeconds: it.targetTimeSeconds,
+              targetPace: it.targetPace,
+              targetRounds: it.targetRounds,
+              restSeconds: it.restSeconds,
+              tempo: it.tempo,
+              instructions: it.instructions
+            }))
+          }))
+        }))
+      }))
+    }));
+
+    const duplicated = await this.createProgram(
+      {
+        titleEn: newTitleEn,
+        titleAr: newTitleAr,
+        descriptionEn: source.descriptionEn,
+        descriptionAr: source.descriptionAr,
+        durationWeeks: source.durationWeeks,
+        sportId: source.sportId,
+        goalType: source.goalType,
+        difficulty: source.difficulty,
+        creatorId: actor?.coachProfileId || source.creatorId || undefined,
+        nutritionProgramId: source.nutritionProgramId,
+        status: "DRAFT",
+        isActive: true,
+        isTemplate: false,
+        weeks: weeksInput
+      },
+      actor
+    );
+
+    await auditService.log({
+      actor,
+      action: "DUPLICATE_PROGRAM",
+      entityType: "TrainingProgram",
+      entityId: duplicated.id,
+      oldValues: { sourceProgramId: id, sourceMasterVersion: source.masterVersion },
+      newValues: { duplicatedProgramId: duplicated.id, titleEn: duplicated.titleEn, masterVersion: 1 }
+    });
+
+    return duplicated;
   }
 
   /**
@@ -615,8 +1455,26 @@ export class ProgramService {
                         exercises: {
                           include: { exercise: true },
                           orderBy: { orderIndex: "asc" }
+                        },
+                        blocks: {
+                          include: {
+                            items: {
+                              include: { exercise: true },
+                              orderBy: { orderIndex: "asc" }
+                            }
+                          },
+                          orderBy: { orderIndex: "asc" }
                         }
                       }
+                    },
+                    blocks: {
+                      include: {
+                        items: {
+                          include: { exercise: true },
+                          orderBy: { orderIndex: "asc" }
+                        }
+                      },
+                      orderBy: { orderIndex: "asc" }
                     }
                   }
                 }
@@ -661,7 +1519,8 @@ export class ProgramService {
       orderIndex: number;
       scheduledDate: Date;
       dateKey: string;
-      exercises: NonNullable<typeof program.weeks[number]["days"][number]["workouts"][number]["template"]>["exercises"];
+      exercises: any[];
+      blocks: any[];
     };
 
     const plannedWorkouts: PlannedWorkout[] = [];
@@ -690,17 +1549,53 @@ export class ProgramService {
         }
 
         for (const pw of day.workouts) {
+          const blocks =
+            pw.blocks && pw.blocks.length > 0
+              ? pw.blocks
+              : pw.template?.blocks && pw.template.blocks.length > 0
+              ? pw.template.blocks
+              : [];
+
+          let legacyExercises = pw.template?.exercises || [];
+          if (legacyExercises.length === 0 && blocks.length > 0) {
+            let orderIdx = 0;
+            const derived: any[] = [];
+            for (const b of blocks) {
+              for (const it of b.items || []) {
+                if (it.exerciseId && (!it.itemType || it.itemType === "EXERCISE")) {
+                  derived.push({
+                    exerciseId: it.exerciseId,
+                    exercise: it.exercise,
+                    orderIndex: orderIdx++,
+                    targetSets: it.targetSets,
+                    targetReps: it.targetReps,
+                    targetWeightKg: it.targetWeightKg,
+                    targetDistanceKm: it.targetDistanceKm,
+                    targetTimeSeconds: it.targetTimeSeconds,
+                    targetPace: it.targetPace,
+                    targetRounds: it.targetRounds,
+                    restSeconds: it.restSeconds,
+                    tempo: it.tempo,
+                    notes: it.instructions
+                  });
+                }
+              }
+            }
+            legacyExercises = derived;
+          }
+
           plannedWorkouts.push({
             weekNumber: week.weekNumber,
             dayNumber: day.dayNumber,
             dayTitle: day.titleEn || day.titleAr,
             templateId: pw.templateId,
-            templateTitle: pw.template?.titleEn || pw.template?.titleAr || day.titleEn || "Workout Session",
+            templateTitle: pw.title || pw.template?.titleEn || pw.template?.titleAr || day.titleEn || "Workout Session",
             templateDescription: pw.template?.descriptionEn || pw.template?.descriptionAr || null,
             orderIndex: pw.orderIndex,
             scheduledDate: dayDate,
             dateKey,
-            exercises: pw.template?.exercises || []
+            exercises: legacyExercises,
+            blocks
           });
         }
       }
@@ -807,7 +1702,7 @@ export class ProgramService {
    * Apply structured program to client:
    * - Validates lifecycle state & client/coach resolution
    * - Detects duplicate ProgramAssignments & date conflicts without silently overwriting
-   * - Creates ProgramAssignment + traceable ClientWorkoutAssignment records with frozen exercise snapshots
+   * - Creates ProgramAssignment with sourceMasterVersion snapshot + traceable ClientWorkoutAssignment records
    * - Skips rest days (no fake workout assignments created)
    * - Optionally attaches linked NutritionProgram (or client-specific CUSTOM_OVERRIDE) via ClientNutritionAssignment
    */
@@ -821,7 +1716,8 @@ export class ProgramService {
       notes?: string;
       includeNutrition?: boolean;
       nutritionOverride?: NutritionOverrideInput | null;
-    }
+    },
+    actor?: AuthActor
   ) {
     let resolvedCoachId = coachId;
     if (resolvedCoachId) {
@@ -898,7 +1794,9 @@ export class ProgramService {
             startDate: preview.startDateObj,
             endDate: preview.endDateObj,
             isActive: true,
-            notes: toOptionalText(options?.notes)
+            notes: toOptionalText(options?.notes),
+            sourceMasterVersion: preview.program.masterVersion,
+            programTitleSnapshot: preview.program.titleEn || preview.program.titleAr
           }
         });
 
@@ -918,12 +1816,55 @@ export class ProgramService {
               programWeekNumber: pw.weekNumber,
               programDayNumber: pw.dayNumber,
               programDayTitle: pw.dayTitle,
+              programWorkoutOrder: pw.orderIndex,
               scheduledDate: pw.scheduledDate,
               status: AssignmentStatus.SCHEDULED,
               coachNotes: `Week ${pw.weekNumber} Day ${pw.dayNumber}: ${pw.dayTitle} (${preview.program.titleEn})`
             }
           });
 
+          // 1. Populate normalized AssignmentBlock & AssignmentBlockItem
+          if (pw.blocks && pw.blocks.length > 0) {
+            for (const b of pw.blocks) {
+              const createdBlock = await tx.assignmentBlock.create({
+                data: {
+                  assignmentId: assignment.id,
+                  orderIndex: b.orderIndex,
+                  type: b.type,
+                  title: b.title,
+                  rounds: b.rounds,
+                  durationSeconds: b.durationSeconds,
+                  restBetweenRoundsSeconds: b.restBetweenRoundsSeconds,
+                  notes: b.notes
+                }
+              });
+
+              if (b.items && b.items.length > 0) {
+                await tx.assignmentBlockItem.createMany({
+                  data: b.items.map((it: any) => ({
+                    assignmentBlockId: createdBlock.id,
+                    orderIndex: it.orderIndex,
+                    itemType: it.itemType || "EXERCISE",
+                    exerciseId: it.exerciseId || null,
+                    exerciseNameSnapshot: it.exercise?.nameEn || it.exercise?.nameAr || (it.exerciseId ? "Exercise" : null),
+                    metricTypeSnapshot: it.exercise?.metricType || MetricType.SETS_REPS_WEIGHT,
+                    targetSets: it.targetSets,
+                    targetReps: it.targetReps,
+                    targetWeightKg: it.targetWeightKg,
+                    targetDistanceKm: it.targetDistanceKm,
+                    targetTimeSeconds: it.targetTimeSeconds,
+                    targetPace: it.targetPace,
+                    targetRounds: it.targetRounds,
+                    restSeconds: it.restSeconds,
+                    tempo: it.tempo,
+                    instructions: it.instructions
+                  }))
+                });
+              }
+            }
+          }
+
+          // 2. Legacy ClientWorkoutAssignmentExercise compatibility
           if (pw.exercises.length > 0) {
             await tx.clientWorkoutAssignmentExercise.createMany({
               data: buildAssignmentSnapshotData(assignment.id, pw.exercises)
@@ -1022,6 +1963,19 @@ export class ProgramService {
       { maxWait: 10000, timeout: 30000 }
     );
 
+    await auditService.log({
+      actor: actor || { user: { id: resolvedCoachId } },
+      action: "APPLY_PROGRAM",
+      entityType: "ProgramAssignment",
+      entityId: txResult.programAssignment.id,
+      newValues: {
+        programId: preview.program.id,
+        clientId,
+        sourceMasterVersion: preview.program.masterVersion,
+        workoutsCount: txResult.createdIds.length
+      }
+    });
+
     const workoutAssignments = txResult.createdIds.length
       ? await prisma.clientWorkoutAssignment.findMany({
           where: { id: { in: txResult.createdIds } },
@@ -1038,6 +1992,101 @@ export class ProgramService {
       nutritionAssignment: txResult.nutritionAssignment,
       restDaysSkipped: preview.restDaysCount,
       skippedConflicts: strategy === "SKIP_CONFLICTS" ? preview.dateConflicts : []
+    };
+  }
+
+  /**
+   * Preview rest-day sync when a master program day was toggled to Rest Day after assignment.
+   * Returns unstarted scheduled workouts that would be removed, and any started/completed workouts that are protected.
+   */
+  async previewRestDaySync(programId: string, programAssignmentId: string) {
+    const program = await prisma.trainingProgram.findUnique({
+      where: { id: programId },
+      include: {
+        weeks: {
+          include: {
+            days: {
+              where: { isRestDay: true },
+              select: { dayNumber: true, week: { select: { weekNumber: true } } }
+            }
+          }
+        }
+      }
+    });
+    if (!program) {
+      throw new ProgramServiceError("Training program not found", 404);
+    }
+
+    const restDayPairs = new Set<string>();
+    for (const w of program.weeks) {
+      for (const d of w.days) {
+        restDayPairs.add(`${w.weekNumber}:${d.dayNumber}`);
+      }
+    }
+
+    const assignments = await prisma.clientWorkoutAssignment.findMany({
+      where: {
+        programAssignmentId,
+        programWeekNumber: { not: null },
+        programDayNumber: { not: null }
+      },
+      include: {
+        workoutLog: true
+      }
+    });
+
+    const affected = assignments.filter((a) => restDayPairs.has(`${a.programWeekNumber}:${a.programDayNumber}`));
+
+    const unstarted = affected.filter((a) => a.status === AssignmentStatus.SCHEDULED && a.workoutLog === null);
+    const protectedOrCompleted = affected.filter((a) => a.status !== AssignmentStatus.SCHEDULED || a.workoutLog !== null);
+
+    return {
+      totalAffected: affected.length,
+      unstartedWorkouts: unstarted,
+      protectedWorkouts: protectedOrCompleted,
+      canSync: unstarted.length > 0
+    };
+  }
+
+  /**
+   * Apply confirmed rest-day sync: removes unstarted scheduled workouts on days that are now rest days in master.
+   * Emits REST_DAY_SYNC in AuditLog. Never silently removes started or completed sessions.
+   */
+  async applyRestDaySync(programId: string, programAssignmentId: string, actor?: AuthActor) {
+    const preview = await this.previewRestDaySync(programId, programAssignmentId);
+
+    if (preview.unstartedWorkouts.length === 0) {
+      return { removedCount: 0, message: "No unstarted workouts to remove" };
+    }
+
+    const unstartedIds = preview.unstartedWorkouts.map((w) => w.id);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.assignmentBlock.deleteMany({
+        where: { assignmentId: { in: unstartedIds } }
+      });
+      await tx.clientWorkoutAssignmentExercise.deleteMany({
+        where: { assignmentId: { in: unstartedIds } }
+      });
+      await tx.clientWorkoutAssignment.deleteMany({
+        where: { id: { in: unstartedIds } }
+      });
+    });
+
+    await auditService.log({
+      actor,
+      action: "REST_DAY_SYNC",
+      entityType: "ProgramAssignment",
+      entityId: programAssignmentId,
+      newValues: {
+        removedWorkoutIds: unstartedIds,
+        removedCount: unstartedIds.length
+      }
+    });
+
+    return {
+      removedCount: unstartedIds.length,
+      removedWorkoutIds: unstartedIds
     };
   }
 }

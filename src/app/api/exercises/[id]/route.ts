@@ -53,7 +53,7 @@ export async function DELETE(
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);
-    const result = await exerciseService.deleteExercise(id);
+    const result = await exerciseService.deleteExercise(id, auth.actor);
     return NextResponse.json({ success: true, ...result });
   } catch (err: any) {
     console.error("[API_EXERCISE_ID_DELETE_ERROR]:", err);

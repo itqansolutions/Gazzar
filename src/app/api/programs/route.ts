@@ -113,7 +113,8 @@ export async function POST(req: NextRequest) {
           notes: body.notes,
           includeNutrition: body.includeNutrition,
           nutritionOverride: body.nutritionOverride
-        }
+        },
+        auth.actor
       );
 
       return NextResponse.json(
@@ -129,10 +130,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const program = await programService.createProgram({
-      ...body,
-      creatorId: body.creatorId || auth.actor.coachProfileId || undefined
-    });
+    if (body.action === "DUPLICATE") {
+      if (!body.programId) {
+        return NextResponse.json(
+          { success: false, error: "programId is required" },
+          { status: 400 }
+        );
+      }
+
+      const duplicate = await programService.duplicateProgram(body.programId, auth.actor);
+      return NextResponse.json({ success: true, data: duplicate }, { status: 201 });
+    }
+
+    const program = await programService.createProgram(
+      {
+        ...body,
+        creatorId: body.creatorId || auth.actor.coachProfileId || undefined
+      },
+      auth.actor
+    );
     return NextResponse.json({ success: true, data: program }, { status: 201 });
   } catch (error: any) {
     console.error("[POST /api/programs] Error:", error);

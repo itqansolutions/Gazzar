@@ -23,7 +23,7 @@ export async function PATCH(
     if (!access.ok) return access.response;
 
     const body = await req.json();
-    const updated = await healthService.updateAssessment(id, body);
+    const updated = await healthService.updateAssessment(id, body, auth.actor);
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {
     console.error("[PATCH /api/assessments/[id]] Error:", error);
@@ -47,7 +47,7 @@ export async function DELETE(
     const access = await requireClientAccess(auth.actor, existing.clientId);
     if (!access.ok) return access.response;
 
-    await healthService.deleteAssessment(id);
+    await healthService.deleteAssessment(id, auth.actor);
     return NextResponse.json({ success: true, message: "Assessment deleted successfully" });
   } catch (error: any) {
     console.error("[DELETE /api/assessments/[id]] Error:", error);
