@@ -64,7 +64,7 @@ export async function PATCH(req: NextRequest) {
 
       const attendance = await sessionService.updateAttendance(
         body.sessionId,
-        body.clientId,
+        access.client.id,
         body.status,
         body.notes,
         auth.actor
