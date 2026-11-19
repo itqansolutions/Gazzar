@@ -144,6 +144,60 @@ export class CheckInScheduleService {
       otherReading: otherStatus
     };
 
+    // Lazy notification generation for OVERDUE with stable cycle keys
+    if (schedule && (overdueCount > 0 || dueSoonCount > 0)) {
+      try {
+        const { notificationService } = await import("./notification.service");
+        const clientUser = await prisma.clientProfile.findUnique({
+          where: { id: client.id },
+          select: { userId: true }
+        });
+
+        if (clientUser?.userId) {
+          if (weightStatus.isOverdue && schedule.nextWeightDueAt) {
+            const cycleKey = `${client.id}:WEIGHT:${schedule.nextWeightDueAt.toISOString()}`;
+            await notificationService.sendDeduplicated({
+              userId: clientUser.userId,
+              type: "CHECKIN_DUE",
+              title: "Weight check-in overdue",
+              message: "Your scheduled weight check-in is overdue. Please submit your latest measurement.",
+              link: `/clients/${client.id}?tab=checkins`,
+              relatedEntityId: cycleKey,
+              relatedEntityType: "CHECKIN_CYCLE"
+            });
+          }
+
+          if (measurementStatus.isOverdue && schedule.nextMeasurementDueAt) {
+            const cycleKey = `${client.id}:MEASUREMENT:${schedule.nextMeasurementDueAt.toISOString()}`;
+            await notificationService.sendDeduplicated({
+              userId: clientUser.userId,
+              type: "CHECKIN_DUE",
+              title: "Body measurements check-in overdue",
+              message: "Your scheduled body measurements check-in is overdue.",
+              link: `/clients/${client.id}?tab=checkins`,
+              relatedEntityId: cycleKey,
+              relatedEntityType: "CHECKIN_CYCLE"
+            });
+          }
+
+          if (photoStatus.isOverdue && schedule.nextPhotoDueAt) {
+            const cycleKey = `${client.id}:PHOTO:${schedule.nextPhotoDueAt.toISOString()}`;
+            await notificationService.sendDeduplicated({
+              userId: clientUser.userId,
+              type: "CHECKIN_DUE",
+              title: "Progress photos check-in overdue",
+              message: "Your scheduled progress photos check-in is overdue.",
+              link: `/clients/${client.id}?tab=photos`,
+              relatedEntityId: cycleKey,
+              relatedEntityType: "CHECKIN_CYCLE"
+            });
+          }
+        }
+      } catch (err) {
+        console.error("[CheckInScheduleService] Error generating lazy notifications:", err);
+      }
+    }
+
     return {
       schedule,
       status
@@ -315,6 +369,80 @@ export class CheckInScheduleService {
 
     if (Object.keys(updateData).length > 0) {
       return await prisma.athleteCheckInSchedule.update({
+        where: { id: schedule.id },
+        data: updateData
+      });
+    }
+
+    return schedule;
+  }
+
+  /**
+   * Batch advance multiple metrics in ONE single database update with explicit null checks.
+   */
+  async recordSubmissionBatch(
+    clientId: string,
+    submission: {
+      weightKg?: number | null;
+      hasMeasurements?: boolean;
+      hasPhotos?: boolean;
+      hasOther?: boolean;
+      submittedAt?: Date;
+    },
+    tx?: any
+  ) {
+    const db = tx || prisma;
+    const client = await db.clientProfile.findFirst({
+      where: { OR: [{ id: clientId }, { userId: clientId }] },
+      select: { id: true }
+    });
+
+    if (!client) return null;
+
+    const schedule = await db.athleteCheckInSchedule.findUnique({
+      where: { clientId: client.id }
+    });
+
+    if (!schedule) return null;
+
+    const submissionDate = submission.submittedAt || new Date();
+    const updateData: any = {};
+
+    // Explicit null & undefined check for weight (so weight = 0 is not falsely skipped)
+    if (submission.weightKg !== null && submission.weightKg !== undefined) {
+      updateData.lastWeightAt = submissionDate;
+      if (schedule.weightFrequencyDays && schedule.weightFrequencyDays > 0) {
+        updateData.nextWeightDueAt = new Date(submissionDate.getTime() + schedule.weightFrequencyDays * 86400000);
+      }
+    }
+
+    if (submission.hasMeasurements) {
+      updateData.lastMeasurementAt = submissionDate;
+      if (schedule.measurementFrequencyDays && schedule.measurementFrequencyDays > 0) {
+        updateData.nextMeasurementDueAt = new Date(
+          submissionDate.getTime() + schedule.measurementFrequencyDays * 86400000
+        );
+      }
+    }
+
+    if (submission.hasPhotos) {
+      updateData.lastPhotoAt = submissionDate;
+      if (schedule.photoFrequencyDays && schedule.photoFrequencyDays > 0) {
+        updateData.nextPhotoDueAt = new Date(submissionDate.getTime() + schedule.photoFrequencyDays * 86400000);
+      }
+    }
+
+    if (submission.hasOther) {
+      updateData.lastOtherReadingAt = submissionDate;
+      if (schedule.otherReadingFrequencyDays && schedule.otherReadingFrequencyDays > 0) {
+        updateData.nextOtherReadingDueAt = new Date(
+          submissionDate.getTime() + schedule.otherReadingFrequencyDays * 86400000
+        );
+      }
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      return await db.athleteCheckInSchedule.update({
         where: { id: schedule.id },
         data: updateData
       });

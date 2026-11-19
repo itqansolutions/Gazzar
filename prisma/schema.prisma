@@ -171,6 +171,10 @@ model User {
   auditLogs           AuditLog[]
   sessions            Session[]
   passwordResetTokens PasswordResetToken[]
+  verifiedMeasurements ClientMeasurementHistory[] @relation("MeasurementVerifications")
+  reviewedSubmissions  AthleteCheckInSubmission[] @relation("SubmissionReviews")
+  reviewedRequests     CheckInRequest[]           @relation("RequestReviews")
+  uploadedPhotoAssets  ClientProgressPhotoAsset[]
 
   @@map("users")
 }
@@ -200,6 +204,7 @@ model CoachProfile {
   sessionsScheduled            SessionCalendar[]
   assignedWorkouts             ClientWorkoutAssignment[]
   publicProfile                PublicCoachProfile?
+  checkInRequests              CheckInRequest[]            @relation("RequestedByCoach")
 
   @@map("coach_profiles")
 }
@@ -229,6 +234,8 @@ model ClientProfile {
   programAssignments   ProgramAssignment[]
   nutritionAssignments ClientNutritionAssignment[]
   checkInSchedule      AthleteCheckInSchedule?
+  checkInSubmissions   AthleteCheckInSubmission[]
+  checkInRequests      CheckInRequest[]
   workoutLogs          WorkoutLog[]
   attendances          SessionAttendance[]
   mealPlans            MealPlan[]
@@ -756,33 +763,82 @@ model SetLog {
   @@map("set_logs")
 }
 
+enum MeasurementSource {
+  COACH_RECORDED
+  SELF_REPORTED
+  LEGACY
+}
+
+enum MeasurementVerificationStatus {
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
+  LEGACY
+}
+
+enum PhotoRecordType {
+  PHYSIQUE_SET
+  INBODY_SCAN
+  OTHER
+}
+
+enum PhotoAssetAngle {
+  FRONT
+  SIDE
+  BACK
+  FULL
+  NOT_APPLICABLE
+}
+
+enum CheckInReviewStatus {
+  PENDING
+  REVIEWED
+  FLAGGED
+}
+
+enum CheckInRequestStatus {
+  PENDING
+  SUBMITTED
+  REVIEWED
+  CANCELLED
+}
+
 model ClientMeasurementHistory {
-  id                String        @id @default(uuid())
-  clientId          String
-  client            ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  recordedByCoachId String?
-  recordedByCoach   CoachProfile? @relation(fields: [recordedByCoachId], references: [id])
-  date              DateTime      @default(now())
-  weightKg          Float
-  heightCm          Float?
-  bmi               Float?
-  bodyFatPercentage Float?
-  muscleMassKg      Float?
-  waistCm           Float?
-  chestCm           Float?
-  armsCm            Float?
-  thighCm           Float?
-  notes             String?
+  id                       String                        @id @default(uuid())
+  clientId                 String
+  client                   ClientProfile                 @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  recordedByCoachId        String?
+  recordedByCoach          CoachProfile?                 @relation(fields: [recordedByCoachId], references: [id])
+  date                     DateTime                      @default(now())
+  weightKg                 Float
+  heightCm                 Float?
+  bmi                      Float?
+  bodyFatPercentage        Float?
+  muscleMassKg             Float?
+  waistCm                  Float?
+  chestCm                  Float?
+  armsCm                   Float?
+  thighCm                  Float?
+  notes                    String?
+  source                   MeasurementSource             @default(LEGACY)
+  verificationStatus       MeasurementVerificationStatus @default(LEGACY)
+  verifiedByUserId         String?
+  verifiedByUser           User?                         @relation("MeasurementVerifications", fields: [verifiedByUserId], references: [id])
+  verifiedAt               DateTime?
+  verificationNote         String?
+  submissionId             String?                       @unique
+  submission               AthleteCheckInSubmission?     @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  supersededBySubmissionId String?
 
   @@map("client_measurement_histories")
 }
 
 model AthleteCheckInSchedule {
-  id                        String        @id @default(uuid())
-  clientId                  String        @unique
-  client                    ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id                        String                     @id @default(uuid())
+  clientId                  String                     @unique
+  client                    ClientProfile              @relation(fields: [clientId], references: [id], onDelete: Cascade)
   configuredByCoachId       String?
-  configuredByCoach         CoachProfile? @relation(fields: [configuredByCoachId], references: [id])
+  configuredByCoach         CoachProfile?              @relation(fields: [configuredByCoachId], references: [id])
   weightFrequencyDays       Int?
   measurementFrequencyDays  Int?
   otherReadingFrequencyDays Int?
@@ -796,10 +852,91 @@ model AthleteCheckInSchedule {
   nextOtherReadingDueAt     DateTime?
   nextPhotoDueAt            DateTime?
   notes                     String?
-  createdAt                 DateTime      @default(now())
-  updatedAt                 DateTime      @updatedAt
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+
+  submissions               AthleteCheckInSubmission[]
+  checkInRequests           CheckInRequest[]
 
   @@map("athlete_check_in_schedules")
+}
+
+model AthleteCheckInSubmission {
+  id                   String                     @id @default(uuid())
+  clientId             String
+  client               ClientProfile              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  scheduleId           String?
+  schedule             AthleteCheckInSchedule?    @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  checkInRequestId     String?
+  checkInRequest       CheckInRequest?            @relation(fields: [checkInRequestId], references: [id], onDelete: SetNull)
+
+  submittedAt          DateTime                   @default(now())
+
+  // Self-reported measurements snapshot
+  weightKg             Float?
+  heightCm             Float?
+  bodyFatPercentage    Float?
+  muscleMassKg         Float?
+  waistCm              Float?
+  chestCm              Float?
+  armsCm               Float?
+  thighCm              Float?
+
+  currentIssues        String?
+  athleteNotes         String?
+
+  correctsSubmissionId String?
+  correctsSubmission   AthleteCheckInSubmission?  @relation("CorrectionChain", fields: [correctsSubmissionId], references: [id], onDelete: SetNull)
+  corrections          AthleteCheckInSubmission[] @relation("CorrectionChain")
+
+  progressPhotos       ClientProgressPhoto[]
+  generatedMeasurement ClientMeasurementHistory?
+
+  reviewStatus         CheckInReviewStatus        @default(PENDING)
+  reviewedByUserId     String?
+  reviewedByUser       User?                      @relation("SubmissionReviews", fields: [reviewedByUserId], references: [id])
+  reviewedAt           DateTime?
+  coachReviewNotes     String?
+
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+
+  @@index([clientId, submittedAt])
+  @@index([checkInRequestId])
+  @@map("athlete_check_in_submissions")
+}
+
+model CheckInRequest {
+  id                 String                     @id @default(uuid())
+  clientId           String
+  client             ClientProfile              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  requestedByCoachId String
+  requestedByCoach   CoachProfile               @relation("RequestedByCoach", fields: [requestedByCoachId], references: [id])
+  scheduleId         String?
+  schedule           AthleteCheckInSchedule?    @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  requestedMetrics   String[]                   @default([])
+  dueAt              DateTime
+  notes              String?
+
+  status             CheckInRequestStatus       @default(PENDING)
+
+  reviewedAt         DateTime?
+  reviewedByUserId   String?
+  reviewedByUser     User?                      @relation("RequestReviews", fields: [reviewedByUserId], references: [id])
+  reviewNotes        String?
+
+  cancelledAt        DateTime?
+  cancelledReason    String?
+
+  submissions        AthleteCheckInSubmission[]
+
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  @@index([clientId, status])
+  @@index([requestedByCoachId])
+  @@map("check_in_requests")
 }
 
 model ClientGoal {
@@ -838,10 +975,10 @@ model ClientMedicalRestriction {
 }
 
 model ClientProgressPhoto {
-  id               String        @id @default(uuid())
+  id               String                     @id @default(uuid())
   clientId         String
-  client           ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  date             DateTime      @default(now())
+  client           ClientProfile              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  date             DateTime                   @default(now())
   frontImageUrl    String?
   sideImageUrl     String?
   backImageUrl     String?
@@ -854,8 +991,28 @@ model ClientProgressPhoto {
   uploadedByUserId String?
   weightAtTime     Float?
   notes            String?
+  recordType       PhotoRecordType            @default(PHYSIQUE_SET)
+  submissionId     String?
+  submission       AthleteCheckInSubmission?  @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  assets           ClientProgressPhotoAsset[]
 
   @@map("client_progress_photos")
+}
+
+model ClientProgressPhotoAsset {
+  id               String              @id @default(uuid())
+  photoId          String
+  photo            ClientProgressPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  angle            PhotoAssetAngle     @default(NOT_APPLICABLE)
+  storageKey       String
+  mimeType         String
+  fileSizeBytes    Int
+  uploadedByUserId String?
+  uploadedByUser   User?               @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime            @default(now())
+
+  @@index([photoId])
+  @@map("client_progress_photo_assets")
 }
 
 model ClientAssessment {
@@ -1052,16 +1209,19 @@ model ClientNote {
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  message   String
-  type      String   @default("INFO")
-  read      Boolean  @default(false)
-  link      String?
-  createdAt DateTime @default(now())
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  message           String
+  type              String   @default("INFO")
+  read              Boolean  @default(false)
+  link              String?
+  relatedEntityId   String?
+  relatedEntityType String?
+  createdAt         DateTime @default(now())
 
+  @@index([userId, type, relatedEntityId])
   @@map("notifications")
 }
 

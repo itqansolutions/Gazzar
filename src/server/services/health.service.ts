@@ -65,7 +65,11 @@ export class HealthService {
           armsCm: data.armsCm ? Number(data.armsCm) : null,
           thighCm: data.thighCm ? Number(data.thighCm) : null,
           notes: data.notes || null,
-          recordedByCoachId: coachId
+          recordedByCoachId: coachId,
+          source: "COACH_RECORDED",
+          verificationStatus: "VERIFIED",
+          verifiedByUserId: actor?.user?.id || null,
+          verifiedAt: new Date()
         }
       });
 

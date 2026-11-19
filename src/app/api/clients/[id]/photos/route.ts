@@ -52,7 +52,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const auth = await requireAuth(req);
+    const { UserRole } = await import("@prisma/client");
+    const auth = await requireAuth(req, [UserRole.ADMIN, UserRole.HEAD_COACH, UserRole.COACH]);
     if (!auth.ok) return auth.response;
 
     const { id } = await Promise.resolve(params);

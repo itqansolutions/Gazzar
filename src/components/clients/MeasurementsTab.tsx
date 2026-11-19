@@ -14,12 +14,14 @@ interface MeasurementsTabProps {
 export default function MeasurementsTab({ measurements, onOpenModal }: MeasurementsTabProps) {
   const { t } = useLanguage();
 
-  const chartData = measurements.map(m => ({
-    date: m.date.slice(5),
-    weight: m.weightKg,
-    fat: m.bodyFatPercentage,
-    muscle: m.muscleMassKg
-  }));
+  const chartData = measurements
+    .filter((m) => (m as any).verificationStatus !== "REJECTED")
+    .map((m) => ({
+      date: m.date.slice(5),
+      weight: m.weightKg,
+      fat: m.bodyFatPercentage,
+      muscle: m.muscleMassKg
+    }));
 
   return (
     <div className="space-y-6">
@@ -28,7 +30,7 @@ export default function MeasurementsTab({ measurements, onOpenModal }: Measureme
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t("measurementsHistory")}</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Weight & body fat progression chart over time</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Weight & body fat progression chart (verified only)</p>
           </div>
           <button
             onClick={onOpenModal}
@@ -62,7 +64,7 @@ export default function MeasurementsTab({ measurements, onOpenModal }: Measureme
       <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            Historical Measurements Log
+            Historical Measurements Log & Provenance
           </h3>
         </div>
         <div className="overflow-x-auto">
@@ -71,29 +73,50 @@ export default function MeasurementsTab({ measurements, onOpenModal }: Measureme
               <tr>
                 <th className="p-3 text-start">{t("date")}</th>
                 <th className="p-3 text-center">{t("weight")}</th>
+                <th className="p-3 text-center">Provenance</th>
+                <th className="p-3 text-center">Status</th>
                 <th className="p-3 text-center">BMI</th>
                 <th className="p-3 text-center">{t("bodyFat")}</th>
-                <th className="p-3 text-center">{t("muscleMass")}</th>
                 <th className="p-3 text-center">{t("waist")}</th>
-                <th className="p-3 text-center">{t("chest")}</th>
-                <th className="p-3 text-center">{t("arms")}</th>
                 <th className="p-3 text-start">Notes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-              {measurements.map(m => (
-                <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                  <td className="p-3 font-semibold text-slate-900 dark:text-white font-mono">{m.date}</td>
-                  <td className="p-3 text-center font-bold text-brand-crimson">{m.weightKg} KG</td>
-                  <td className="p-3 text-center">{m.bmi}</td>
-                  <td className="p-3 text-center">{m.bodyFatPercentage}%</td>
-                  <td className="p-3 text-center">{m.muscleMassKg} KG</td>
-                  <td className="p-3 text-center">{m.waistCm} CM</td>
-                  <td className="p-3 text-center">{m.chestCm} CM</td>
-                  <td className="p-3 text-center">{m.armsCm} CM</td>
-                  <td className="p-3 text-slate-500 dark:text-slate-400 max-w-xs truncate">{m.notes || "-"}</td>
-                </tr>
-              ))}
+              {measurements.map(m => {
+                const source = (m as any).source || "LEGACY";
+                const vStatus = (m as any).verificationStatus || "LEGACY";
+
+                return (
+                  <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="p-3 font-semibold text-slate-900 dark:text-white font-mono">{m.date}</td>
+                    <td className="p-3 text-center font-bold text-brand-crimson">{m.weightKg} KG</td>
+                    <td className="p-3 text-center">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        {source}
+                      </span>
+                    </td>
+                    <td className="p-3 text-center">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          vStatus === "VERIFIED"
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                            : vStatus === "REJECTED"
+                            ? "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
+                            : vStatus === "PENDING_REVIEW"
+                            ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                            : "bg-slate-500/15 text-slate-400 border border-slate-500/30"
+                        }`}
+                      >
+                        {vStatus}
+                      </span>
+                    </td>
+                    <td className="p-3 text-center">{m.bmi ?? "-"}</td>
+                    <td className="p-3 text-center">{m.bodyFatPercentage ? `${m.bodyFatPercentage}%` : "-"}</td>
+                    <td className="p-3 text-center">{m.waistCm ? `${m.waistCm} CM` : "-"}</td>
+                    <td className="p-3 text-slate-500 dark:text-slate-400 max-w-xs truncate">{m.notes || "-"}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
