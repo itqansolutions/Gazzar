@@ -781,6 +781,26 @@ export default function WorkoutModalRunner({
     : false;
   const isCompletedSession = assignment?.effectiveStatus === "COMPLETED";
 
+  // Active exercise media, instructions and form guidance
+  const exerciseImageUrl =
+    currentExercise?.exercise?.thumbnailUrl ||
+    (currentExercise?.exercise as any)?.imageUrl ||
+    (currentExercise as any)?.imageUrl ||
+    null;
+
+  const exerciseInstructions =
+    (isRtl ? currentExercise?.exercise?.instructionsAr : currentExercise?.exercise?.instructionsEn) ||
+    currentExercise?.exercise?.instructionsEn ||
+    currentExercise?.exercise?.instructionsAr ||
+    currentExercise?.notes ||
+    "";
+
+  const exerciseCoachTip =
+    (isRtl ? currentExercise?.exercise?.coachTipsAr : currentExercise?.exercise?.coachTipsEn) ||
+    currentExercise?.exercise?.coachTipsEn ||
+    currentExercise?.exercise?.coachTipsAr ||
+    "";
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-0 md:p-4 overflow-y-auto"
@@ -952,49 +972,51 @@ export default function WorkoutModalRunner({
             </div>
           )}
 
-          {/* MAIN RUNNER VIEW: EXERCISE STEP VIEW */}
+          {/* MAIN RUNNER VIEW: EXERCISE STEP VIEW (STRICTLY ONE EXERCISE PER SCREEN) */}
           {!loading && !fetchError && !isCompletedSuccess && !isSummaryStep && currentBlock && currentExercise && (
             <div className="space-y-4">
-              {/* BLOCK CONTEXT BANNER (PRESERVES BLOCK SEMANTICS: SINGLE, SUPERSET, CIRCUIT, SEQUENCE) */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+              {/* STEP PROGRESS & BLOCK CONTEXT BANNER */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                    <span className="px-3 py-1 rounded-full text-xs font-black bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/40 shadow-xs">
+                      {isRtl
+                        ? `التمرين ${activeStepIndex + 1} من ${steps.length}`
+                        : `Exercise ${activeStepIndex + 1} of ${steps.length}`}
+                    </span>
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getBlockTypeBadge(
                         currentBlock.type
                       )}`}
                     >
-                      {currentBlock.type}
+                      {currentBlock.title || currentBlock.type}
                     </span>
-                    <h3 className="text-xs font-bold text-slate-200">
-                      {currentBlock.title || `Block ${currentStep!.bIdx + 1}`}
-                    </h3>
                   </div>
 
                   <div className="flex items-center space-x-3 rtl:space-x-reverse text-xs text-slate-400">
                     {currentBlock.rounds > 1 && (
                       <span className="font-semibold text-slate-300">
                         {isRtl
-                          ? `الجولات: ${currentBlock.rounds}`
-                          : `${currentBlock.rounds} Rounds`}
+                          ? `الجولة ${currentExercise.sets[0]?.roundNumber || 1} من ${currentBlock.rounds}`
+                          : `Round ${currentExercise.sets[0]?.roundNumber || 1} of ${currentBlock.rounds}`}
                       </span>
                     )}
                     {typeof currentBlock.restBetweenRoundsSeconds === "number" &&
                       currentBlock.restBetweenRoundsSeconds > 0 && (
                         <span>
                           {isRtl
-                            ? `راحة بين الجولات: ${currentBlock.restBetweenRoundsSeconds}ث`
-                            : `Rest: ${currentBlock.restBetweenRoundsSeconds}s`}
+                            ? `راحة الجولة: ${currentBlock.restBetweenRoundsSeconds}ث`
+                            : `Round Rest: ${currentBlock.restBetweenRoundsSeconds}s`}
                         </span>
                       )}
                   </div>
                 </div>
 
-                {/* If SUPERSET or CIRCUIT or SEQUENCE, show block exercise pills to preserve relationship context */}
+                {/* If SUPERSET or CIRCUIT or SEQUENCE, show sequence context pills */}
                 {currentBlock.exercises.length > 1 && (
                   <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-1.5 text-xs">
                     <span className="text-[11px] text-slate-400 font-semibold me-1">
-                      {isRtl ? "تمارين البلوك:" : "Block Order:"}
+                      {isRtl ? "ترتيب تمارين المجموعة المركبة:" : "Block Sequence:"}
                     </span>
                     {currentBlock.exercises.map((ex, exIdx) => {
                       const isCurrentInBlock = exIdx === currentStep!.exIdx;
@@ -1002,16 +1024,21 @@ export default function WorkoutModalRunner({
                       return (
                         <div
                           key={ex.exerciseId + exIdx}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center space-x-1 rtl:space-x-reverse border ${
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center space-x-1 rtl:space-x-reverse border transition-all ${
                             isCurrentInBlock
-                              ? "bg-brand-crimson/20 border-brand-crimson text-white shadow-sm"
+                              ? "bg-brand-crimson text-white border-brand-crimson shadow-md shadow-[0_0_12px_rgba(240,20,37,0.35)] ring-1 ring-white/20"
                               : isExDone
                               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400"
+                              : "bg-slate-950/60 border-slate-800 text-slate-400 opacity-60"
                           }`}
                         >
                           <span>{exIdx + 1}.</span>
                           <span className="truncate max-w-[120px]">{ex.exerciseName}</span>
+                          {isCurrentInBlock && (
+                            <span className="text-[9px] uppercase tracking-wider bg-black/40 px-1 py-0.2 rounded font-black">
+                              {isRtl ? "الحالي" : "Now"}
+                            </span>
+                          )}
                           {isExDone && <Check className="w-3 h-3 text-emerald-400" />}
                         </div>
                       );
@@ -1020,40 +1047,58 @@ export default function WorkoutModalRunner({
                 )}
 
                 {currentBlock.notes && (
-                  <p className="text-xs text-slate-400 italic pt-1">{currentBlock.notes}</p>
+                  <p className="text-xs text-slate-400 italic pt-0.5">{currentBlock.notes}</p>
                 )}
               </div>
 
-              {/* EXERCISE DETAIL CARD */}
-              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+              {/* EXERCISE DETAIL CARD (FOCUSED SINGLE EXERCISE VIEW) */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+                {/* Header: Title + Primary Muscles / Badges + Quick Rest */}
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-base md:text-lg font-bold text-white flex items-center space-x-2 rtl:space-x-reverse">
+                  <div className="space-y-1.5 min-w-0">
+                    <h2 className="text-lg sm:text-xl font-black text-white flex items-center space-x-2 rtl:space-x-reverse">
                       <span>{currentExercise.exerciseName}</span>
                     </h2>
-                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-400">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-bold text-slate-300">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-bold text-slate-300 border border-slate-700">
                         {currentExercise.metricType}
                       </span>
+                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-bold text-brand-crimson border border-brand-crimson/30">
+                        {currentExercise.sets.length} {isRtl ? "مجموعات" : "Sets"}
+                      </span>
+                      {currentExercise.exercise?.primaryMuscle && (
+                        <span className="px-2 py-0.5 rounded-md bg-slate-800/80 text-[10px] font-semibold text-slate-300 border border-slate-700">
+                          {isRtl
+                            ? currentExercise.exercise.primaryMuscle.nameAr || currentExercise.exercise.primaryMuscle.nameEn
+                            : currentExercise.exercise.primaryMuscle.nameEn}
+                        </span>
+                      )}
+                      {currentExercise.exercise?.equipment && (
+                        <span className="px-2 py-0.5 rounded-md bg-slate-800/80 text-[10px] font-semibold text-slate-300 border border-slate-700">
+                          {isRtl
+                            ? currentExercise.exercise.equipment.nameAr || currentExercise.exercise.equipment.nameEn
+                            : currentExercise.exercise.equipment.nameEn}
+                        </span>
+                      )}
                       {currentExercise.tempo && (
-                        <span>
-                          {isRtl ? "الإيقاع (Tempo):" : "Tempo:"} {currentExercise.tempo}
+                        <span className="text-slate-300">
+                          {isRtl ? "الإيقاع (Tempo):" : "Tempo:"} <span className="font-bold text-white">{currentExercise.tempo}</span>
                         </span>
                       )}
                       {currentExercise.restSeconds > 0 && (
-                        <span>
-                          {isRtl ? "الراحة:" : "Rest:"} {currentExercise.restSeconds}s
+                        <span className="text-slate-300">
+                          {isRtl ? "الراحة:" : "Rest:"} <span className="font-bold text-white">{currentExercise.restSeconds}s</span>
                         </span>
                       )}
                     </div>
                   </div>
 
                   {/* Manual Quick Rest Trigger */}
-                  <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+                  <div className="flex items-center space-x-1.5 rtl:space-x-reverse shrink-0">
                     <button
                       type="button"
                       onClick={() => startRestTimer(currentExercise.restSeconds || 60)}
-                      className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center space-x-1 rtl:space-x-reverse transition-colors border border-slate-700"
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors border border-slate-700 shadow-xs"
                     >
                       <Clock className="w-3.5 h-3.5 text-amber-400" />
                       <span>{isRtl ? "مؤقت راحة" : "Rest Timer"}</span>
@@ -1061,10 +1106,37 @@ export default function WorkoutModalRunner({
                   </div>
                 </div>
 
-                {currentExercise.notes && (
-                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-300 flex items-start space-x-2 rtl:space-x-reverse">
-                    <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    <p>{currentExercise.notes}</p>
+                {/* Exercise Image / Thumbnail (if available) */}
+                {exerciseImageUrl && (
+                  <div className="relative w-full max-h-56 sm:max-h-64 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center">
+                    <img
+                      src={exerciseImageUrl}
+                      alt={currentExercise.exerciseName}
+                      className="w-full h-full max-h-56 sm:max-h-64 object-contain sm:object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+
+                {/* Instructions & Technique Guidance (if available) */}
+                {exerciseInstructions && (
+                  <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs text-slate-300 space-y-1">
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse font-bold text-slate-200">
+                      <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <span>{isRtl ? "تعليمات الأداء الفني:" : "Exercise Instructions:"}</span>
+                    </div>
+                    <p className="leading-relaxed text-slate-300 whitespace-pre-line">{exerciseInstructions}</p>
+                  </div>
+                )}
+
+                {/* Coach Technique Tip (if available) */}
+                {exerciseCoachTip && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 space-y-1">
+                    <div className="flex items-center space-x-1.5 rtl:space-x-reverse font-bold text-amber-300">
+                      <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                      <span>{isRtl ? "توجيهات المدرب:" : "Coach Tip:"}</span>
+                    </div>
+                    <p className="leading-relaxed text-amber-100/90 whitespace-pre-line">{exerciseCoachTip}</p>
                   </div>
                 )}
 
@@ -1497,10 +1569,10 @@ export default function WorkoutModalRunner({
                   type="button"
                   onClick={handlePrevStep}
                   disabled={isSavingStep || isFinishing}
-                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors border border-slate-700"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors border border-slate-700"
                 >
                   {isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-                  <span>{isRtl ? "السابق" : "Previous"}</span>
+                  <span>{isRtl ? "التمرين السابق" : "Previous Exercise"}</span>
                 </button>
               )}
 
@@ -1510,17 +1582,17 @@ export default function WorkoutModalRunner({
                   type="button"
                   onClick={handleNextStep}
                   disabled={isSavingStep}
-                  className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-all shadow-md shadow-[0_0_15px_rgba(240,20,37,0.35)] disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-all shadow-md shadow-[0_0_15px_rgba(240,20,37,0.35)] disabled:opacity-50"
                 >
                   {isSavingStep && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   <span>
                     {activeStepIndex === steps.length - 1
                       ? isRtl
-                        ? "مراجعة وإنهاء"
+                        ? "مراجعة وإنهاء الجلسة"
                         : "Review & Finish"
                       : isRtl
-                      ? "التالي (حفظ ومتابعة)"
-                      : "Next Exercise"}
+                      ? `التمرين التالي (${activeStepIndex + 2}/${steps.length})`
+                      : `Next: Exercise ${activeStepIndex + 2}`}
                   </span>
                   {!isSavingStep && (
                     isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
