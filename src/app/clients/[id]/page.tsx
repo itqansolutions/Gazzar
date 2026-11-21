@@ -24,9 +24,11 @@ import {
   Apple,
   Clock,
   Activity,
-  Layers
+  Layers,
+  LayoutDashboard
 } from "lucide-react";
 
+import AthleteOverviewTab from "@/components/clients/AthleteOverviewTab";
 import MeasurementsTab from "@/components/clients/MeasurementsTab";
 import MedicalTab from "@/components/clients/MedicalTab";
 import GoalsTab from "@/components/clients/GoalsTab";
@@ -48,6 +50,7 @@ export default function ClientProfilePage() {
 
   const [client, setClient] = useState<ClientProfile | null>(null);
   const [activeTab, setActiveTab] = useState<
+    | "overview"
     | "checkins"
     | "program"
     | "workouts"
@@ -59,7 +62,7 @@ export default function ClientProfilePage() {
     | "goals"
     | "coaches"
     | "notes"
-  >("checkins");
+  >("overview");
 
   // Modals
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
@@ -237,6 +240,7 @@ export default function ClientProfilePage() {
   };
 
   const tabs = [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "checkins", label: "Check-in Schedule & Compliance", icon: Clock },
     { id: "program", label: "Active Training Program", icon: Layers },
     { id: "workouts", label: "Assigned Workouts", icon: Dumbbell },
@@ -414,6 +418,15 @@ export default function ClientProfilePage() {
 
       {/* Tab Contents View */}
       <div className="animate-in fade-in duration-150">
+        {activeTab === "overview" && (
+          <AthleteOverviewTab
+            client={client}
+            isClient={isClient}
+            onSelectWorkout={(_workoutId) => setActiveTab("workouts")}
+            onNavigateTab={(tabId) => setActiveTab(tabId as any)}
+          />
+        )}
+
         {activeTab === "checkins" && (
           <CheckInsTab
             clientId={client.id}
