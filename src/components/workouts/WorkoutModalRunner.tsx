@@ -39,6 +39,7 @@ export interface WorkoutModalRunnerProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdated?: () => void;
+  standalone?: boolean;
 }
 
 interface LocalSet {
@@ -98,7 +99,8 @@ export default function WorkoutModalRunner({
   assignmentId,
   isOpen,
   onClose,
-  onUpdated
+  onUpdated,
+  standalone = false
 }: WorkoutModalRunnerProps) {
   const { language, dir } = useLanguage();
   const isRtl = dir === "rtl" || language === "ar";
@@ -807,7 +809,11 @@ export default function WorkoutModalRunner({
       dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Runner Dialog (Fullscreen on mobile, centered dialog on desktop) */}
-      <div className="relative w-full h-full md:h-auto md:max-h-[92vh] md:max-w-4xl bg-slate-950 text-white md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-800">
+      <div
+        className={`relative w-full h-full ${
+          standalone ? "md:h-[95vh] md:max-w-5xl" : "md:h-auto md:max-h-[92vh] md:max-w-4xl"
+        } bg-slate-950 text-white md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-800`}
+      >
         {/* TOP BAR / HEADER */}
         <div className="shrink-0 bg-slate-900/90 border-b border-slate-800 px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center space-x-3 rtl:space-x-reverse min-w-0">
