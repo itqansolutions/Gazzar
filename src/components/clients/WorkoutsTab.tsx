@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   Dumbbell,
@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   History,
   Sparkles,
-  Filter
+  Filter,
+  ExternalLink
 } from "lucide-react";
 import { toCalendarDateKey, getCairoDateKey, addCalendarDaysKey } from "@/lib/date-utils";
 import {
@@ -22,6 +23,8 @@ import {
 interface WorkoutsTabProps {
   clientId: string;
   isClient?: boolean;
+  onExecuteWorkout?: (workoutId: string) => void;
+  refreshKey?: number;
 }
 
 function getRelativeDayLabel(scheduledDateStr: string | Date, todayKey: string): string {
@@ -35,12 +38,17 @@ function getRelativeDayLabel(scheduledDateStr: string | Date, todayKey: string):
   return dateKey;
 }
 
-export default function WorkoutsTab({ clientId, isClient = false }: WorkoutsTabProps) {
+export default function WorkoutsTab({
+  clientId,
+  isClient = false,
+  onExecuteWorkout,
+  refreshKey
+}: WorkoutsTabProps) {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"ALL" | "TODAY" | "UPCOMING" | "HISTORY">("ALL");
 
-  useEffect(() => {
+  const loadAssignments = useCallback(() => {
     fetch(`/api/workouts?clientId=${clientId}`)
       .then((res) => res.json())
       .then((json) => {
@@ -51,6 +59,10 @@ export default function WorkoutsTab({ clientId, isClient = false }: WorkoutsTabP
       .catch((err) => console.error("[WorkoutsTab] Error fetching assignments:", err))
       .finally(() => setLoading(false));
   }, [clientId]);
+
+  useEffect(() => {
+    loadAssignments();
+  }, [loadAssignments, refreshKey]);
 
   const todayKey = useMemo(() => getCairoDateKey(), []);
 
@@ -217,23 +229,57 @@ export default function WorkoutsTab({ clientId, isClient = false }: WorkoutsTabP
           </span>
 
           {isExecutable && (
-            <Link
-              href={`/workout/${a.id}/execute`}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-transform hover:scale-105 shadow-md cursor-pointer ${
-                effStatus === "COMPLETED"
-                  ? "bg-slate-800 hover:bg-slate-700 text-slate-200"
-                  : "bg-brand-crimson hover:bg-[#FF2D3B] text-white shadow-[0_0_20px_rgba(240,20,37,0.38)]"
-              }`}
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>
-                {effStatus === "COMPLETED"
-                  ? "View Summary"
-                  : effStatus === "IN_PROGRESS"
-                  ? "Resume"
-                  : "Start Workout"}
-              </span>
-            </Link>
+            <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+              {onExecuteWorkout ? (
+                <button
+                  type="button"
+                  onClick={() => onExecuteWorkout(a.id)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-transform hover:scale-105 shadow-md cursor-pointer ${
+                    effStatus === "COMPLETED"
+                      ? "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                      : "bg-brand-crimson hover:bg-[#FF2D3B] text-white shadow-[0_0_20px_rgba(240,20,37,0.38)]"
+                  }`}
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>
+                    {effStatus === "COMPLETED"
+                      ? "View Summary"
+                      : effStatus === "IN_PROGRESS"
+                      ? "Resume"
+                      : "Start Workout"}
+                  </span>
+                </button>
+              ) : (
+                <Link
+                  href={`/workout/${a.id}/execute`}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-transform hover:scale-105 shadow-md cursor-pointer ${
+                    effStatus === "COMPLETED"
+                      ? "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                      : "bg-brand-crimson hover:bg-[#FF2D3B] text-white shadow-[0_0_20px_rgba(240,20,37,0.38)]"
+                  }`}
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>
+                    {effStatus === "COMPLETED"
+                      ? "View Summary"
+                      : effStatus === "IN_PROGRESS"
+                      ? "Resume"
+                      : "Start Workout"}
+                  </span>
+                </Link>
+              )}
+
+              {/* Standalone Route Fallback */}
+              <Link
+                href={`/workout/${a.id}/execute`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open in standalone page (fallback)"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           )}
         </div>
       </div>

@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 
 import AthleteOverviewTab from "@/components/clients/AthleteOverviewTab";
+import WorkoutModalRunner from "@/components/workouts/WorkoutModalRunner";
 import MeasurementsTab from "@/components/clients/MeasurementsTab";
 import MedicalTab from "@/components/clients/MedicalTab";
 import GoalsTab from "@/components/clients/GoalsTab";
@@ -63,6 +64,26 @@ export default function ClientProfilePage() {
     | "coaches"
     | "notes"
   >("overview");
+
+  // In-Page Workout Runner States
+  const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
+  const [isRunnerOpen, setIsRunnerOpen] = useState(false);
+  const [workoutsRefreshKey, setWorkoutsRefreshKey] = useState(0);
+
+  const handleStartWorkout = (workoutId: string) => {
+    setActiveWorkoutId(workoutId);
+    setIsRunnerOpen(true);
+  };
+
+  const handleCloseRunner = () => {
+    setIsRunnerOpen(false);
+    setActiveWorkoutId(null);
+  };
+
+  const handleRunnerUpdated = async () => {
+    await loadClientData();
+    setWorkoutsRefreshKey((k) => k + 1);
+  };
 
   // Modals
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
@@ -422,7 +443,7 @@ export default function ClientProfilePage() {
           <AthleteOverviewTab
             client={client}
             isClient={isClient}
-            onSelectWorkout={(_workoutId) => setActiveTab("workouts")}
+            onSelectWorkout={(workoutId) => handleStartWorkout(workoutId)}
             onNavigateTab={(tabId) => setActiveTab(tabId as any)}
           />
         )}
@@ -500,6 +521,8 @@ export default function ClientProfilePage() {
           <WorkoutsTab
             clientId={client.id}
             isClient={isClient}
+            onExecuteWorkout={handleStartWorkout}
+            refreshKey={workoutsRefreshKey}
           />
         )}
 
@@ -809,6 +832,16 @@ export default function ClientProfilePage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* In-Page Workout Modal Runner */}
+      {activeWorkoutId && (
+        <WorkoutModalRunner
+          assignmentId={activeWorkoutId}
+          isOpen={isRunnerOpen}
+          onClose={handleCloseRunner}
+          onUpdated={handleRunnerUpdated}
+        />
       )}
     </div>
   );
