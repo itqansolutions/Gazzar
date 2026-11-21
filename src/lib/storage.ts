@@ -57,16 +57,51 @@ export function validateImageMagicBytes(buffer: Buffer): { valid: boolean; mimeT
 
 /**
  * Resolves a storage key into an absolute file path safely, guarding against path traversal attacks.
+ * Uses lexical boundary enforcement and Nearest Existing Ancestor Walk to prevent symlink escapes
+ * even for non-existent target files.
  */
 export function resolveSecureStoragePath(storageKey: string): string {
-  const baseDir = path.resolve(getPhotoStorageDirectory());
-  const targetPath = path.resolve(baseDir, storageKey);
-
-  if (!targetPath.startsWith(baseDir)) {
-    throw new Error("Security Error: Path traversal attempt detected");
+  if (!storageKey || typeof storageKey !== "string") {
+    throw new Error("Invalid storage key");
   }
 
-  return targetPath;
+  // 1. Strict lexical sanitizer: no null bytes, no relative dots
+  if (storageKey.includes("\0") || storageKey.includes("..") || path.isAbsolute(storageKey)) {
+    throw new Error("Security Error: Malformed storage key");
+  }
+
+  const baseDir = path.resolve(getPhotoStorageDirectory());
+  if (!fs.existsSync(baseDir)) {
+    fs.mkdirSync(baseDir, { recursive: true });
+  }
+  const realBaseDir = fs.realpathSync(baseDir);
+  const realBasePrefix = realBaseDir.endsWith(path.sep) ? realBaseDir : realBaseDir + path.sep;
+
+  // Syntactic destination
+  const resolvedTarget = path.resolve(realBaseDir, storageKey);
+
+  // 2. Lexical boundary check
+  if (!resolvedTarget.startsWith(realBasePrefix)) {
+    throw new Error("Security Error: Path traversal attempt outside base directory");
+  }
+
+  // 3. Nearest Existing Ancestor Walk (Symlink traversal defense for uncreated files)
+  let currentCheckPath = resolvedTarget;
+  while (!fs.existsSync(currentCheckPath)) {
+    const parent = path.dirname(currentCheckPath);
+    if (parent === currentCheckPath) break; // reached filesystem root
+    currentCheckPath = parent;
+  }
+
+  if (fs.existsSync(currentCheckPath)) {
+    const realAncestor = fs.realpathSync(currentCheckPath);
+    const realAncestorPrefix = realAncestor.endsWith(path.sep) ? realAncestor : realAncestor + path.sep;
+    if (realAncestor !== realBaseDir && !realAncestor.startsWith(realBasePrefix)) {
+      throw new Error("Security Error: Symlink traversal detected escaping storage root");
+    }
+  }
+
+  return resolvedTarget;
 }
 
 /**

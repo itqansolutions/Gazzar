@@ -174,6 +174,7 @@ model User {
   verifiedMeasurements ClientMeasurementHistory[] @relation("MeasurementVerifications")
   reviewedSubmissions  AthleteCheckInSubmission[] @relation("SubmissionReviews")
   reviewedRequests     CheckInRequest[]           @relation("RequestReviews")
+  requestedCheckIns    CheckInRequest[]           @relation("RequestedByActor")
   uploadedPhotoAssets  ClientProgressPhotoAsset[]
 
   @@map("users")
@@ -827,8 +828,9 @@ model ClientMeasurementHistory {
   verifiedAt               DateTime?
   verificationNote         String?
   submissionId             String?                       @unique
-  submission               AthleteCheckInSubmission?     @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  submission               AthleteCheckInSubmission?     @relation("GeneratedMeasurement", fields: [submissionId], references: [id], onDelete: Restrict)
   supersededBySubmissionId String?
+  supersededBySubmission   AthleteCheckInSubmission?     @relation("SupersededMeasurements", fields: [supersededBySubmissionId], references: [id], onDelete: Restrict)
 
   @@map("client_measurement_histories")
 }
@@ -885,12 +887,13 @@ model AthleteCheckInSubmission {
   currentIssues        String?
   athleteNotes         String?
 
-  correctsSubmissionId String?
-  correctsSubmission   AthleteCheckInSubmission?  @relation("CorrectionChain", fields: [correctsSubmissionId], references: [id], onDelete: SetNull)
+  correctsSubmissionId String?                    @unique
+  correctsSubmission   AthleteCheckInSubmission?  @relation("CorrectionChain", fields: [correctsSubmissionId], references: [id], onDelete: Restrict)
   corrections          AthleteCheckInSubmission[] @relation("CorrectionChain")
 
-  progressPhotos       ClientProgressPhoto[]
-  generatedMeasurement ClientMeasurementHistory?
+  progressPhotos         ClientProgressPhoto[]
+  generatedMeasurement   ClientMeasurementHistory?  @relation("GeneratedMeasurement")
+  supersededMeasurements ClientMeasurementHistory[] @relation("SupersededMeasurements")
 
   reviewStatus         CheckInReviewStatus        @default(PENDING)
   reviewedByUserId     String?
@@ -910,8 +913,10 @@ model CheckInRequest {
   id                 String                     @id @default(uuid())
   clientId           String
   client             ClientProfile              @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  requestedByCoachId String
-  requestedByCoach   CoachProfile               @relation("RequestedByCoach", fields: [requestedByCoachId], references: [id])
+  requestedByUserId  String
+  requestedByUser    User                       @relation("RequestedByActor", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  requestedByCoachId String?
+  requestedByCoach   CoachProfile?              @relation("RequestedByCoach", fields: [requestedByCoachId], references: [id])
   scheduleId         String?
   schedule           AthleteCheckInSchedule?    @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
 
@@ -935,6 +940,7 @@ model CheckInRequest {
   updatedAt          DateTime                   @updatedAt
 
   @@index([clientId, status])
+  @@index([requestedByUserId])
   @@index([requestedByCoachId])
   @@map("check_in_requests")
 }
@@ -1217,11 +1223,13 @@ model Notification {
   type              String   @default("INFO")
   read              Boolean  @default(false)
   link              String?
+  dedupKey          String?
   relatedEntityId   String?
   relatedEntityType String?
   createdAt         DateTime @default(now())
 
   @@index([userId, type, relatedEntityId])
+  @@index([userId, dedupKey])
   @@map("notifications")
 }
 

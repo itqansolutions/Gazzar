@@ -59,18 +59,6 @@ export class CheckInSubmissionService {
 
     const submittedAt = new Date();
 
-    // Check correction chain if specified
-    let originalSubmission: any = null;
-    if (input.correctsSubmissionId) {
-      originalSubmission = await prisma.athleteCheckInSubmission.findUnique({
-        where: { id: input.correctsSubmissionId },
-        include: { generatedMeasurement: true }
-      });
-      if (!originalSubmission || originalSubmission.clientId !== resolvedClientId) {
-        throw new CheckInSubmissionServiceError("Original submission not found or does not belong to you", 404);
-      }
-    }
-
     // Check check-in request if specified
     if (input.checkInRequestId) {
       const request = await prisma.checkInRequest.findUnique({
@@ -83,6 +71,37 @@ export class CheckInSubmissionService {
 
     // Execute atomic submission creation + CMH promotion + schedule advance
     const result = await prisma.$transaction(async (tx) => {
+      // 0. If correcting a previous submission, lock it and verify it is the latest un-corrected leaf
+      let originalSubmission: any = null;
+      if (input.correctsSubmissionId) {
+        const targetSubs = await tx.$queryRaw<any[]>`
+          SELECT id, "clientId", "reviewStatus" 
+          FROM "athlete_check_in_submissions" 
+          WHERE id = ${input.correctsSubmissionId} 
+          FOR UPDATE;
+        `;
+        const targetSub = targetSubs[0];
+        if (!targetSub || targetSub.clientId !== resolvedClientId) {
+          throw new CheckInSubmissionServiceError("Original submission not found or does not belong to you", 404);
+        }
+
+        const existingCorrection = await tx.athleteCheckInSubmission.findFirst({
+          where: { correctsSubmissionId: input.correctsSubmissionId },
+          select: { id: true }
+        });
+        if (existingCorrection) {
+          throw new CheckInSubmissionServiceError(
+            `Cannot correct submission ${input.correctsSubmissionId}: It has already been corrected by submission ${existingCorrection.id}. You must correct the latest submission in the chain.`,
+            400
+          );
+        }
+
+        originalSubmission = await tx.athleteCheckInSubmission.findUnique({
+          where: { id: input.correctsSubmissionId },
+          include: { generatedMeasurement: true }
+        });
+      }
+
       // 1. Create AthleteCheckInSubmission row
       const submission = await tx.athleteCheckInSubmission.create({
         data: {
@@ -286,6 +305,18 @@ export class CheckInSubmissionService {
       throw new CheckInSubmissionServiceError("Submission not found", 404);
     }
 
+    // Leaf check: cannot review an intermediate node if a child correction exists
+    const childCorrection = await prisma.athleteCheckInSubmission.findFirst({
+      where: { correctsSubmissionId: submissionId },
+      select: { id: true }
+    });
+    if (childCorrection) {
+      throw new CheckInSubmissionServiceError(
+        `Cannot review submission ${submissionId}: It has already been superseded by correction ${childCorrection.id}. You must review the latest submission.`,
+        400
+      );
+    }
+
     const access = await requireClientAccess(actor, submission.clientId);
     if (!access.ok) {
       throw new CheckInSubmissionServiceError("Forbidden: You are not assigned to this athlete", 403);
@@ -363,7 +394,8 @@ export class CheckInSubmissionService {
     }
 
     const measurement = await prisma.clientMeasurementHistory.findUnique({
-      where: { id: measurementId }
+      where: { id: measurementId },
+      include: { submission: true }
     });
 
     if (!measurement) {
@@ -375,16 +407,40 @@ export class CheckInSubmissionService {
       throw new CheckInSubmissionServiceError("Forbidden: You are not assigned to this athlete", 403);
     }
 
+    if (measurement.supersededBySubmissionId) {
+      throw new CheckInSubmissionServiceError(
+        `Cannot verify measurement ${measurementId}: It has been superseded by submission ${measurement.supersededBySubmissionId}. Please review the active measurement.`,
+        400
+      );
+    }
+
     const verifiedAt = new Date();
 
-    const updated = await prisma.clientMeasurementHistory.update({
-      where: { id: measurementId },
-      data: {
-        verificationStatus: input.verificationStatus,
-        verifiedByUserId: actor.user.id,
-        verifiedAt,
-        verificationNote: input.verificationNote ?? null
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedCmh = await tx.clientMeasurementHistory.update({
+        where: { id: measurementId },
+        data: {
+          verificationStatus: input.verificationStatus,
+          verifiedByUserId: actor.user.id,
+          verifiedAt,
+          verificationNote: input.verificationNote ?? null
+        }
+      });
+
+      // Conditional Prior Reactivation Engine
+      if (input.verificationStatus === "REJECTED" && measurement.submission?.correctsSubmissionId) {
+        const parentCmh = await tx.clientMeasurementHistory.findUnique({
+          where: { submissionId: measurement.submission.correctsSubmissionId }
+        });
+        if (parentCmh && parentCmh.verificationStatus === "VERIFIED") {
+          await tx.clientMeasurementHistory.update({
+            where: { id: parentCmh.id },
+            data: { supersededBySubmissionId: null }
+          });
+        }
       }
+
+      return updatedCmh;
     });
 
     await auditService.log({
@@ -422,24 +478,6 @@ export class CheckInSubmissionService {
     // Validate metrics server-side
     const validatedMetrics = validateCheckInMetrics(input.requestedMetrics);
 
-    let coachProfileId = actor.coachProfileId;
-    if (!coachProfileId) {
-      // Find coach profile or first admin coach profile
-      const cp = await prisma.coachProfile.findFirst({
-        where: { userId: actor.user.id }
-      });
-      if (cp) {
-        coachProfileId = cp.id;
-      } else {
-        // For admin without coach profile, find any coach or create dummy link
-        const anyCoach = await prisma.coachProfile.findFirst();
-        if (!anyCoach) {
-          throw new CheckInSubmissionServiceError("No CoachProfile configured in system", 400);
-        }
-        coachProfileId = anyCoach.id;
-      }
-    }
-
     const dueAtDate = new Date(input.dueAt);
     if (isNaN(dueAtDate.getTime())) {
       throw new CheckInSubmissionServiceError("Invalid dueAt date", 400);
@@ -448,7 +486,8 @@ export class CheckInSubmissionService {
     const request = await prisma.checkInRequest.create({
       data: {
         clientId: resolvedClientId,
-        requestedByCoachId: coachProfileId,
+        requestedByUserId: actor.user.id,
+        requestedByCoachId: actor.coachProfileId ?? null,
         requestedMetrics: validatedMetrics,
         dueAt: dueAtDate,
         notes: input.notes ?? null,
@@ -470,6 +509,7 @@ export class CheckInSubmissionService {
           title: "Check-in requested by your coach",
           message: input.notes || "Your coach has requested a new check-in. Please submit your metrics.",
           link: `/clients/${resolvedClientId}?tab=checkins`,
+          dedupKey: `REQUEST_CREATED:${request.id}`,
           relatedEntityId: request.id,
           relatedEntityType: "CheckInRequest"
         });
@@ -508,6 +548,9 @@ export class CheckInSubmissionService {
       where: { clientId: resolvedClientId },
       orderBy: { createdAt: "desc" },
       include: {
+        requestedByUser: {
+          select: { id: true, name: true, avatar: true, role: true }
+        },
         requestedByCoach: {
           include: { user: { select: { id: true, name: true, avatar: true } } }
         },

@@ -7,29 +7,51 @@ export interface SendNotificationInput {
   title: string;
   message: string;
   link?: string | null;
+  dedupKey?: string | null;
   relatedEntityId?: string | null;
   relatedEntityType?: string | null;
 }
 
 export class NotificationService {
   /**
-   * Sends an in-app notification with strict deduplication based on stable cycle / entity keys.
-   * If relatedEntityId is provided, checks if ANY notification (read or unread)
-   * with the same userId, type, and relatedEntityId already exists.
+   * Sends an in-app notification with strict deduplication based on stable dedupKey.
+   * Leverages database unique index on (userId, dedupKey) and safely handles P2002 concurrency races.
    */
   async sendDeduplicated(input: SendNotificationInput) {
-    if (input.relatedEntityId) {
-      const existing = await prisma.notification.findFirst({
-        where: {
-          userId: input.userId,
-          type: input.type,
-          relatedEntityId: input.relatedEntityId,
-        },
-      });
+    const dedupKey = input.dedupKey ?? input.relatedEntityId ?? null;
 
-      if (existing) {
-        // Deduplicated: already sent for this stable cycle or entity
-        return existing;
+    if (dedupKey) {
+      try {
+        return await prisma.notification.create({
+          data: {
+            userId: input.userId,
+            type: input.type,
+            title: input.title,
+            message: input.message,
+            link: input.link ?? null,
+            dedupKey: dedupKey,
+            relatedEntityId: input.relatedEntityId ?? null,
+            relatedEntityType: input.relatedEntityType ?? null,
+            read: false,
+          },
+        });
+      } catch (err: any) {
+        // P2002: Unique constraint violation on (userId, dedupKey)
+        if (
+          err.code === "P2002" &&
+          (err.meta?.target?.includes("dedupKey") ||
+           err.message?.includes("notifications_user_dedup_idx") ||
+           err.message?.includes("Notification_userId_dedupKey_key"))
+        ) {
+          const existing = await prisma.notification.findFirst({
+            where: {
+              userId: input.userId,
+              dedupKey: dedupKey,
+            },
+          });
+          if (existing) return existing;
+        }
+        throw err;
       }
     }
 
@@ -40,6 +62,7 @@ export class NotificationService {
         title: input.title,
         message: input.message,
         link: input.link ?? null,
+        dedupKey: null,
         relatedEntityId: input.relatedEntityId ?? null,
         relatedEntityType: input.relatedEntityType ?? null,
         read: false,

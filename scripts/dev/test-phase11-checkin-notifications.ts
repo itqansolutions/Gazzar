@@ -372,43 +372,38 @@ async function runPhase11Tests() {
     console.log("✓ Verification & Rejection verified: numeric values remain 100% immutable.");
 
     // ------------------------------------------------------------------------
-    // SCENARIO 8: NOTIFICATION CYCLE-KEY DEDUPLICATION
+    // SCENARIO 8: NOTIFICATION CONCURRENCY & DEDUP KEY DEDUPLICATION
     // ------------------------------------------------------------------------
-    console.log("\n[TEST 8] Testing notification cycle-key deduplication...");
-    const cycleKey = `test_cycle_${Date.now()}`;
+    console.log("\n[TEST 8] Testing notification dedupKey & concurrent Promise.all race...");
+    const cycleDedupKey = `test_cycle_${Date.now()}`;
 
-    // Send 1st
-    await notificationService.sendDeduplicated({
-      userId: athleteAUser.id,
-      type: "CHECKIN_DUE",
-      title: "Cycle Test",
-      message: "Testing deduplication",
-      relatedEntityId: cycleKey,
-      relatedEntityType: "CHECKIN_CYCLE"
-    });
-
-    // Send 2nd (duplicate)
-    await notificationService.sendDeduplicated({
-      userId: athleteAUser.id,
-      type: "CHECKIN_DUE",
-      title: "Cycle Test",
-      message: "Testing deduplication 2",
-      relatedEntityId: cycleKey,
-      relatedEntityType: "CHECKIN_CYCLE"
-    });
+    // Parallel burst: 10 concurrent requests with the exact same dedupKey
+    await Promise.all(
+      Array.from({ length: 10 }).map((_, i) =>
+        notificationService.sendDeduplicated({
+          userId: athleteAUser.id,
+          type: "CHECKIN_DUE",
+          title: "Cycle Concurrency Test",
+          message: `Parallel burst message ${i}`,
+          dedupKey: cycleDedupKey,
+          relatedEntityId: "entity_test_123",
+          relatedEntityType: "CHECKIN_CYCLE"
+        })
+      )
+    );
 
     const matchingNotifs = await prisma.notification.findMany({
-      where: { userId: athleteAUser.id, relatedEntityId: cycleKey }
+      where: { userId: athleteAUser.id, dedupKey: cycleDedupKey }
     });
     if (matchingNotifs.length !== 1) {
-      throw new Error(`Deduplication failed: expected 1 notification, found ${matchingNotifs.length}`);
+      throw new Error(`Deduplication concurrency failed: expected 1 notification, found ${matchingNotifs.length}`);
     }
-    console.log("✓ Notification deduplication verified: duplicate cycle keys rejected.");
+    console.log("✓ Notification concurrency race verified: 10 parallel requests resulted in exactly 1 DB record.");
 
     // ------------------------------------------------------------------------
-    // SCENARIO 9: SECURE PHOTO STORAGE & MAGIC BYTES VALIDATION
+    // SCENARIO 9: SECURE PHOTO STORAGE & NEAREST ANCESTOR WALK
     // ------------------------------------------------------------------------
-    console.log("\n[TEST 9] Testing secure photo storage & magic-byte validation...");
+    console.log("\n[TEST 9] Testing secure photo storage & Nearest Ancestor Walk...");
     // Valid JPEG mock buffer (magic bytes: FF D8 FF E0)
     const validJpegBuffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01]);
     const validMagic = validateImageMagicBytes(validJpegBuffer);
@@ -427,7 +422,7 @@ async function runPhase11Tests() {
     const storageKey = await saveSecurePhotoFile(athleteAProfile.id, validJpegBuffer, "jpg");
     createdAssetKeys.push(storageKey);
 
-    // Verify path traversal guard
+    // Verify path traversal guards
     let traversalBlocked = false;
     try {
       resolveSecureStoragePath("../../etc/passwd");
@@ -436,7 +431,83 @@ async function runPhase11Tests() {
     }
     if (!traversalBlocked) throw new Error("Security failure: Path traversal was not blocked!");
 
-    console.log("✓ Photo storage security verified: magic bytes checked, path traversal blocked.");
+    let nullByteBlocked = false;
+    try {
+      resolveSecureStoragePath("test\0exploit.png");
+    } catch {
+      nullByteBlocked = true;
+    }
+    if (!nullByteBlocked) throw new Error("Security failure: Null byte in storageKey was not blocked!");
+
+    console.log("✓ Photo storage security verified: magic bytes checked, traversal & null bytes blocked.");
+
+    // ------------------------------------------------------------------------
+    // SCENARIO 10: MULTI-HOP CORRECTION CHAIN ($A \to B \to C$) & BRANCHING REJECTION
+    // ------------------------------------------------------------------------
+    console.log("\n[TEST 10] Testing multi-hop chain ($A \to B \to C$) & branching prevention...");
+
+    // Athlete submits C correcting B
+    const subC = await checkInSubmissionService.createSubmission(
+      {
+        clientId: athleteAProfile.id,
+        weightKg: 85.5,
+        athleteNotes: "Final correction C",
+        correctsSubmissionId: createdSubmissionBId
+      },
+      actorAthleteA
+    );
+    const createdSubmissionCId = subC.id;
+
+    // Verify C points to B
+    if (subC.correctsSubmissionId !== createdSubmissionBId) {
+      throw new Error("Submission C does not point to B!");
+    }
+
+    // Verify CMH for B is now superseded by C
+    const cmhB = await prisma.clientMeasurementHistory.findUnique({
+      where: { submissionId: createdSubmissionBId }
+    });
+    if (cmhB?.supersededBySubmissionId !== createdSubmissionCId) {
+      throw new Error("CMH B was not superseded by C!");
+    }
+
+    // Attempting to branch: athlete tries to correct A AGAIN after B exists
+    let branchingBlocked = false;
+    try {
+      await checkInSubmissionService.createSubmission(
+        {
+          clientId: athleteAProfile.id,
+          weightKg: 99.0,
+          athleteNotes: "Illegal branch attempt",
+          correctsSubmissionId: createdSubmissionAId
+        },
+        actorAthleteA
+      );
+    } catch (err: any) {
+      branchingBlocked = true;
+      console.log(`  ✓ Expected branching rejection caught: "${err.message}"`);
+    }
+    if (!branchingBlocked) {
+      throw new Error("CRITICAL: Branching correction was NOT blocked by service / database!");
+    }
+
+    // Attempting to review an intermediate superseded node B
+    let intermediateReviewBlocked = false;
+    try {
+      await checkInSubmissionService.reviewSubmission(
+        createdSubmissionBId,
+        { reviewStatus: "REVIEWED", coachReviewNotes: "Reviewing intermediate B" },
+        actorCoachA
+      );
+    } catch (err: any) {
+      intermediateReviewBlocked = true;
+      console.log(`  ✓ Expected intermediate review rejection caught: "${err.message}"`);
+    }
+    if (!intermediateReviewBlocked) {
+      throw new Error("CRITICAL: Review on intermediate superseded submission B was NOT blocked!");
+    }
+
+    console.log("✓ Multi-hop chain and branching prevention verified 100%.");
   } finally {
     // ------------------------------------------------------------------------
     // TEARDOWN: CLEAN UP THROWAWAY TEST DATA WITH ZERO IMPACT ON PRODUCTION
@@ -448,42 +519,83 @@ async function runPhase11Tests() {
       await deleteSecurePhotoFile(key);
     }
 
-    // Delete test database records in FK-safe order
-    if (createdSubmissionBId) {
-      await prisma.clientMeasurementHistory.deleteMany({ where: { submissionId: createdSubmissionBId } });
-      await prisma.athleteCheckInSubmission.deleteMany({ where: { id: createdSubmissionBId } });
-    }
-    if (createdSubmissionAId) {
-      await prisma.clientMeasurementHistory.deleteMany({ where: { submissionId: createdSubmissionAId } });
-      await prisma.athleteCheckInSubmission.deleteMany({ where: { id: createdSubmissionAId } });
-    }
-    if (createdRequestId) {
-      await prisma.checkInRequest.deleteMany({ where: { id: createdRequestId } });
-    }
+    const safeDelete = async (fn: () => Promise<any>, desc: string) => {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await fn();
+          return;
+        } catch (e: any) {
+          if (attempt === 3) console.warn(`Teardown warning (${desc}):`, e.message);
+          else await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+    };
 
-    // Delete notifications for test users
-    await prisma.notification.deleteMany({
-      where: { userId: { in: [athleteAUser.id, athleteBUser.id, coachUser.id, unassignedCoachUser.id, adminUser.id] } }
-    });
+    await safeDelete(
+      () =>
+        prisma.clientMeasurementHistory.deleteMany({
+          where: { clientId: { in: [athleteAProfile.id, athleteBProfile.id] } }
+        }),
+      "test CMH"
+    );
 
-    // Delete assignments
-    await prisma.clientCoachAssignment.deleteMany({
-      where: { clientId: { in: [athleteAProfile.id, athleteBProfile.id] } }
-    });
+    await safeDelete(
+      () =>
+        prisma.athleteCheckInSubmission.deleteMany({
+          where: { clientId: { in: [athleteAProfile.id, athleteBProfile.id] } }
+        }),
+      "test submissions"
+    );
 
-    // Delete profiles
-    await prisma.clientProfile.deleteMany({ where: { id: { in: [athleteAProfile.id, athleteBProfile.id] } } });
-    await prisma.coachProfile.deleteMany({ where: { id: { in: [coachProfile.id, unassignedCoachProfile.id] } } });
+    await safeDelete(
+      () =>
+        prisma.checkInRequest.deleteMany({
+          where: { clientId: { in: [athleteAProfile.id, athleteBProfile.id] } }
+        }),
+      "test requests"
+    );
 
-    // Delete audit logs for test actors
-    await prisma.auditLog.deleteMany({
-      where: { userId: { in: [athleteAUser.id, athleteBUser.id, coachUser.id, unassignedCoachUser.id, adminUser.id] } }
-    });
+    await safeDelete(
+      () =>
+        prisma.notification.deleteMany({
+          where: { userId: { in: [athleteAUser.id, athleteBUser.id, coachUser.id, unassignedCoachUser.id, adminUser.id] } }
+        }),
+      "test notifications"
+    );
 
-    // Delete test users
-    await prisma.user.deleteMany({
-      where: { id: { in: [athleteAUser.id, athleteBUser.id, coachUser.id, unassignedCoachUser.id, adminUser.id] } }
-    });
+    await safeDelete(
+      () =>
+        prisma.clientCoachAssignment.deleteMany({
+          where: { clientId: { in: [athleteAProfile.id, athleteBProfile.id] } }
+        }),
+      "test assignments"
+    );
+
+    await safeDelete(
+      () => prisma.clientProfile.deleteMany({ where: { id: { in: [athleteAProfile.id, athleteBProfile.id] } } }),
+      "test client profiles"
+    );
+
+    await safeDelete(
+      () => prisma.coachProfile.deleteMany({ where: { id: { in: [coachProfile.id, unassignedCoachProfile.id] } } }),
+      "test coach profiles"
+    );
+
+    await safeDelete(
+      () =>
+        prisma.auditLog.deleteMany({
+          where: { userId: { in: [athleteAUser.id, athleteBUser.id, coachUser.id, unassignedCoachUser.id, adminUser.id] } }
+        }),
+      "test audit logs"
+    );
+
+    await safeDelete(
+      () =>
+        prisma.user.deleteMany({
+          where: { id: { in: [athleteAUser.id, athleteBUser.id, coachUser.id, unassignedCoachUser.id, adminUser.id] } }
+        }),
+      "test users"
+    );
 
     console.log("✓ All throwaway test data cleanly removed.");
 

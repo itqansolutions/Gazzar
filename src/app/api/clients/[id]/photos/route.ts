@@ -33,6 +33,13 @@ export async function POST(
     const auth = await requireAuth(req);
     if (!auth.ok) return auth.response;
 
+    if (auth.actor.user.role === "CLIENT") {
+      return NextResponse.json(
+        { success: false, error: "Athletes cannot link external photo URLs. Please use the secure photo upload." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await Promise.resolve(params);
     const access = await requireClientAccess(auth.actor, id);
     if (!access.ok) return access.response;
