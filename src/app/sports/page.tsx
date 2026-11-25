@@ -447,27 +447,35 @@ export default function SportsPage() {
                   )}
 
                   {/* Linked Usage Counts */}
-                  <div className="grid grid-cols-4 gap-1.5 pt-1 text-[10px] font-bold">
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
+                  <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-bold">
+                    {exerciseCount > 0 && (
+                    <div className="px-3 py-2 min-w-[72px] rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
                       <Dumbbell className="w-3 h-3 text-brand-crimson mx-auto mb-0.5" />
                       <div className="text-slate-900 dark:text-white">{exerciseCount}</div>
                       <div className="text-slate-500 font-medium">Exercises</div>
                     </div>
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
+                    )}
+                    {templateCount > 0 && (
+                    <div className="px-3 py-2 min-w-[72px] rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
                       <Layers className="w-3 h-3 text-brand-crimson mx-auto mb-0.5" />
                       <div className="text-slate-900 dark:text-white">{templateCount}</div>
                       <div className="text-slate-500 font-medium">Templates</div>
                     </div>
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
+                    )}
+                    {programCount > 0 && (
+                    <div className="px-3 py-2 min-w-[72px] rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
                       <BookOpen className="w-3 h-3 text-brand-crimson mx-auto mb-0.5" />
                       <div className="text-slate-900 dark:text-white">{programCount}</div>
                       <div className="text-slate-500 font-medium">Programs</div>
                     </div>
-                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
+                    )}
+                    {clientCount > 0 && (
+                    <div className="px-3 py-2 min-w-[72px] rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-center">
                       <Users className="w-3 h-3 text-brand-crimson mx-auto mb-0.5" />
                       <div className="text-slate-900 dark:text-white">{clientCount}</div>
                       <div className="text-slate-500 font-medium">Athletes</div>
                     </div>
+                    )}
                   </div>
 
                   {sp.categories && sp.categories.length > 0 && (

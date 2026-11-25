@@ -152,6 +152,7 @@ export default function ProgramsPage() {
   const [sports, setSports] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [nutritionPrograms, setNutritionPrograms] = useState<NutritionProgram[]>([]);
+  const [menuProgId, setMenuProgId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -999,6 +1000,7 @@ export default function ProgramsPage() {
 
                   {/* Card Actions */}
                   <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                    {effectiveStatus === "ACTIVE" && (
                     <Link
                       href={`/assignments?programId=${prog.id}&mode=PROGRAM`}
                       className={`px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center gap-1.5 transition-all cursor-pointer ${
@@ -1013,6 +1015,7 @@ export default function ProgramsPage() {
                       <Send className="w-3.5 h-3.5" />
                       <span>Assign to Athlete</span>
                     </Link>
+                    )}
 
 
                     <button
@@ -1024,37 +1027,41 @@ export default function ProgramsPage() {
                       <Edit2 className="w-4 h-4" />
                     </button>
 
-                    {effectiveStatus !== "ARCHIVED" ? (
+                    <div className="relative">
                       <button
                         type="button"
-                        onClick={() => handleStatusChange(prog, "ARCHIVED")}
-                        title="Archive program"
-                        className="p-2 rounded-xl text-slate-500 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                        onClick={() => setMenuProgId(menuProgId === prog.id ? null : prog.id)}
+                        aria-label="More actions"
+                        className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer font-black leading-none"
                       >
-                        <Archive className="w-4 h-4" />
+                        ⋯
                       </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(prog, "ACTIVE")}
-                        title="Reactivate program"
-                        className="p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDeleteConflictMsg(null);
-                        setDeleteConfirmProgram(prog);
-                      }}
-                      title="Delete program"
-                      className="p-2 rounded-xl text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      {menuProgId === prog.id && (
+                        <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-20 py-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMenuProgId(null);
+                              handleStatusChange(prog, effectiveStatus !== "ARCHIVED" ? "ARCHIVED" : "ACTIVE");
+                            }}
+                            className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          >
+                            {effectiveStatus !== "ARCHIVED" ? "Archive program" : "Reactivate program"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMenuProgId(null);
+                              setDeleteConflictMsg(null);
+                              setDeleteConfirmProgram(prog);
+                            }}
+                            className="w-full text-left px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+                          >
+                            Delete program
+                          </button>
+                        </div>
+                      )}
+                    </div>
 
                     <button
                       type="button"

@@ -35,6 +35,7 @@ export default function UsersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [resetChoiceUser, setResetChoiceUser] = useState<User | null>(null);
   const [resetLinkModal, setResetLinkModal] = useState<{
     isOpen: boolean;
     userName: string;
@@ -408,19 +409,9 @@ export default function UsersPage() {
                   <td className="px-4 py-3.5 text-center">
                     <div className="flex items-center justify-center space-x-1.5">
                       <button
-                        onClick={() => handleGenerateResetLink(u)}
-                        title="Send Password Reset Link"
-                        className="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                      >
-                        <Link2 className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setSelectedUser(u);
-                          setIsPasswordModalOpen(true);
-                        }}
-                        title="Reset Password"
+                        onClick={() => setResetChoiceUser(u)}
+                        title="Reset password"
+                        aria-label="Reset password"
                         className="p-1.5 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors"
                       >
                         <Key className="w-4 h-4" />
@@ -755,6 +746,28 @@ export default function UsersPage() {
       )}
 
       {/* PASSWORD RESET LINK MODAL */}
+      {resetChoiceUser && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setResetChoiceUser(null)}>
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">Reset password for {resetChoiceUser.name}</h3>
+            <button
+              className="w-full px-4 py-3 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold text-left"
+              onClick={() => { const u = resetChoiceUser; setResetChoiceUser(null); handleGenerateResetLink(u); }}
+            >
+              Send a reset link
+              <span className="block text-[11px] font-normal opacity-90">The user sets their own new password</span>
+            </button>
+            <button
+              className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-bold text-left"
+              onClick={() => { setSelectedUser(resetChoiceUser); setResetChoiceUser(null); setIsPasswordModalOpen(true); }}
+            >
+              Set a new password now
+              <span className="block text-[11px] font-normal opacity-70">You type the password for them</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {resetLinkModal && resetLinkModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5">

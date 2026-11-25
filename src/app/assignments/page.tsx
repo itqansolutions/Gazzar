@@ -309,6 +309,7 @@ function AssignmentsContent() {
     }
   };
 
+  const [showFilters, setShowFilters] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const filteredAssignments = useMemo(() => {
@@ -841,10 +842,22 @@ function AssignmentsContent() {
 
       {/* Central Filters Bar */}
       <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
-          <Filter className="w-3.5 h-3.5 text-brand-crimson" />
-          <span>Filters & Search</span>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowFilters((v) => !v)}
+          className="w-full flex items-center justify-between gap-2 text-xs font-bold text-slate-600 dark:text-slate-300 cursor-pointer"
+        >
+          <span className="flex items-center gap-2">
+            <Filter className="w-3.5 h-3.5 text-brand-crimson" />
+            <span>Filters & Search</span>
+            {[filterClientId, filterCoachId, filterSource].filter((v) => v !== "ALL").length + (filterDateFrom ? 1 : 0) + (filterDateTo ? 1 : 0) > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full bg-brand-crimson text-white text-[10px]">
+                {[filterClientId, filterCoachId, filterSource].filter((v) => v !== "ALL").length + (filterDateFrom ? 1 : 0) + (filterDateTo ? 1 : 0)}
+              </span>
+            )}
+          </span>
+          <span className="text-brand-crimson">{showFilters ? "Hide ▲" : "More filters ▼"}</span>
+        </button>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5">
           <div className="relative lg:col-span-2">
@@ -858,6 +871,7 @@ function AssignmentsContent() {
             />
           </div>
 
+          <div className={showFilters ? "contents" : "hidden"}>
           {!isClient && (
             <select
               value={filterClientId}
@@ -914,6 +928,7 @@ function AssignmentsContent() {
               aria-label="Date To"
               className="w-full px-2 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-900 dark:text-white outline-none focus:border-brand-crimson"
             />
+          </div>
           </div>
         </div>
       </div>

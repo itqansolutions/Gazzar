@@ -51,6 +51,7 @@ export default function CalendarPage() {
 
   // Data states
   const [events, setEvents] = useState<SessionCalendar[]>([]);
+  const [showCalWorkouts, setShowCalWorkouts] = useState(false);
   const [workouts, setWorkouts] = useState<ClientWorkoutAssignment[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
@@ -478,6 +479,18 @@ export default function CalendarPage() {
       ) : layoutMode === "MONTH" ? (
         /* ==================== MONTH VIEW GRID ==================== */
         <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 dark:border-slate-800 text-[11px]">
+            <span className="text-slate-500 dark:text-slate-400 font-semibold">
+              {showCalWorkouts ? "Showing classes and athlete workouts" : `Showing classes only · ${totalWorkoutCount} athlete workouts hidden`}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowCalWorkouts((v) => !v)}
+              className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold cursor-pointer"
+            >
+              {showCalWorkouts ? "Hide workouts" : "Show workouts"}
+            </button>
+          </div>
           {/* Day Headers (Sun - Sat) */}
           <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 text-center text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 py-3">
             <span>Sun</span>
@@ -551,8 +564,14 @@ export default function CalendarPage() {
                       );
                     })}
 
+                    {!showCalWorkouts && cellItems.workouts.length > 0 && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-crimson" />
+                        {cellItems.workouts.length} workout{cellItems.workouts.length === 1 ? "" : "s"}
+                      </span>
+                    )}
                     {/* Workouts (Outlined Badge with Status Dot) */}
-                    {cellItems.workouts.map((wo) => {
+                    {(showCalWorkouts ? cellItems.workouts : []).map((wo) => {
                       const st = getWorkoutStatusBadge(wo.status);
                       return (
                         <button
