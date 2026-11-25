@@ -3,7 +3,6 @@
 const BUILD_ID = process.env.RAILWAY_GIT_COMMIT_SHA || process.env.SOURCE_COMMIT || String(Date.now());
 const nextConfig = {
   generateBuildId: async () => BUILD_ID,
-  env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
