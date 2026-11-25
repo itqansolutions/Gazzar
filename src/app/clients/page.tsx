@@ -69,7 +69,7 @@ export default function ClientsPage() {
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
-          setClients(json.data);
+          setClients(json.data.map((c: any) => ({ ...c, coaches: c.coaches ?? c.coachAssignments ?? [] })));
         }
       }
     } catch (err) {
