@@ -293,13 +293,13 @@ export default function ClientsPage() {
       case "LEAD":
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-400">Lead</span>;
       case "FROZEN":
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#1C1C1F] text-slate-400 border border-[#26262A]">Frozen</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-raised text-muted border border-line">Frozen</span>;
       case "EXPIRED":
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400">Expiring</span>;
       case "SUSPENDED":
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/15 text-red-400">Suspended</span>;
       default:
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300">{status}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-fg/80">{status}</span>;
     }
   };
 
@@ -332,20 +332,20 @@ export default function ClientsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
             <span>Members</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted mt-1">
             {totalCount} athletes in the academy
           </p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <label className="flex items-center gap-2 h-11 px-3.5 rounded-xl bg-[#141416] border border-[#26262A] text-slate-400 min-w-[240px] focus-within:border-brand-crimson transition-colors">
-            <Search className="w-4 h-4 text-slate-500 flex-shrink-0" />
+          <label className="flex items-center gap-2 h-11 px-3.5 rounded-xl bg-card border border-line text-muted min-w-[240px] focus-within:border-brand-crimson transition-colors">
+            <Search className="w-4 h-4 text-muted flex-shrink-0" />
             <input
               type="search"
               placeholder="Search members"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 w-full"
+              className="bg-transparent border-0 outline-none text-xs text-fg placeholder-slate-500 w-full"
             />
           </label>
 
@@ -363,13 +363,13 @@ export default function ClientsPage() {
 
       {/* Filter Tabs matching prototype */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex gap-1.5 p-1 rounded-xl bg-[#141416] border border-[#26262A] overflow-x-auto max-w-full">
+        <div className="flex gap-1.5 p-1 rounded-xl bg-card border border-line overflow-x-auto max-w-full">
           <button
             onClick={() => setStatusFilter("ALL")}
             className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
               statusFilter === "ALL"
                 ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
-                : "text-slate-400 hover:text-white"
+                : "text-muted hover:text-fg"
             }`}
           >
             All · {totalCount}
@@ -379,7 +379,7 @@ export default function ClientsPage() {
             className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
               statusFilter === "ACTIVE"
                 ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
-                : "text-slate-400 hover:text-white"
+                : "text-muted hover:text-fg"
             }`}
           >
             Active · {activeCount}
@@ -389,7 +389,7 @@ export default function ClientsPage() {
             className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
               statusFilter === "EXPIRED"
                 ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
-                : "text-slate-400 hover:text-white"
+                : "text-muted hover:text-fg"
             }`}
           >
             Expiring · {expiringCount}
@@ -399,7 +399,7 @@ export default function ClientsPage() {
             className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
               statusFilter === "FROZEN"
                 ? "bg-brand-crimson text-white shadow-[0_0_15px_rgba(240,20,37,0.4)]"
-                : "text-slate-400 hover:text-white"
+                : "text-muted hover:text-fg"
             }`}
           >
             Frozen · {frozenCount}
@@ -411,7 +411,7 @@ export default function ClientsPage() {
           <select
             value={coachFilter}
             onChange={e => setCoachFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-slate-300 focus:outline-none focus:border-brand-crimson"
+            className="h-9 px-3 rounded-xl bg-card border border-line text-xs text-fg/80 focus:outline-none focus:border-brand-crimson"
           >
             <option value="ALL">All Coaches</option>
             {coaches.map(c => (
@@ -422,38 +422,38 @@ export default function ClientsPage() {
       </div>
 
       {/* Main Members Data Table Card */}
-      <div className="bg-[#141416] border border-[#26262A] rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.35)] overflow-hidden">
+      <div className="bg-card border border-line rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.35)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse min-w-[760px] text-left">
             <thead>
-              <tr className="border-b border-[#26262A]">
-                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+              <tr className="border-b border-line">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-muted px-5 py-3.5">
                   Member
                 </th>
-                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-muted px-5 py-3.5">
                   Program / Sport
                 </th>
-                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-muted px-5 py-3.5">
                   Plan
                 </th>
-                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-muted px-5 py-3.5">
                   Progress
                 </th>
-                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-muted px-5 py-3.5">
                   Assigned Coach
                 </th>
-                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-muted px-5 py-3.5">
                   Status
                 </th>
-                <th className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-5 py-3.5 text-right">
+                <th className="text-[11px] font-bold uppercase tracking-wider text-muted px-5 py-3.5 text-right">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#26262A]">
+            <tbody className="divide-y divide-line">
               {filteredClients.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-slate-500 text-xs">
+                  <td colSpan={7} className="px-5 py-12 text-center text-muted text-xs">
                     No members found matching your search criteria.
                   </td>
                 </tr>
@@ -475,7 +475,7 @@ export default function ClientsPage() {
                   return (
                     <tr
                       key={client.id}
-                      className="hover:bg-[#1C1C1F] transition-colors group"
+                      className="hover:bg-raised transition-colors group"
                     >
                       {/* Member Info */}
                       <td className="px-5 py-3.5">
@@ -486,45 +486,45 @@ export default function ClientsPage() {
                           <div>
                             <Link
                               href={`/clients/${client.id}`}
-                              className="font-bold text-xs text-white group-hover:text-brand-crimson transition-colors block"
+                              className="font-bold text-xs text-fg group-hover:text-brand-crimson transition-colors block"
                             >
                               {client.user?.name || "Athlete"}
                             </Link>
-                            <p className="text-[11px] text-slate-400">
+                            <p className="text-[11px] text-muted">
                               {client.user?.email || client.user?.phone || "Active Athlete"}
                             </p>
                             {/* Phone: the Actions column is off-screen, so repeat the main actions here */}
                             <div className="flex md:hidden items-center gap-3 pt-1.5 text-[11px] font-bold">
                               <Link href={`/clients/${client.id}`} className="text-brand-crimson">View</Link>
                               {(user?.role === "ADMIN" || user?.role === "HEAD_COACH") && (
-                                <button type="button" onClick={() => setMembershipClient(client)} className="text-slate-300">+ Plan</button>
+                                <button type="button" onClick={() => setMembershipClient(client)} className="text-fg/80">+ Plan</button>
                               )}
-                              <button type="button" onClick={() => openAssignModal(client)} className="text-slate-300">Coach</button>
+                              <button type="button" onClick={() => openAssignModal(client)} className="text-fg/80">Coach</button>
                             </div>
                           </div>
                         </div>
                       </td>
 
                       {/* Program */}
-                      <td className="px-5 py-3.5 text-xs text-slate-300 font-medium">
+                      <td className="px-5 py-3.5 text-xs text-fg/80 font-medium">
                         {sportName}
                       </td>
 
                       {/* Plan */}
-                      <td className="px-5 py-3.5 text-xs text-slate-300">
+                      <td className="px-5 py-3.5 text-xs text-fg/80">
                         {planType}
                       </td>
 
                       {/* Progress bar */}
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-24 rounded-full bg-[#26262A] overflow-hidden">
+                          <div className="h-1.5 w-24 rounded-full bg-line overflow-hidden">
                             <div
                               className="h-full rounded-full bg-brand-crimson transition-all"
                               style={{ width: `${progressPct}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-slate-500 font-mono">
+                          <span className="text-[10px] text-muted font-mono">
                             {progressPct}%
                           </span>
                         </div>
@@ -533,7 +533,7 @@ export default function ClientsPage() {
                       {/* Assigned Coach */}
                       <td className="px-5 py-3.5">
                         {primaryCoach ? (
-                          <span className="text-xs text-slate-300 font-medium">
+                          <span className="text-xs text-fg/80 font-medium">
                             {primaryCoach}
                           </span>
                         ) : (
@@ -557,7 +557,7 @@ export default function ClientsPage() {
                           <button
                             type="button"
                             onClick={() => openAssignModal(client)}
-                            className="text-slate-400 hover:text-white text-xs font-semibold transition-colors"
+                            className="text-muted hover:text-fg text-xs font-semibold transition-colors"
                             title="Assign Coach"
                           >
                             <UserCheck className="w-4 h-4" />
@@ -566,7 +566,7 @@ export default function ClientsPage() {
                             <button
                               type="button"
                               onClick={() => setMembershipClient(client)}
-                              className="text-slate-400 hover:text-white text-[11px] font-semibold transition-colors"
+                              className="text-muted hover:text-fg text-[11px] font-semibold transition-colors"
                               title="Assign Membership"
                             >
                               + Plan
@@ -581,7 +581,7 @@ export default function ClientsPage() {
                               setEditCoachRole(p?.role || "PRIMARY");
                               setIsEditModalOpen(true);
                             }}
-                            className="text-slate-400 hover:text-white text-xs font-semibold transition-colors"
+                            className="text-muted hover:text-fg text-xs font-semibold transition-colors"
                             title="Edit Athlete"
                           >
                             <Edit className="w-4 h-4" />
@@ -603,12 +603,12 @@ export default function ClientsPage() {
         </div>
 
         {/* Table Footer */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-t border-[#26262A] text-xs text-slate-400">
+        <div className="flex items-center justify-between px-5 py-3.5 border-t border-line text-xs text-muted">
           <span>Showing 1–{filteredClients.length} of {totalCount}</span>
           <div className="flex items-center gap-2">
             <button
               disabled
-              className="px-3 py-1.5 rounded-lg bg-[#1C1C1F] border border-[#26262A] text-slate-500 text-xs font-semibold cursor-not-allowed"
+              className="px-3 py-1.5 rounded-lg bg-raised border border-line text-muted text-xs font-semibold cursor-not-allowed"
             >
               Previous
             </button>
@@ -625,15 +625,15 @@ export default function ClientsPage() {
       {/* ADD CLIENT MODAL */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 animate-in fade-in">
-            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="text-base font-bold text-fg flex items-center gap-2">
                 <Plus className="w-5 h-5 text-brand-crimson" />
                 <span>Add New Member</span>
               </h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted hover:text-fg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -641,7 +641,7 @@ export default function ClientsPage() {
 
             <form onSubmit={handleCreateClient} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                   Full Name *
                 </label>
                 <input
@@ -650,13 +650,13 @@ export default function ClientsPage() {
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
                   placeholder="Omar Hassan"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Email *
                   </label>
                   <input
@@ -665,11 +665,11 @@ export default function ClientsPage() {
                     value={newEmail}
                     onChange={e => setNewEmail(e.target.value)}
                     placeholder="omar@example.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Phone Number
                   </label>
                   <input
@@ -677,45 +677,45 @@ export default function ClientsPage() {
                     value={newPhone}
                     onChange={e => setNewPhone(e.target.value)}
                     placeholder="+20 100 000 0000"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Weight (KG)
                   </label>
                   <input
                     type="number"
                     value={newWeight}
                     onChange={e => setNewWeight(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Height (CM)
                   </label>
                   <input
                     type="number"
                     value={newHeight}
                     onChange={e => setNewHeight(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Preferred Sport
                   </label>
                   <select
                     value={newSportId}
                     onChange={e => setNewSportId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     {sports.map(s => (
                       <option key={s.id} value={s.id}>
@@ -725,13 +725,13 @@ export default function ClientsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Status
                   </label>
                   <select
                     value={newStatus}
                     onChange={e => setNewStatus(e.target.value as ClientStatus)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="LEAD">Lead</option>
@@ -742,9 +742,9 @@ export default function ClientsPage() {
               </div>
 
               {/* Coach Assignment */}
-              <div className="p-4 rounded-2xl bg-[#1C1C1F] border border-[#26262A] space-y-3">
+              <div className="p-4 rounded-2xl bg-raised border border-line space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-fg flex items-center gap-1.5">
                     <UserCheck className="w-3.5 h-3.5 text-brand-crimson" />
                     <span>Assign Supervising Coach</span>
                   </span>
@@ -752,13 +752,13 @@ export default function ClientsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[11px] font-semibold text-muted mb-1">
                       Coach
                     </label>
                     <select
                       value={newCoachId}
                       onChange={e => setNewCoachId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      className="w-full px-3 py-2 rounded-xl bg-card border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                     >
                       <option value="">-- Unassigned --</option>
                       {coaches.map(c => (
@@ -770,14 +770,14 @@ export default function ClientsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[11px] font-semibold text-muted mb-1">
                       Role
                     </label>
                     <select
                       value={newCoachRole}
                       disabled={!newCoachId}
                       onChange={e => setNewCoachRole(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson disabled:opacity-40"
+                      className="w-full px-3 py-2 rounded-xl bg-card border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson disabled:opacity-40"
                     >
                       <option value="PRIMARY">Primary Coach</option>
                       <option value="ASSISTANT">Assistant Coach</option>
@@ -792,7 +792,7 @@ export default function ClientsPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-raised hover:bg-line text-fg/80 text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -811,15 +811,15 @@ export default function ClientsPage() {
       {/* EDIT CLIENT MODAL */}
       {isEditModalOpen && selectedClient && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="text-base font-bold text-fg flex items-center gap-2">
                 <Edit className="w-5 h-5 text-brand-crimson" />
                 <span>Edit Athlete Profile</span>
               </h3>
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-muted hover:text-fg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -827,7 +827,7 @@ export default function ClientsPage() {
 
             <form onSubmit={handleEditSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                   Full Name *
                 </label>
                 <input
@@ -835,13 +835,13 @@ export default function ClientsPage() {
                   required
                   value={selectedClient.user?.name || ""}
                   onChange={e => setSelectedClient({ ...selectedClient, user: { ...selectedClient.user, name: e.target.value } })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Email *
                   </label>
                   <input
@@ -849,56 +849,56 @@ export default function ClientsPage() {
                     required
                     value={selectedClient.user?.email || ""}
                     onChange={e => setSelectedClient({ ...selectedClient, user: { ...selectedClient.user, email: e.target.value } })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Phone Number
                   </label>
                   <input
                     type="text"
                     value={selectedClient.user?.phone || ""}
                     onChange={e => setSelectedClient({ ...selectedClient, user: { ...selectedClient.user, phone: e.target.value } })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Weight (KG)
                   </label>
                   <input
                     type="number"
                     value={selectedClient.weightKg || 80}
                     onChange={e => setSelectedClient({ ...selectedClient, weightKg: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Height (CM)
                   </label>
                   <input
                     type="number"
                     value={selectedClient.heightCm || 175}
                     onChange={e => setSelectedClient({ ...selectedClient, heightCm: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Status
                   </label>
                   <select
                     value={selectedClient.status}
                     onChange={e => setSelectedClient({ ...selectedClient, status: e.target.value as ClientStatus })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="LEAD">Lead</option>
@@ -908,13 +908,13 @@ export default function ClientsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Sport
                   </label>
                   <select
                     value={selectedClient.preferredSportId || "sport-bodybuilding"}
                     onChange={e => setSelectedClient({ ...selectedClient, preferredSportId: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     {sports.map(s => (
                       <option key={s.id} value={s.id}>
@@ -926,21 +926,21 @@ export default function ClientsPage() {
               </div>
 
               {/* Edit Coach Assignment */}
-              <div className="p-3.5 rounded-2xl bg-[#1C1C1F] border border-[#26262A] space-y-3">
-                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+              <div className="p-3.5 rounded-2xl bg-raised border border-line space-y-3">
+                <span className="text-xs font-bold text-fg flex items-center gap-1.5">
                   <UserCheck className="w-3.5 h-3.5 text-brand-crimson" />
                   <span>Assigned Coach</span>
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[11px] font-semibold text-muted mb-1">
                       Coach
                     </label>
                     <select
                       value={editCoachId}
                       onChange={e => setEditCoachId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                      className="w-full px-3 py-2 rounded-xl bg-card border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                     >
                       <option value="">-- No Coach (Unassign) --</option>
                       {coaches.map(c => (
@@ -952,14 +952,14 @@ export default function ClientsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[11px] font-semibold text-muted mb-1">
                       Role
                     </label>
                     <select
                       value={editCoachRole}
                       disabled={!editCoachId}
                       onChange={e => setEditCoachRole(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson disabled:opacity-40"
+                      className="w-full px-3 py-2 rounded-xl bg-card border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson disabled:opacity-40"
                     >
                       <option value="PRIMARY">Primary Coach</option>
                       <option value="ASSISTANT">Assistant Coach</option>
@@ -974,7 +974,7 @@ export default function ClientsPage() {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-raised hover:bg-line text-fg/80 text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -993,17 +993,17 @@ export default function ClientsPage() {
       {/* QUICK ASSIGN COACH MODAL */}
       {isAssignModalOpen && assignModalClient && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center">
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-fg">
                     Assign Coach to Athlete
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-muted">
                     {assignModalClient.user?.name}
                   </p>
                 </div>
@@ -1013,7 +1013,7 @@ export default function ClientsPage() {
                   setIsAssignModalOpen(false);
                   setAssignModalClient(null);
                 }}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted hover:text-fg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1021,7 +1021,7 @@ export default function ClientsPage() {
 
             {/* Currently Assigned Coaches List */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-2">
                 Currently Assigned Coaches:
               </label>
 
@@ -1030,15 +1030,15 @@ export default function ClientsPage() {
                   {assignModalClient.coaches.filter(ca => ca.active).map(ca => (
                     <div
                       key={ca.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs"
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-raised border border-line text-xs"
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-lg bg-brand-crimson text-white font-black text-xs flex items-center justify-center">
                           {ca.coach?.user?.name ? ca.coach.user.name.slice(0, 2) : "GX"}
                         </div>
                         <div>
-                          <span className="font-bold text-white block">{ca.coach?.user?.name || "Coach"}</span>
-                          <span className="text-[10px] text-slate-400">
+                          <span className="font-bold text-fg block">{ca.coach?.user?.name || "Coach"}</span>
+                          <span className="text-[10px] text-muted">
                             {ca.role === "PRIMARY" ? "Primary Coach" : ca.role}
                           </span>
                         </div>
@@ -1056,28 +1056,28 @@ export default function ClientsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-slate-400 text-xs text-center">
+                <div className="p-3 rounded-xl bg-raised border border-line text-muted text-xs text-center">
                   No coaches currently assigned to this athlete.
                 </div>
               )}
             </div>
 
             {/* Assignment Form */}
-            <form onSubmit={handleQuickAssignSubmit} className="space-y-3 pt-2 border-t border-[#26262A]">
+            <form onSubmit={handleQuickAssignSubmit} className="space-y-3 pt-2 border-t border-line">
               <span className="block text-xs font-bold text-brand-crimson">
                 + Assign New Coach / Switch Primary
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  <label className="block text-xs font-semibold text-muted mb-1">
                     Select Coach *
                   </label>
                   <select
                     required
                     value={modalCoachId}
                     onChange={e => setModalCoachId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     {coaches.map(c => (
                       <option key={c.id} value={c.id}>
@@ -1088,13 +1088,13 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  <label className="block text-xs font-semibold text-muted mb-1">
                     Coaching Role *
                   </label>
                   <select
                     value={modalCoachRole}
                     onChange={e => setModalCoachRole(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     <option value="PRIMARY">Primary Coach</option>
                     <option value="ASSISTANT">Assistant Coach</option>
@@ -1105,7 +1105,7 @@ export default function ClientsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">
+                <label className="block text-xs font-semibold text-muted mb-1">
                   Supervision Notes (Optional)
                 </label>
                 <input
@@ -1113,7 +1113,7 @@ export default function ClientsPage() {
                   value={modalCoachNotes}
                   onChange={e => setModalCoachNotes(e.target.value)}
                   placeholder="e.g. Focus on mobility and recovery"
-                  className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                  className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
@@ -1124,7 +1124,7 @@ export default function ClientsPage() {
                     setIsAssignModalOpen(false);
                     setAssignModalClient(null);
                   }}
-                  className="px-4 py-2 rounded-xl bg-[#1C1C1F] text-slate-300 text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-raised text-fg/80 text-xs font-bold cursor-pointer"
                 >
                   Cancel
                 </button>

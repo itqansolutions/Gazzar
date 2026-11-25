@@ -310,13 +310,13 @@ export default function CoachesPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-fg flex items-center gap-3">
             <span>Coaching Staff</span>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#1C1C1F] text-slate-300 border border-[#26262A]">
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-raised text-fg/80 border border-line">
               {filteredCoaches.length} coaches
             </span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted mt-1">
             Coaching staff directory, Head Coach oversight, specialties and assigned athletes
           </p>
         </div>
@@ -340,13 +340,13 @@ export default function CoachesPage() {
       {/* Search & Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="sm:col-span-2 relative">
-          <Search className="w-4 h-4 text-slate-500 absolute top-3.5 left-3.5 pointer-events-none" />
+          <Search className="w-4 h-4 text-muted absolute top-3.5 left-3.5 pointer-events-none" />
           <input
             type="text"
             placeholder="Search coach name, specialty, email..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson transition-colors"
           />
         </div>
 
@@ -354,7 +354,7 @@ export default function CoachesPage() {
           <select
             value={selectedSpecialty}
             onChange={e => setSelectedSpecialty(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-slate-300 focus:outline-none focus:border-brand-crimson"
+            className="w-full px-3 py-2.5 rounded-xl bg-card border border-line text-xs text-fg/80 focus:outline-none focus:border-brand-crimson"
           >
             <option value="ALL">All Specialties</option>
             {allSpecialties.map((s, idx) => (
@@ -366,15 +366,15 @@ export default function CoachesPage() {
 
       {/* Coaches Cards Grid */}
       {filteredCoaches.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl bg-[#141416] border border-[#26262A] shadow-lg space-y-4">
+        <div className="p-12 text-center rounded-3xl bg-card border border-line shadow-lg space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center mx-auto">
             <Users className="w-8 h-8" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-bold text-fg">
               No coaches found
             </h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <p className="text-xs text-muted mt-1 max-w-sm mx-auto">
               Add your first coach or head coach to start assigning athletes and workouts.
             </p>
           </div>
@@ -395,7 +395,7 @@ export default function CoachesPage() {
             return (
               <div
                 key={co.id}
-                className="relative bg-[#141416] rounded-3xl border border-[#26262A] hover:border-brand-crimson/50 shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+                className="relative bg-card rounded-3xl border border-line hover:border-brand-crimson/50 shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-300 flex flex-col justify-between overflow-hidden group"
               >
                 {/* Top Athletic Accent Line */}
                 <div className={`h-1.5 w-full ${isHeadCoach ? "bg-gradient-to-r from-brand-crimson via-red-500 to-amber-500" : "bg-gradient-to-r from-brand-crimson via-red-600 to-zinc-700"}`} />
@@ -419,7 +419,7 @@ export default function CoachesPage() {
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className="text-base font-bold text-white truncate">
+                        <h3 className="text-base font-bold text-fg truncate">
                           {co.user?.name}
                         </h3>
                         <div className="mt-1 flex items-center gap-1.5 flex-wrap">
@@ -429,8 +429,8 @@ export default function CoachesPage() {
                               <span>Head Coach</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#1C1C1F] text-slate-300 border border-[#26262A]">
-                              <Shield className="w-2.5 h-2.5 text-slate-400" />
+                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-raised text-fg/80 border border-line">
+                              <Shield className="w-2.5 h-2.5 text-muted" />
                               <span>Coach</span>
                             </span>
                           )}
@@ -443,14 +443,14 @@ export default function CoachesPage() {
                       <button
                         onClick={() => openEditModal(co)}
                         title="Edit Coach"
-                        className="p-2 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-400 hover:text-white border border-[#26262A] transition-all cursor-pointer"
+                        className="p-2 rounded-xl bg-raised hover:bg-line text-muted hover:text-fg border border-line transition-all cursor-pointer"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirmCoach(co)}
                         title="Delete Coach"
-                        className="p-2 rounded-xl bg-[#1C1C1F] hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-[#26262A] hover:border-red-800/40 transition-all cursor-pointer"
+                        className="p-2 rounded-xl bg-raised hover:bg-red-950/40 text-muted hover:text-red-400 border border-line hover:border-red-800/40 transition-all cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -458,14 +458,14 @@ export default function CoachesPage() {
                   </div>
 
                   {/* Contact Meta */}
-                  <div className="space-y-1.5 pt-1 text-xs text-slate-400">
+                  <div className="space-y-1.5 pt-1 text-xs text-muted">
                     <div className="flex items-center gap-2 font-mono text-[11px] truncate">
-                      <Mail className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                      <Mail className="w-3.5 h-3.5 text-muted flex-shrink-0" />
                       <span className="truncate">{co.user?.email}</span>
                     </div>
                     {co.user?.phone && (
                       <div className="flex items-center gap-2 font-mono text-[11px]">
-                        <Phone className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                        <Phone className="w-3.5 h-3.5 text-muted flex-shrink-0" />
                         <span>{co.user.phone}</span>
                       </div>
                     )}
@@ -473,7 +473,7 @@ export default function CoachesPage() {
 
                   {/* Bio Quote */}
                   {co.bio && (
-                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-2 bg-[#1C1C1F] px-3.5 py-2.5 rounded-xl border border-[#26262A] italic">
+                    <p className="text-xs text-fg/80 leading-relaxed line-clamp-2 bg-raised px-3.5 py-2.5 rounded-xl border border-line italic">
                       "{co.bio}"
                     </p>
                   )}
@@ -481,7 +481,7 @@ export default function CoachesPage() {
                   {/* Specialties */}
                   {co.specialties && co.specialties.length > 0 && (
                     <div className="space-y-1.5 pt-1">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <span className="text-[11px] font-bold text-muted uppercase tracking-wider block">
                         Specialties
                       </span>
                       <div className="flex flex-wrap gap-1.5">
@@ -499,30 +499,30 @@ export default function CoachesPage() {
 
                   {/* Performance Stats Grid */}
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
-                    <div className="p-3 rounded-2xl bg-[#1C1C1F] border border-[#26262A] flex items-center gap-2.5">
+                    <div className="p-3 rounded-2xl bg-raised border border-line flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center flex-shrink-0">
                         <Award className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <span className="text-[10px] text-slate-400 font-medium block">
+                        <span className="text-[10px] text-muted font-medium block">
                           Experience
                         </span>
-                        <span className="text-xs font-bold text-white block truncate">
+                        <span className="text-xs font-bold text-fg block truncate">
                           {co.yearsOfExperience || 3} Years
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-[#1C1C1F] border border-[#26262A] flex items-center justify-between">
+                    <div className="p-3 rounded-2xl bg-raised border border-line flex items-center justify-between">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center flex-shrink-0">
                           <Users className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[10px] text-slate-400 font-medium block">
+                          <span className="text-[10px] text-muted font-medium block">
                             Athletes
                           </span>
-                          <span className="text-xs font-bold text-white block truncate">
+                          <span className="text-xs font-bold text-fg block truncate">
                             {co.assignedClientsCount || 0}
                           </span>
                         </div>
@@ -534,11 +534,11 @@ export default function CoachesPage() {
                 </div>
 
                 {/* Card Footer */}
-                <div className="px-5 py-3 bg-[#1C1C1F]/60 border-t border-[#26262A] flex items-center justify-between text-xs">
+                <div className="px-5 py-3 bg-raised/60 border-t border-line flex items-center justify-between text-xs">
                   <button
                     type="button"
                     onClick={() => openAssignAthleteModal(co)}
-                    className="inline-flex items-center gap-1.5 font-bold text-slate-300 hover:text-brand-crimson transition-colors cursor-pointer text-xs"
+                    className="inline-flex items-center gap-1.5 font-bold text-fg/80 hover:text-brand-crimson transition-colors cursor-pointer text-xs"
                   >
                     <UserCheck className="w-3.5 h-3.5 text-brand-crimson" />
                     <span>Manage Athletes</span>
@@ -559,25 +559,25 @@ export default function CoachesPage() {
       {/* --- ADD COACH MODAL --- */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <h3 className="text-base font-bold text-fg flex items-center gap-2">
                   <Plus className="w-5 h-5 text-brand-crimson" />
                   <span>Create New Coach</span>
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted">
                   Enter coach credentials and details to set up account
                 </p>
               </div>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsAddModalOpen(false)} className="text-muted hover:text-fg">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAddCoach} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                   Coach Name *
                 </label>
                 <input
@@ -586,13 +586,13 @@ export default function CoachesPage() {
                   placeholder="e.g. Coach Abdullah"
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Email Address *
                   </label>
                   <input
@@ -601,11 +601,11 @@ export default function CoachesPage() {
                     placeholder="coach@gxfitness.com"
                     value={formEmail}
                     onChange={e => setFormEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Phone Number
                   </label>
                   <input
@@ -613,27 +613,27 @@ export default function CoachesPage() {
                     placeholder="+20 100 000 0000"
                     value={formPhone}
                     onChange={e => setFormPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Role & Permission
                   </label>
                   <select
                     value={formRole}
                     onChange={e => setFormRole(e.target.value as UserRole)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     <option value="COACH">Coach</option>
                     <option value="HEAD_COACH">Head Coach</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Years of Experience
                   </label>
                   <input
@@ -642,14 +642,14 @@ export default function CoachesPage() {
                     max="40"
                     value={formExperience}
                     onChange={e => setFormExperience(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider">
                     Sports & Specialties *
                   </label>
                   <span className="text-[10px] font-bold text-brand-crimson bg-brand-crimson/15 px-2 py-0.5 rounded-full border border-brand-crimson/30">
@@ -657,7 +657,7 @@ export default function CoachesPage() {
                   </span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#1C1C1F] border border-[#26262A] space-y-2.5">
+                <div className="p-3.5 rounded-2xl bg-raised border border-line space-y-2.5">
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar p-0.5">
                     {sports.map(sport => {
                       const sportName = sport.nameEn || sport.nameAr;
@@ -679,15 +679,15 @@ export default function CoachesPage() {
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                             isSelected
                               ? "bg-brand-crimson text-white border-brand-crimson shadow-[0_0_12px_rgba(240,20,37,0.4)]"
-                              : "bg-[#141416] text-slate-300 border-[#26262A] hover:border-brand-crimson/40"
+                              : "bg-card text-fg/80 border-line hover:border-brand-crimson/40"
                           }`}
                         >
                           <span>{sport.icon || "🏆"}</span>
                           <span>{sportName}</span>
                           {isSelected ? (
-                            <Check className="w-3.5 h-3.5 text-white" />
+                            <Check className="w-3.5 h-3.5 text-fg" />
                           ) : (
-                            <Plus className="w-3.5 h-3.5 text-slate-500" />
+                            <Plus className="w-3.5 h-3.5 text-muted" />
                           )}
                         </button>
                       );
@@ -695,7 +695,7 @@ export default function CoachesPage() {
                   </div>
 
                   {/* Add custom specialty input */}
-                  <div className="pt-2 border-t border-[#26262A] flex items-center gap-2">
+                  <div className="pt-2 border-t border-line flex items-center gap-2">
                     <input
                       type="text"
                       placeholder="Or add custom specialty..."
@@ -707,7 +707,7 @@ export default function CoachesPage() {
                           addCustomSpecialty();
                         }
                       }}
-                      className="flex-1 px-3 py-2 rounded-xl bg-[#141416] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                      className="flex-1 px-3 py-2 rounded-xl bg-card border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                     />
                     <button
                       type="button"
@@ -742,7 +742,7 @@ export default function CoachesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                   Bio / Background
                 </label>
                 <textarea
@@ -750,7 +750,7 @@ export default function CoachesPage() {
                   placeholder="Brief background, certifications, and achievements..."
                   value={formBio}
                   onChange={e => setFormBio(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
@@ -758,7 +758,7 @@ export default function CoachesPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-raised hover:bg-line text-fg/80 text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -777,22 +777,22 @@ export default function CoachesPage() {
       {/* --- EDIT COACH MODAL --- */}
       {isEditModalOpen && editingCoach && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <h3 className="text-base font-bold text-fg flex items-center gap-2">
                   <Edit2 className="w-5 h-5 text-brand-crimson" />
                   <span>Edit Coach Profile</span>
                 </h3>
               </div>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsEditModalOpen(false)} className="text-muted hover:text-fg">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleUpdateCoach} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                   Coach Name *
                 </label>
                 <input
@@ -800,13 +800,13 @@ export default function CoachesPage() {
                   required
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Email Address *
                   </label>
                   <input
@@ -814,38 +814,38 @@ export default function CoachesPage() {
                     required
                     value={formEmail}
                     onChange={e => setFormEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Phone Number
                   </label>
                   <input
                     type="text"
                     value={formPhone}
                     onChange={e => setFormPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Role & Permission
                   </label>
                   <select
                     value={formRole}
                     onChange={e => setFormRole(e.target.value as UserRole)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   >
                     <option value="COACH">Coach</option>
                     <option value="HEAD_COACH">Head Coach</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                     Years of Experience
                   </label>
                   <input
@@ -854,20 +854,20 @@ export default function CoachesPage() {
                     max="40"
                     value={formExperience}
                     onChange={e => setFormExperience(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                   Bio / Background
                 </label>
                 <textarea
                   rows={2}
                   value={formBio}
                   onChange={e => setFormBio(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white focus:outline-none focus:border-brand-crimson"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-raised border border-line text-xs text-fg focus:outline-none focus:border-brand-crimson"
                 />
               </div>
 
@@ -875,7 +875,7 @@ export default function CoachesPage() {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-raised hover:bg-line text-fg/80 text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -894,15 +894,15 @@ export default function CoachesPage() {
       {/* --- DELETE COACH CONFIRMATION MODAL --- */}
       {deleteConfirmCoach && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
             <div className="w-12 h-12 rounded-2xl bg-red-500/15 text-red-400 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-fg">
                 Confirm Coach Deletion
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted mt-1">
                 Are you sure you want to permanently delete coach "{deleteConfirmCoach.user?.name}"?
               </p>
             </div>
@@ -910,7 +910,7 @@ export default function CoachesPage() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmCoach(null)}
-                className="px-4 py-2.5 rounded-xl bg-[#1C1C1F] hover:bg-[#26262A] text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-raised hover:bg-line text-fg/80 text-xs font-bold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -929,17 +929,17 @@ export default function CoachesPage() {
       {/* --- ASSIGN ATHLETE TO COACH MODAL --- */}
       {isAssignAthleteModalOpen && targetCoach && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-[#141416] border border-[#26262A] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#26262A] pb-3">
+          <div className="bg-card border border-line rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-brand-crimson/15 text-brand-crimson flex items-center justify-center">
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-fg">
                     Manage Coach Athletes
                   </h3>
-                  <p className="text-xs text-slate-400 font-semibold">
+                  <p className="text-xs text-muted font-semibold">
                     {targetCoach.user?.name}
                   </p>
                 </div>
@@ -949,7 +949,7 @@ export default function CoachesPage() {
                   setIsAssignAthleteModalOpen(false);
                   setTargetCoach(null);
                 }}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-muted hover:text-fg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -957,7 +957,7 @@ export default function CoachesPage() {
 
             {/* Currently Assigned Athletes */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-fg/80 uppercase tracking-wider mb-1.5">
                 Currently Assigned Athletes:
               </label>
 
@@ -968,7 +968,7 @@ export default function CoachesPage() {
 
                 if (assignedAthletes.length === 0) {
                   return (
-                    <div className="p-3 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-slate-400 text-xs text-center">
+                    <div className="p-3 rounded-xl bg-raised border border-line text-muted text-xs text-center">
                       No athletes currently assigned to this coach.
                     </div>
                   );
@@ -981,18 +981,18 @@ export default function CoachesPage() {
                       return (
                         <div
                           key={cl.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-raised border border-line text-xs"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <img
                               src={resolveAvatar(cl.user?.avatar)}
                               alt={cl.user?.name}
-                              className="w-7 h-7 rounded-full object-cover border border-[#26262A]"
+                              className="w-7 h-7 rounded-full object-cover border border-line"
                               onError={e => { (e.target as HTMLImageElement).src = "/coach_dark_hero.jpg"; }}
                             />
                             <div className="min-w-0">
-                              <span className="font-bold text-white block truncate">{cl.user?.name}</span>
-                              <span className="text-[10px] text-slate-400 block">
+                              <span className="font-bold text-fg block truncate">{cl.user?.name}</span>
+                              <span className="text-[10px] text-muted block">
                                 {ca?.role === "PRIMARY" ? "Primary Coach" : ca?.role}
                               </span>
                             </div>
@@ -1015,7 +1015,7 @@ export default function CoachesPage() {
             </div>
 
             {/* Assign New Athlete Form */}
-            <form onSubmit={handleAssignAthleteSubmit} className="space-y-3 pt-3 border-t border-[#26262A]">
+            <form onSubmit={handleAssignAthleteSubmit} className="space-y-3 pt-3 border-t border-line">
               <span className="block text-xs font-bold text-brand-crimson">
                 + Assign Athlete to Coach
               </span>
@@ -1024,14 +1024,14 @@ export default function CoachesPage() {
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1">
+                      <label className="block text-xs font-semibold text-muted mb-1">
                         Select Athlete *
                       </label>
                       <select
                         required
                         value={athleteIdToAssign}
                         onChange={e => setAthleteIdToAssign(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white font-medium focus:outline-none focus:border-brand-crimson"
+                        className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-xs text-fg font-medium focus:outline-none focus:border-brand-crimson"
                       >
                         {clients.map(c => {
                           const isAlreadyAssigned = c.coaches?.some(ca => ca.coachId === targetCoach.id && ca.active);
@@ -1045,13 +1045,13 @@ export default function CoachesPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1">
+                      <label className="block text-xs font-semibold text-muted mb-1">
                         Coaching Role *
                       </label>
                       <select
                         value={athleteRoleToAssign}
                         onChange={e => setAthleteRoleToAssign(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white font-medium focus:outline-none focus:border-brand-crimson"
+                        className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-xs text-fg font-medium focus:outline-none focus:border-brand-crimson"
                       >
                         <option value="PRIMARY">Primary Coach</option>
                         <option value="ASSISTANT">Assistant Coach</option>
@@ -1062,7 +1062,7 @@ export default function CoachesPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">
+                    <label className="block text-xs font-semibold text-muted mb-1">
                       Supervision Notes (Optional)
                     </label>
                     <input
@@ -1070,7 +1070,7 @@ export default function CoachesPage() {
                       value={athleteAssignNotes}
                       onChange={e => setAthleteAssignNotes(e.target.value)}
                       placeholder="e.g. Muscle gain program and check-ins"
-                      className="w-full px-3 py-2 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
+                      className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-xs text-fg placeholder-slate-500 focus:outline-none focus:border-brand-crimson"
                     />
                   </div>
 
@@ -1081,7 +1081,7 @@ export default function CoachesPage() {
                         setIsAssignAthleteModalOpen(false);
                         setTargetCoach(null);
                       }}
-                      className="px-4 py-2 rounded-xl bg-[#1C1C1F] text-slate-300 text-xs font-bold cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-raised text-fg/80 text-xs font-bold cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -1094,7 +1094,7 @@ export default function CoachesPage() {
                   </div>
                 </>
               ) : (
-                <div className="p-3 rounded-xl bg-[#1C1C1F] border border-[#26262A] text-slate-400 text-xs text-center">
+                <div className="p-3 rounded-xl bg-raised border border-line text-muted text-xs text-center">
                   No athletes registered in academy yet.
                 </div>
               )}
