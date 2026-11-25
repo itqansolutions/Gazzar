@@ -313,6 +313,12 @@ export default function CalendarPage() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
+      {/* Classes and Attendance live together: two tabs, both routes keep working */}
+      <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800/70 text-xs font-bold self-start">
+        <Link href="/calendar" className="px-4 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-brand-crimson shadow-sm">Classes</Link>
+        <Link href="/attendance" className="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-300">Attendance</Link>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2.5 rtl:space-x-reverse">

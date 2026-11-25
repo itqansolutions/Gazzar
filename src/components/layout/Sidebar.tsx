@@ -78,13 +78,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   ];
 
   const operationsGroup = [
-    { href: "/attendance", label: t("navAttendance") || "Attendance", icon: CheckCircle2, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/memberships", label: t("navMemberships") || "Memberships", icon: CreditCard, roles: ["ADMIN", "HEAD_COACH", "COACH"] },
     { href: "/reports", label: t("navReports") || "Reports", icon: BarChart3, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
   ];
 
   const systemGroup = [
-    { href: "/users", label: t("navUsers") || "Users", icon: Users, roles: ["ADMIN", "HEAD_COACH"] },
+    { href: "/users", label: t("navUsers") || "User Accounts", icon: Users, roles: ["ADMIN", "HEAD_COACH"] },
     { href: "/audit-logs", label: t("navAuditLogs") || "Audit Logs", icon: ShieldAlert, roles: ["ADMIN"] },
     { href: "/settings", label: t("navSettings") || "Settings", icon: Settings, roles: ["ADMIN", "HEAD_COACH", "COACH"] }
   ];
@@ -100,7 +99,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   ];
 
   const renderNavItem = (item: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }, isPrimary = false) => {
-    const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+    const isActive =
+      pathname === item.href ||
+      (item.href !== "/dashboard" && pathname.startsWith(item.href)) ||
+      (item.href === "/calendar" && pathname.startsWith("/attendance"));
     const Icon = item.icon;
 
     return (
