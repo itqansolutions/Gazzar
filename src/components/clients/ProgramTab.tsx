@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Dumbbell, Calendar, Apple, CheckCircle, ArrowRight, Play, Award, Layers } from "lucide-react";
+import WeeklyProgramView from "@/components/clients/WeeklyProgramView";
 import { toCalendarDateKey } from "@/lib/date-utils";
 
 interface ProgramTabProps {
@@ -135,61 +136,11 @@ export default function ProgramTab({
             No session instances generated for this program.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {workoutAssignments
-              .filter((w) => w.programId === program.id)
-              .map((w) => {
-                const effStatus =
-                  w.effectiveStatus ||
-                  (w.status === "SCHEDULED" && w.workoutLog && w.workoutLog.isCompleted === false
-                    ? "IN_PROGRESS"
-                    : w.status);
-
-                return (
-                  <div
-                    key={w.id}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center space-x-3 rtl:space-x-reverse min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-brand-crimson/10 text-brand-crimson flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        {w.programDayNumber ? `D${w.programDayNumber}` : <Dumbbell className="w-4 h-4" />}
-                      </div>
-                      <div className="min-w-0">
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                          {w.title || w.template?.titleEn || "Workout Session"}
-                        </h5>
-                        <p className="text-[11px] text-slate-400 flex items-center space-x-1.5 rtl:space-x-reverse mt-0.5">
-                          <span>Week {w.programWeekNumber || 1}</span>
-                          <span>•</span>
-                          <span>{w.scheduledDate ? toCalendarDateKey(w.scheduledDate) : "—"}</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2 rtl:space-x-reverse flex-shrink-0">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          effStatus === "COMPLETED"
-                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                            : effStatus === "IN_PROGRESS"
-                            ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                            : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                        }`}
-                      >
-                        {effStatus === "COMPLETED" ? "Done" : effStatus === "IN_PROGRESS" ? "Active" : "Pending"}
-                      </span>
-
-                      <Link
-                        href={`/workout/${w.id}/execute`}
-                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-brand-crimson hover:text-white text-slate-600 dark:text-slate-300 transition-colors"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+          <WeeklyProgramView
+            workouts={workoutAssignments.filter((w) => w.programId === program.id)}
+            startDate={activeAssignment.startDate}
+            durationWeeks={program.durationWeeks}
+          />
         )}
       </div>
     </div>
