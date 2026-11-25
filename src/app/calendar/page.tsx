@@ -533,7 +533,7 @@ export default function CalendarPage() {
                     </span>
 
                     {(cellItems.events.length > 0 || cellItems.workouts.length > 0) && (
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                      <span className="hidden sm:inline text-[10px] font-bold text-slate-400 dark:text-slate-500">
                         {cellItems.events.length + cellItems.workouts.length} items
                       </span>
                     )}
@@ -567,7 +567,7 @@ export default function CalendarPage() {
                     {!showCalWorkouts && cellItems.workouts.length > 0 && (
                       <span className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                         <span className="w-1.5 h-1.5 rounded-full bg-brand-crimson" />
-                        {cellItems.workouts.length} workout{cellItems.workouts.length === 1 ? "" : "s"}
+                        {cellItems.workouts.length}<span className="hidden sm:inline">&nbsp;workout{cellItems.workouts.length === 1 ? "" : "s"}</span>
                       </span>
                     )}
                     {/* Workouts (Outlined Badge with Status Dot) */}
