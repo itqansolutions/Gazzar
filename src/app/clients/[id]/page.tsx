@@ -41,6 +41,7 @@ import NotesTab from "@/components/clients/NotesTab";
 import CheckInsTab from "@/components/clients/CheckInsTab";
 import AssessmentsTab from "@/components/clients/AssessmentsTab";
 import ProgramTab from "@/components/clients/ProgramTab";
+import AssignMembershipModal from "@/components/clients/AssignMembershipModal";
 
 export default function ClientProfilePage() {
   const params = useParams();
@@ -89,6 +90,7 @@ export default function ClientProfilePage() {
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
   const [medicalModalOpen, setMedicalModalOpen] = useState(false);
   const [coachAssignModalOpen, setCoachAssignModalOpen] = useState(false);
+  const [membershipModalOpen, setMembershipModalOpen] = useState(false);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
 
   // Form states
@@ -363,6 +365,15 @@ export default function ClientProfilePage() {
                 </button>
               )}
 
+              {(user?.role === "ADMIN" || user?.role === "HEAD_COACH") && (
+                <button
+                  onClick={() => setMembershipModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer"
+                >
+                  <span>Assign Membership</span>
+                </button>
+              )}
+
               <button
                 onClick={() => setNoteModalOpen(true)}
                 className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center space-x-1.5 rtl:space-x-reverse transition-all cursor-pointer"
@@ -557,6 +568,16 @@ export default function ClientProfilePage() {
         )}
       </div>
       {/* --- ADD MEASUREMENT MODAL --- */}
+      {client && (
+        <AssignMembershipModal
+          open={membershipModalOpen}
+          clientId={client.id}
+          clientName={client.user?.name || "Athlete"}
+          onClose={() => setMembershipModalOpen(false)}
+          onSaved={() => loadClientData()}
+        />
+      )}
+
       {measurementModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">

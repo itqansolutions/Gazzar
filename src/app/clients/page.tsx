@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ClientProfile, ClientStatus, CoachProfile, Sport } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import AssignMembershipModal from "@/components/clients/AssignMembershipModal";
 import {
   Users,
   Search,
@@ -25,6 +26,7 @@ export default function ClientsPage() {
   const { user } = useAuth();
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
+  const [membershipClient, setMembershipClient] = useState<any>(null);
   const [sports, setSports] = useState<Sport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -552,6 +554,16 @@ export default function ClientsPage() {
                           >
                             <UserCheck className="w-4 h-4" />
                           </button>
+                          {(user?.role === "ADMIN" || user?.role === "HEAD_COACH") && (
+                            <button
+                              type="button"
+                              onClick={() => setMembershipClient(client)}
+                              className="text-slate-400 hover:text-white text-[11px] font-semibold transition-colors"
+                              title="Assign Membership"
+                            >
+                              + Plan
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => {
@@ -1119,6 +1131,13 @@ export default function ClientsPage() {
           </div>
         </div>
       )}
+      <AssignMembershipModal
+        open={!!membershipClient}
+        clientId={membershipClient?.id || ""}
+        clientName={membershipClient?.user?.name || ""}
+        onClose={() => setMembershipClient(null)}
+        onSaved={() => { loadClients(); showToast("Membership assigned."); }}
+      />
     </div>
   );
 }

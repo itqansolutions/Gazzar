@@ -4,54 +4,44 @@ import { MembershipPlan, PaymentStatus } from "@prisma/client";
 export const MEMBERSHIP_PACKAGES = [
   {
     id: "pkg-1",
-    nameEn: "1 Month Standard",
-    nameAr: "اشتراك شهر قياسي",
-    description: "Full gym floor access, locker, sauna, and 1 fitness assessment.",
-    price: 1500,
+    nameEn: "12 Sessions",
+    nameAr: "12 حصة",
+    description: "12 sessions, valid for 30 days.",
+    price: 2800,
+    currency: "EGP",
+    durationDays: 30,
+    sessionsCount: 12,
+    planType: MembershipPlan.GROUP_CLASS
+  },
+  {
+    id: "pkg-2",
+    nameEn: "1 Month (Unlimited)",
+    nameAr: "شهر (غير محدود)",
+    description: "Unlimited access for 1 month.",
+    price: 3500,
     currency: "EGP",
     durationDays: 30,
     planType: MembershipPlan.MONTHLY
   },
   {
-    id: "pkg-2",
-    nameEn: "3 Months Transformation",
-    nameAr: "باقة التحول - 3 أشهر",
-    description: "Full access, customized workout plan, monthly inbody test & nutrition check.",
-    price: 3800,
+    id: "pkg-3",
+    nameEn: "3 Months (Unlimited)",
+    nameAr: "3 شهور (غير محدود)",
+    description: "Unlimited access for 3 months.",
+    price: 7500,
     currency: "EGP",
     durationDays: 90,
     planType: MembershipPlan.THREE_MONTHS
   },
   {
-    id: "pkg-3",
-    nameEn: "6 Months Elite",
-    nameAr: "باقة النخبة - 6 أشهر",
-    description: "Priority access, nutrition guidance, quarterly body assessment & 3 guest passes.",
-    price: 6800,
+    id: "pkg-4",
+    nameEn: "6 Months (Unlimited)",
+    nameAr: "6 شهور (غير محدود)",
+    description: "Unlimited access for 6 months.",
+    price: 12000,
     currency: "EGP",
     durationDays: 180,
     planType: MembershipPlan.SIX_MONTHS
-  },
-  {
-    id: "pkg-4",
-    nameEn: "Annual Championship",
-    nameAr: "الباقة السنوية - الأبطال",
-    description: "Unlimited gym access 365 days, full VIP perks, freeze option (up to 45 days).",
-    price: 11500,
-    currency: "EGP",
-    durationDays: 365,
-    planType: MembershipPlan.ANNUAL
-  },
-  {
-    id: "pkg-5",
-    nameEn: "1-on-1 VIP PT (12 Sessions)",
-    nameAr: "تدريب شخصي VIP (12 جلسة)",
-    description: "12 private 1-on-1 coaching sessions with Head Coach or Elite Coach.",
-    price: 5400,
-    currency: "EGP",
-    durationDays: 45,
-    sessionsCount: 12,
-    planType: MembershipPlan.PERSONAL_TRAINING
   }
 ];
 
