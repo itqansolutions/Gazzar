@@ -51,19 +51,19 @@ export default function ClientProfilePage() {
 
   const [client, setClient] = useState<ClientProfile | null>(null);
   const [activeTab, setActiveTab] = useState<
-    | "overview"
-    | "checkins"
-    | "program"
-    | "workouts"
-    | "nutrition"
-    | "measurements"
-    | "assessments"
-    | "photos"
-    | "medical"
-    | "goals"
-    | "coaches"
-    | "notes"
+    "overview" | "training" | "progress" | "nutrition" | "attendance"
   >("overview");
+  // Old tab ids (used by Overview shortcuts) map onto the 5 merged tabs.
+  const goToTab = (id: string) => {
+    const map: Record<string, typeof activeTab> = {
+      program: "training", workouts: "training", training: "training",
+      measurements: "progress", assessments: "progress", photos: "progress", progress: "progress",
+      checkins: "attendance", attendance: "attendance",
+      nutrition: "nutrition", overview: "overview",
+      medical: "overview", goals: "overview", coaches: "overview", notes: "overview"
+    };
+    setActiveTab(map[id] || "overview");
+  };
 
   // In-Page Workout Runner States
   const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
@@ -261,18 +261,11 @@ export default function ClientProfilePage() {
   };
 
   const tabs = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "checkins", label: "Check-in Schedule & Compliance", icon: Clock },
-    { id: "program", label: "Active Training Program", icon: Layers },
-    { id: "workouts", label: "Assigned Workouts", icon: Dumbbell },
-    { id: "nutrition", label: "Nutrition & Macros", icon: Apple },
-    { id: "measurements", label: "Measurements & Weight Log", icon: Scale },
-    { id: "assessments", label: "Physical Assessments", icon: Activity, badge: (client.assessments || []).length },
-    { id: "photos", label: "Progress Gallery", icon: Camera },
-    { id: "medical", label: "Medical Restrictions & Cues", icon: AlertTriangle, badge: restrictions.length },
-    { id: "goals", label: "Training Goals", icon: Award },
-    { id: "coaches", label: "Assigned Coaches", icon: Users },
-    { id: "notes", label: "Coach Notes", icon: FileText, badge: (client.notes || []).length }
+    { id: "overview", label: "Overview", icon: LayoutDashboard, badge: restrictions.length },
+    { id: "training", label: "Training", icon: Dumbbell },
+    { id: "progress", label: "Progress", icon: Scale, badge: (client.assessments || []).length },
+    { id: "nutrition", label: "Nutrition", icon: Apple },
+    { id: "attendance", label: "Attendance & Check-ins", icon: Clock }
   ];
 
   return (
@@ -416,7 +409,7 @@ export default function ClientProfilePage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => goToTab(tab.id)}
               className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? "bg-brand-crimson text-white shadow-lg shadow-[0_0_20px_rgba(240,20,37,0.38)]"
@@ -440,66 +433,37 @@ export default function ClientProfilePage() {
       {/* Tab Contents View */}
       <div className="animate-in fade-in duration-150">
         {activeTab === "overview" && (
+          <div className="space-y-6">
           <AthleteOverviewTab
             client={client}
             isClient={isClient}
             onSelectWorkout={(workoutId) => handleStartWorkout(workoutId)}
-            onNavigateTab={(tabId) => setActiveTab(tabId as any)}
+            onNavigateTab={(tabId) => goToTab(tabId)}
           />
-        )}
-
-        {activeTab === "checkins" && (
-          <CheckInsTab
-            clientId={client.id}
-            isClient={isClient}
-            onOpenMeasurementModal={() => setMeasurementModalOpen(true)}
-            onRefresh={loadClientData}
-          />
-        )}
-
-        {activeTab === "program" && (
-          <ProgramTab
-            clientId={client.id}
-            isClient={isClient}
-            programAssignments={(client as any).programAssignments || []}
-            workoutAssignments={client.workoutAssignments || []}
-          />
-        )}
-
-        {activeTab === "assessments" && (
-          <AssessmentsTab
-            clientId={client.id}
-            assessments={client.assessments || []}
-            isClient={isClient}
-            onRefresh={loadClientData}
-          />
-        )}
-
-        {activeTab === "measurements" && (
-          <MeasurementsTab
-            measurements={measurements}
-            onOpenModal={() => setMeasurementModalOpen(true)}
-          />
-        )}
-
-        {activeTab === "medical" && (
+            <details className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4" open={restrictions.length > 0}>
+              <summary className="cursor-pointer text-sm font-extrabold text-slate-900 dark:text-white">Medical restrictions & cues{restrictions.length > 0 ? ` (${restrictions.length})` : ""}</summary>
+              <div className="mt-4">
           <MedicalTab
             restrictions={restrictions}
             onOpenModal={() => setMedicalModalOpen(true)}
             isClient={isClient}
           />
-        )}
-
-        {activeTab === "goals" && (
+              </div>
+            </details>
+            <details className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4">
+              <summary className="cursor-pointer text-sm font-extrabold text-slate-900 dark:text-white">Training goals</summary>
+              <div className="mt-4">
           <GoalsTab
             clientId={client.id}
             goals={goals}
             isClient={isClient}
             onRefresh={loadClientData}
           />
-        )}
-
-        {activeTab === "coaches" && (
+              </div>
+            </details>
+            <details className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4">
+              <summary className="cursor-pointer text-sm font-extrabold text-slate-900 dark:text-white">Assigned coaches</summary>
+              <div className="mt-4">
           <CoachesTab
             assignments={client.coaches || []}
             onOpenModal={() => setCoachAssignModalOpen(true)}
@@ -515,40 +479,84 @@ export default function ClientProfilePage() {
             }}
             isClient={isClient}
           />
+              </div>
+            </details>
+            <details className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4">
+              <summary className="cursor-pointer text-sm font-extrabold text-slate-900 dark:text-white">Coach notes{(client.notes || []).length > 0 ? ` (${(client.notes || []).length})` : ""}</summary>
+              <div className="mt-4">
+          <NotesTab
+            notes={client.notes || []}
+            onOpenModal={() => setNoteModalOpen(true)}
+            isClient={isClient}
+          />
+              </div>
+            </details>
+          </div>
         )}
-
-        {activeTab === "workouts" && (
+        {activeTab === "attendance" && (
+          <CheckInsTab
+            clientId={client.id}
+            isClient={isClient}
+            onOpenMeasurementModal={() => setMeasurementModalOpen(true)}
+            onRefresh={loadClientData}
+          />
+        )}
+        {activeTab === "training" && (
+          <div className="space-y-8">
+            <section className="space-y-3">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Active training program</h2>
+          <ProgramTab
+            clientId={client.id}
+            isClient={isClient}
+            programAssignments={(client as any).programAssignments || []}
+            workoutAssignments={client.workoutAssignments || []}
+          />
+            </section>
+            <section className="space-y-3">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Assigned workouts</h2>
           <WorkoutsTab
             clientId={client.id}
             isClient={isClient}
             onExecuteWorkout={handleStartWorkout}
             refreshKey={workoutsRefreshKey}
           />
+            </section>
+          </div>
         )}
-
+        {activeTab === "progress" && (
+          <div className="space-y-8">
+            <section className="space-y-3">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Measurements & weight log</h2>
+          <MeasurementsTab
+            measurements={measurements}
+            onOpenModal={() => setMeasurementModalOpen(true)}
+          />
+            </section>
+            <section className="space-y-3">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Physical assessments</h2>
+          <AssessmentsTab
+            clientId={client.id}
+            assessments={client.assessments || []}
+            isClient={isClient}
+            onRefresh={loadClientData}
+          />
+            </section>
+            <section className="space-y-3">
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Progress gallery</h2>
+          <PhotosTab
+            photos={client.progressPhotos || []}
+            clientId={client.id}
+          />
+            </section>
+          </div>
+        )}
         {activeTab === "nutrition" && (
           <NutritionTab
             clientId={client.id}
             isClient={isClient}
           />
         )}
-
-        {activeTab === "photos" && (
-          <PhotosTab
-            photos={client.progressPhotos || []}
-            clientId={client.id}
-          />
-        )}
-
-        {activeTab === "notes" && (
-          <NotesTab
-            notes={client.notes || []}
-            onOpenModal={() => setNoteModalOpen(true)}
-            isClient={isClient}
-          />
-        )}
       </div>
-
       {/* --- ADD MEASUREMENT MODAL --- */}
       {measurementModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
