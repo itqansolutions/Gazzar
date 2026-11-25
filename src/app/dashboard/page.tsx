@@ -53,7 +53,7 @@ export default function DashboardPage() {
   // Real Database entities from API
   const metrics = dashboardData?.metrics || {};
   const membersCount = metrics.clientsCount ?? 0;
-  const programsCount = metrics.templatesCount ?? 0;
+  const programsCount = metrics.activeProgramsCount ?? 0;
   const sessionsCount = metrics.totalWorkouts ?? 0;
   const coachesCount = metrics.coachesCount ?? 0;
 

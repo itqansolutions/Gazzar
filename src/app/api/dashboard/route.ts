@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       coachesCount,
       exercisesCount,
       templatesCount,
+      activeProgramsCount,
       assignmentsCount,
       sessionsCount,
       recentClients,
@@ -28,6 +29,7 @@ export async function GET(request: Request) {
       prisma.coachProfile.count(),
       prisma.exercise.count(),
       prisma.workoutTemplate.count(),
+      prisma.trainingProgram.count({ where: { isActive: true } }),
       prisma.clientWorkoutAssignment.count({
         where: allowedClientIds !== null ? { clientId: { in: allowedClientIds } } : {}
       }),
@@ -162,6 +164,7 @@ export async function GET(request: Request) {
           coachesCount,
           exercisesCount,
           templatesCount,
+          activeProgramsCount,
           totalWorkouts: assignmentsCount + sessionsCount
         },
         recentClients,

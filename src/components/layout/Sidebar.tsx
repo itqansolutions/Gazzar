@@ -53,8 +53,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { href: "/calendar", label: t("navClasses") || "Classes", icon: Calendar },
     { href: "/nutrition", label: t("navNutrition") || "Nutrition", icon: Apple },
     { href: "/assessments", label: t("navAssessments") || "Assessments", icon: Activity },
-    { href: "/memberships", label: t("navMemberships") || "Memberships", icon: CreditCard },
-    { href: "/settings", label: t("navSettings") || "Settings", icon: Settings }
+    { href: "/memberships", label: t("navMemberships") || "Memberships", icon: CreditCard }
   ];
 
   // Staff Groups per Phase 3.5 specifications

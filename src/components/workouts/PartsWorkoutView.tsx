@@ -215,7 +215,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
     <div className="w-full max-w-2xl mx-auto bg-slate-950 text-white rounded-2xl border border-slate-800 overflow-hidden" dir={isRtl ? "rtl" : "ltr"} data-testid="parts-workout-view">
       <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-800">
         <div className="min-w-0">
-          <h2 className="text-base font-extrabold truncate">{title}</h2>
+          <h2 className="text-base font-extrabold leading-tight line-clamp-2 break-words">{title}</h2>
           <p className="text-[11px] text-slate-400">{t("Complete each part in order", "اخلص كل جزء بالترتيب")}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -223,9 +223,9 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
             {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
           {onSwitchDetailed && (
-            <button type="button" onClick={onSwitchDetailed} className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold flex items-center gap-1">
+            <button type="button" onClick={onSwitchDetailed} aria-label="Detailed logging" className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold flex items-center gap-1">
               <ListChecks className="w-3.5 h-3.5" />
-              {t("Detailed logging", "تسجيل تفصيلي")}
+              <span className="hidden sm:inline">{t("Detailed logging", "تسجيل تفصيلي")}</span>
             </button>
           )}
           <button type="button" onClick={onClose} className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700" aria-label="Close">

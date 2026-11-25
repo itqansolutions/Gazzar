@@ -48,7 +48,7 @@ export default function WorkoutExecutionPage() {
   }
 
   return (
-    <div className="w-full min-h-[85vh] bg-slate-950 flex items-center justify-center">
+    <div className="w-full min-h-[85vh] bg-slate-950 flex items-start md:items-center justify-center p-3 md:p-0">
       <WorkoutModalRunner
         assignmentId={assignmentId}
         isOpen={true}
