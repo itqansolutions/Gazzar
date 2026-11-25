@@ -1159,7 +1159,7 @@ export default function TemplatesPage() {
                       )}
                       {tpl._count && (
                         <p className="text-[10px] text-slate-400 mt-1">
-                          Used in {tpl._count.programWorkouts || 0} program(s) • {tpl._count.assignments || 0} client assignment(s)
+                          Used on {tpl._count.programWorkouts || 0} program day(s) • {tpl._count.assignments || 0} athlete workout(s) assigned
                         </p>
                       )}
                     </div>
