@@ -54,9 +54,22 @@ async function handleWorkoutMutation(
       return NextResponse.json({ success: true, data: reset });
     }
 
-    if (action === "CUSTOMIZE" || (body?.blocks && !["COMPLETE", "SAVE_PROGRESS", "SKIP", "COACH_FEEDBACK"].includes(action))) {
+    if (action === "CUSTOMIZE" || (body?.blocks && !["COMPLETE", "SAVE_PROGRESS", "SKIP", "COACH_FEEDBACK", "PART_START", "PART_FINISH"].includes(action))) {
       const customized = await workoutService.customizeAssignment(id, body, auth.actor);
       return NextResponse.json({ success: true, data: customized });
+    }
+
+    if (action === "PART_START" || action === "PART_FINISH") {
+      if (typeof body?.blockId !== "string" || !body.blockId) {
+        return NextResponse.json({ success: false, error: "blockId is required" }, { status: 400 });
+      }
+      const part = await workoutService.recordPartTiming(
+        id,
+        body.blockId,
+        action === "PART_START" ? "START" : "FINISH",
+        body
+      );
+      return NextResponse.json({ success: true, data: part });
     }
 
     if (action === "SKIP") {

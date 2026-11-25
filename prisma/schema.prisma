@@ -105,6 +105,10 @@ enum BlockType {
   SUPERSET
   CIRCUIT
   SEQUENCE
+  AMRAP
+  FOR_TIME
+  EMOM
+  TABATA
 }
 
 enum BlockItemType {
@@ -598,6 +602,10 @@ model WorkoutBlock {
   rounds                   Int?
   durationSeconds          Int?
   restBetweenRoundsSeconds Int?
+  workSeconds              Int?
+  restSeconds              Int?
+  intervalSeconds          Int?
+  partLabel                String?
   notes                    String?
 
   items                    BlockItem[]
@@ -646,7 +654,16 @@ model AssignmentBlock {
   rounds                   Int?
   durationSeconds          Int?
   restBetweenRoundsSeconds Int?
+  workSeconds              Int?
+  restSeconds              Int?
+  intervalSeconds          Int?
+  partLabel                String?
   notes                    String?
+  startedAt                DateTime?
+  finishedAt               DateTime?
+  resultRounds             Int?
+  resultReps               Int?
+  resultTimeSeconds        Int?
 
   items                    AssignmentBlockItem[]
 

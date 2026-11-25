@@ -46,6 +46,8 @@ import {
   FileText
 } from "lucide-react";
 
+import { PART_LABELS, isTimedFormat, defaultFormatParams, describeFormat, buildTemplateName } from "@/lib/block-formats";
+
 type StatusFilter = "ALL" | "ACTIVE" | "ARCHIVED";
 
 const BLOCK_TYPE_META: Record<BlockType, { label: string; desc: string; badgeClass: string; defaultRounds: number }> = {
@@ -66,6 +68,30 @@ const BLOCK_TYPE_META: Record<BlockType, { label: string; desc: string; badgeCla
     desc: "3+ exercises performed consecutively in rounds",
     badgeClass: "bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30",
     defaultRounds: 3
+  },
+  AMRAP: {
+    label: "AMRAP",
+    desc: "As many rounds/reps as possible within a time cap",
+    badgeClass: "bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-500/30",
+    defaultRounds: 1
+  },
+  FOR_TIME: {
+    label: "For Time",
+    desc: "Complete the work as fast as possible; the finish time is recorded",
+    badgeClass: "bg-orange-500/15 text-orange-600 dark:text-orange-300 border-orange-500/30",
+    defaultRounds: 1
+  },
+  EMOM: {
+    label: "EMOM",
+    desc: "Every minute on the minute: start a new round each interval",
+    badgeClass: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border-cyan-500/30",
+    defaultRounds: 10
+  },
+  TABATA: {
+    label: "Tabata",
+    desc: "Work / rest intervals repeated for a set number of rounds",
+    badgeClass: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300 border-fuchsia-500/30",
+    defaultRounds: 8
   },
   SEQUENCE: {
     label: "Sequence",
@@ -103,6 +129,10 @@ interface BuilderBlock {
   rounds: number | null;
   durationSeconds: number | null;
   restBetweenRoundsSeconds: number | null;
+  workSeconds?: number | null;
+  restSeconds?: number | null;
+  intervalSeconds?: number | null;
+  partLabel?: string | null;
   notes: string;
   items: BuilderBlockItem[];
 }
@@ -264,6 +294,9 @@ export default function TemplatesPage() {
   // Template Form Metadata
   const [titleAr, setTitleAr] = useState("");
   const [titleEn, setTitleEn] = useState("");
+  const [nameAthlete, setNameAthlete] = useState("");
+  const [nameDay, setNameDay] = useState("");
+  const [namePart, setNamePart] = useState("");
   const [descEn, setDescEn] = useState("");
   const [sportId, setSportId] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("INTERMEDIATE");
@@ -343,7 +376,12 @@ export default function TemplatesPage() {
       tpl.titleEn.toLowerCase().includes(q) ||
       tpl.titleAr.toLowerCase().includes(q) ||
       (tpl.descriptionEn && tpl.descriptionEn.toLowerCase().includes(q)) ||
-      (tpl.descriptionAr && tpl.descriptionAr.toLowerCase().includes(q));
+      (tpl.descriptionAr && tpl.descriptionAr.toLowerCase().includes(q)) ||
+      (tpl.blocks || []).some(
+        (b: any) =>
+          (b.partLabel && String(b.partLabel).toLowerCase().includes(q)) ||
+          (b.title && String(b.title).toLowerCase().includes(q))
+      );
 
     const matchesSport = filterSport === "ALL" || tpl.sportId === filterSport;
     const matchesDiff = filterDifficulty === "ALL" || tpl.difficulty === filterDifficulty;
@@ -422,6 +460,17 @@ export default function TemplatesPage() {
       notes: "",
       items: []
     };
+    if (isTimedFormat(type)) {
+      const d = defaultFormatParams(type);
+      newBlock.rounds = d.rounds;
+      newBlock.durationSeconds = d.durationSeconds;
+      newBlock.workSeconds = d.workSeconds || null;
+      newBlock.restSeconds = d.restSeconds || null;
+      newBlock.intervalSeconds = d.intervalSeconds || null;
+      newBlock.restBetweenRoundsSeconds = null;
+    }
+    // New blocks inherit the part label of the previous block so a part stays grouped.
+    newBlock.partLabel = builderBlocks.length > 0 ? builderBlocks[builderBlocks.length - 1].partLabel ?? null : null;
     setBuilderBlocks((prev) => [...prev, newBlock]);
     setActiveBlockUid(newBlock.uid);
   };
@@ -597,6 +646,10 @@ export default function TemplatesPage() {
       rounds: b.rounds !== null && b.rounds !== undefined && b.rounds !== ("" as any) ? Number(b.rounds) : null,
       durationSeconds: b.durationSeconds !== null && b.durationSeconds !== undefined && b.durationSeconds !== ("" as any) ? Number(b.durationSeconds) : null,
       restBetweenRoundsSeconds: b.restBetweenRoundsSeconds !== null && b.restBetweenRoundsSeconds !== undefined && b.restBetweenRoundsSeconds !== ("" as any) ? Number(b.restBetweenRoundsSeconds) : null,
+      workSeconds: b.workSeconds !== null && b.workSeconds !== undefined && b.workSeconds !== ("" as any) ? Number(b.workSeconds) : null,
+      restSeconds: b.restSeconds !== null && b.restSeconds !== undefined && b.restSeconds !== ("" as any) ? Number(b.restSeconds) : null,
+      intervalSeconds: b.intervalSeconds !== null && b.intervalSeconds !== undefined && b.intervalSeconds !== ("" as any) ? Number(b.intervalSeconds) : null,
+      partLabel: b.partLabel && b.partLabel.trim() ? b.partLabel.trim() : null,
       notes: b.notes.trim() || null,
       items: b.items.map((it, iIdx) => ({
         orderIndex: iIdx + 1,
@@ -668,6 +721,10 @@ export default function TemplatesPage() {
         rounds: b.rounds ?? (b.type === "SUPERSET" || b.type === "CIRCUIT" ? 3 : 1),
         durationSeconds: b.durationSeconds ?? null,
         restBetweenRoundsSeconds: b.restBetweenRoundsSeconds ?? null,
+        workSeconds: (b as any).workSeconds ?? null,
+        restSeconds: (b as any).restSeconds ?? null,
+        intervalSeconds: (b as any).intervalSeconds ?? null,
+        partLabel: (b as any).partLabel ?? null,
         notes: b.notes || "",
         items: (b.items || []).map((it) => ({
           uid: it.id || createUid(),
@@ -1193,6 +1250,16 @@ export default function TemplatesPage() {
                                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border uppercase tracking-wider ${bMeta.badgeClass}`}>
                                     {bMeta.label}
                                   </span>
+                                  {(block as any).partLabel && (
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-900 text-white dark:bg-white dark:text-slate-900">
+                                      {(block as any).partLabel}
+                                    </span>
+                                  )}
+                                  {isTimedFormat(block.type) && (
+                                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                                      {describeFormat(block as any)}
+                                    </span>
+                                  )}
                                   {block.title && (
                                     <span className="text-xs font-bold text-slate-900 dark:text-white">
                                       {block.title}
@@ -1413,6 +1480,42 @@ export default function TemplatesPage() {
                   <span>{formError}</span>
                 </div>
               )}
+
+              <datalist id="gx-part-labels">
+                {PART_LABELS.map((l) => (
+                  <option key={l} value={l} />
+                ))}
+              </datalist>
+
+              {/* Quick name builder: Athlete - Day - Part */}
+              <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3 flex flex-wrap items-end gap-2">
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Athlete</label>
+                  <input type="text" value={nameAthlete} onChange={(e) => setNameAthlete(e.target.value)} placeholder="e.g. Ahmed"
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs w-32" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Day</label>
+                  <input type="text" value={nameDay} onChange={(e) => setNameDay(e.target.value)} placeholder="e.g. W1 D2"
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs w-24" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Part</label>
+                  <select value={namePart} onChange={(e) => setNamePart(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                    <option value="">-</option>
+                    {PART_LABELS.map((l) => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+                <button type="button" onClick={() => setTitleEn(buildTemplateName(nameAthlete, nameDay, namePart))}
+                  disabled={!nameAthlete.trim() && !nameDay.trim() && !namePart}
+                  className="px-3 py-1.5 rounded-lg bg-brand-crimson text-white text-xs font-bold disabled:opacity-40">
+                  Use as template title
+                </button>
+                <span className="text-[10px] text-slate-400">Name format: Athlete - Day - Part (searchable from the templates list)</span>
+              </div>
 
               {/* Template Metadata */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1924,6 +2027,10 @@ export default function TemplatesPage() {
                                 <option value="SUPERSET">Superset (2+ Movements)</option>
                                 <option value="CIRCUIT">Circuit (Rounds Loop)</option>
                                 <option value="SEQUENCE">Sequence / Interval</option>
+                                <option value="AMRAP">AMRAP (time cap)</option>
+                                <option value="FOR_TIME">For Time</option>
+                                <option value="EMOM">EMOM (every minute)</option>
+                                <option value="TABATA">Tabata (work / rest)</option>
                               </select>
 
                               <input
@@ -2008,6 +2115,80 @@ export default function TemplatesPage() {
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
+                          </div>
+
+                          {/* Part label + CrossFit format parameters */}
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]" onClick={(e) => e.stopPropagation()}>
+                            <label className="text-slate-400 font-semibold">Part:</label>
+                            <input
+                              type="text"
+                              list="gx-part-labels"
+                              placeholder="Warm-up / Strength / Core / Endurance"
+                              value={block.partLabel ?? ""}
+                              onChange={(e) => handleUpdateBlock(block.uid, { partLabel: e.target.value })}
+                              className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold w-52"
+                            />
+                            {isTimedFormat(block.type) && (
+                              <>
+                                {block.type === "AMRAP" && (
+                                  <label className="flex items-center gap-1 text-slate-500">
+                                    Time cap (min)
+                                    <input type="number" min="1" value={block.durationSeconds ? Math.round(block.durationSeconds / 60) : ""}
+                                      onChange={(e) => handleUpdateBlock(block.uid, { durationSeconds: e.target.value === "" ? null : Number(e.target.value) * 60 })}
+                                      className="w-16 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold" />
+                                  </label>
+                                )}
+                                {block.type === "FOR_TIME" && (
+                                  <label className="flex items-center gap-1 text-slate-500">
+                                    Time cap (min, optional)
+                                    <input type="number" min="1" value={block.durationSeconds ? Math.round(block.durationSeconds / 60) : ""}
+                                      onChange={(e) => handleUpdateBlock(block.uid, { durationSeconds: e.target.value === "" ? null : Number(e.target.value) * 60 })}
+                                      className="w-16 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold" />
+                                  </label>
+                                )}
+                                {block.type === "EMOM" && (
+                                  <>
+                                    <label className="flex items-center gap-1 text-slate-500">
+                                      Interval (sec)
+                                      <input type="number" min="10" value={block.intervalSeconds ?? 60}
+                                        onChange={(e) => handleUpdateBlock(block.uid, { intervalSeconds: e.target.value === "" ? null : Number(e.target.value) })}
+                                        className="w-16 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold" />
+                                    </label>
+                                    <label className="flex items-center gap-1 text-slate-500">
+                                      Rounds
+                                      <input type="number" min="1" value={block.rounds ?? ""}
+                                        onChange={(e) => handleUpdateBlock(block.uid, { rounds: e.target.value === "" ? null : Number(e.target.value) })}
+                                        className="w-16 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold" />
+                                    </label>
+                                  </>
+                                )}
+                                {block.type === "TABATA" && (
+                                  <>
+                                    <label className="flex items-center gap-1 text-slate-500">
+                                      Work (sec)
+                                      <input type="number" min="1" value={block.workSeconds ?? 20}
+                                        onChange={(e) => handleUpdateBlock(block.uid, { workSeconds: e.target.value === "" ? null : Number(e.target.value) })}
+                                        className="w-16 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold" />
+                                    </label>
+                                    <label className="flex items-center gap-1 text-slate-500">
+                                      Rest (sec)
+                                      <input type="number" min="0" value={block.restSeconds ?? 10}
+                                        onChange={(e) => handleUpdateBlock(block.uid, { restSeconds: e.target.value === "" ? null : Number(e.target.value) })}
+                                        className="w-16 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold" />
+                                    </label>
+                                    <label className="flex items-center gap-1 text-slate-500">
+                                      Rounds
+                                      <input type="number" min="1" value={block.rounds ?? ""}
+                                        onChange={(e) => handleUpdateBlock(block.uid, { rounds: e.target.value === "" ? null : Number(e.target.value) })}
+                                        className="w-16 px-1.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold" />
+                                    </label>
+                                  </>
+                                )}
+                                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                                  {describeFormat(block)}
+                                </span>
+                              </>
+                            )}
                           </div>
 
                           {/* Block Notes Input */}

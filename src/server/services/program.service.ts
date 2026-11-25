@@ -56,6 +56,10 @@ export interface ProgramWorkoutBlockInput {
   rounds?: number | null;
   durationSeconds?: number | null;
   restBetweenRoundsSeconds?: number | null;
+  workSeconds?: number | null;
+  restSeconds?: number | null;
+  intervalSeconds?: number | null;
+  partLabel?: string | null;
   notes?: string | null;
   items?: ProgramBlockItemInput[];
 }
@@ -232,6 +236,10 @@ type NormalizedBlock = {
   rounds: number | null;
   durationSeconds: number | null;
   restBetweenRoundsSeconds: number | null;
+  workSeconds?: number | null;
+  restSeconds?: number | null;
+  intervalSeconds?: number | null;
+  partLabel?: string | null;
   notes: string | null;
   items: NormalizedBlockItem[];
 };
@@ -328,6 +336,10 @@ async function normalizeAndValidateWeeks(
                   rounds: toOptionalInt(b.rounds),
                   durationSeconds: toOptionalInt(b.durationSeconds),
                   restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                  workSeconds: toOptionalInt(b.workSeconds),
+                  restSeconds: toOptionalInt(b.restSeconds),
+                  intervalSeconds: toOptionalInt(b.intervalSeconds),
+                  partLabel: toOptionalText(b.partLabel),
                   notes: toOptionalText(b.notes),
                   items
                 };
@@ -430,6 +442,10 @@ function detectStructuralChange(
           rounds: number | null;
           durationSeconds: number | null;
           restBetweenRoundsSeconds: number | null;
+          workSeconds?: number | null;
+          restSeconds?: number | null;
+          intervalSeconds?: number | null;
+          partLabel?: string | null;
           items: Array<{
             id: string;
             orderIndex: number;
@@ -488,6 +504,10 @@ function detectStructuralChange(
               if ((exB.rounds ?? null) !== (inB.rounds ?? null)) return true;
               if ((exB.durationSeconds ?? null) !== (inB.durationSeconds ?? null)) return true;
               if ((exB.restBetweenRoundsSeconds ?? null) !== (inB.restBetweenRoundsSeconds ?? null)) return true;
+              if (((exB as any).workSeconds ?? null) !== ((inB as any).workSeconds ?? null)) return true;
+              if (((exB as any).restSeconds ?? null) !== ((inB as any).restSeconds ?? null)) return true;
+              if (((exB as any).intervalSeconds ?? null) !== ((inB as any).intervalSeconds ?? null)) return true;
+              if (((exB as any).partLabel ?? null) !== ((inB as any).partLabel ?? null)) return true;
 
               if (exB.items.length !== inB.items.length) return true;
 
@@ -714,6 +734,10 @@ async function syncWeeksTree(
                     rounds: tb.rounds,
                     durationSeconds: tb.durationSeconds,
                     restBetweenRoundsSeconds: tb.restBetweenRoundsSeconds,
+                    workSeconds: tb.workSeconds,
+                    restSeconds: tb.restSeconds,
+                    intervalSeconds: tb.intervalSeconds,
+                    partLabel: tb.partLabel,
                     notes: tb.notes
                   }
                 });
@@ -764,6 +788,10 @@ async function syncWeeksTree(
                     rounds: inB.rounds,
                     durationSeconds: inB.durationSeconds,
                     restBetweenRoundsSeconds: inB.restBetweenRoundsSeconds,
+                    workSeconds: inB.workSeconds,
+                    restSeconds: inB.restSeconds,
+                    intervalSeconds: inB.intervalSeconds,
+                    partLabel: inB.partLabel,
                     notes: inB.notes
                   },
                   include: { items: true }
@@ -778,6 +806,10 @@ async function syncWeeksTree(
                     rounds: inB.rounds,
                     durationSeconds: inB.durationSeconds,
                     restBetweenRoundsSeconds: inB.restBetweenRoundsSeconds,
+                    workSeconds: inB.workSeconds,
+                    restSeconds: inB.restSeconds,
+                    intervalSeconds: inB.intervalSeconds,
+                    partLabel: inB.partLabel,
                     notes: inB.notes
                   },
                   include: { items: true }
@@ -1375,6 +1407,10 @@ export class ProgramService {
             rounds: b.rounds,
             durationSeconds: b.durationSeconds,
             restBetweenRoundsSeconds: b.restBetweenRoundsSeconds,
+            workSeconds: b.workSeconds,
+            restSeconds: b.restSeconds,
+            intervalSeconds: b.intervalSeconds,
+            partLabel: b.partLabel,
             notes: b.notes,
             items: (b.items || []).map((it) => ({
               orderIndex: it.orderIndex,
@@ -1835,6 +1871,10 @@ export class ProgramService {
                   rounds: b.rounds,
                   durationSeconds: b.durationSeconds,
                   restBetweenRoundsSeconds: b.restBetweenRoundsSeconds,
+                  workSeconds: b.workSeconds,
+                  restSeconds: b.restSeconds,
+                  intervalSeconds: b.intervalSeconds,
+                  partLabel: b.partLabel,
                   notes: b.notes
                 }
               });

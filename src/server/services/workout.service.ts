@@ -70,6 +70,10 @@ export interface CreateTemplateBlockInput {
   rounds?: number | null;
   durationSeconds?: number | null;
   restBetweenRoundsSeconds?: number | null;
+  workSeconds?: number | null;
+  restSeconds?: number | null;
+  intervalSeconds?: number | null;
+  partLabel?: string | null;
   notes?: string | null;
   items: CreateTemplateBlockItemInput[];
 }
@@ -398,6 +402,10 @@ export class WorkoutService {
                 rounds: toOptionalInt(b.rounds),
                 durationSeconds: toOptionalInt(b.durationSeconds),
                 restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                workSeconds: toOptionalInt(b.workSeconds),
+                restSeconds: toOptionalInt(b.restSeconds),
+                intervalSeconds: toOptionalInt(b.intervalSeconds),
+                partLabel: toOptionalText(b.partLabel),
                 notes: toOptionalText(b.notes)
               }
             });
@@ -610,6 +618,10 @@ export class WorkoutService {
                   rounds: toOptionalInt(b.rounds),
                   durationSeconds: toOptionalInt(b.durationSeconds),
                   restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                  workSeconds: toOptionalInt(b.workSeconds),
+                  restSeconds: toOptionalInt(b.restSeconds),
+                  intervalSeconds: toOptionalInt(b.intervalSeconds),
+                  partLabel: toOptionalText(b.partLabel),
                   notes: toOptionalText(b.notes)
                 }
               });
@@ -966,6 +978,10 @@ export class WorkoutService {
                 rounds: b.rounds,
                 durationSeconds: b.durationSeconds,
                 restBetweenRoundsSeconds: b.restBetweenRoundsSeconds,
+                workSeconds: b.workSeconds,
+                restSeconds: b.restSeconds,
+                intervalSeconds: b.intervalSeconds,
+                partLabel: b.partLabel,
                 notes: b.notes
               }
             });
@@ -1005,6 +1021,10 @@ export class WorkoutService {
                 rounds: toOptionalInt(b.rounds),
                 durationSeconds: toOptionalInt(b.durationSeconds),
                 restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                workSeconds: toOptionalInt(b.workSeconds),
+                restSeconds: toOptionalInt(b.restSeconds),
+                intervalSeconds: toOptionalInt(b.intervalSeconds),
+                partLabel: toOptionalText(b.partLabel),
                 notes: toOptionalText(b.notes)
               }
             });
@@ -1729,6 +1749,55 @@ export class WorkoutService {
   }
 
   /**
+   * Record the start or finish of one workout part (assignment block).
+   * START sets startedAt once (idempotent) and opens an in-progress workout log.
+   * FINISH sets finishedAt (and startedAt if the athlete never tapped Start) plus optional AMRAP/For Time results.
+   * Completed or skipped workouts are immutable.
+   */
+  async recordPartTiming(
+    assignmentId: string,
+    blockId: string,
+    kind: "START" | "FINISH",
+    data: { resultRounds?: unknown; resultReps?: unknown; resultTimeSeconds?: unknown } = {}
+  ) {
+    const assignment = await prisma.clientWorkoutAssignment.findUnique({ where: { id: assignmentId } });
+    if (!assignment) throw new WorkoutServiceError("Assignment not found", 404);
+    if (assignment.status === AssignmentStatus.SKIPPED) {
+      throw new WorkoutServiceError("Cannot record timing on a skipped workout", 409);
+    }
+    if (assignment.status === AssignmentStatus.COMPLETED) {
+      throw new WorkoutServiceError("Completed sessions are immutable", 409);
+    }
+    const block = await prisma.assignmentBlock.findFirst({ where: { id: blockId, assignmentId } });
+    if (!block) throw new WorkoutServiceError("Workout part not found on this assignment", 404);
+
+    const now = new Date();
+    return prisma.$transaction(async (tx) => {
+      await tx.workoutLog.upsert({
+        where: { assignmentId },
+        create: { assignmentId, clientId: assignment.clientId, coachId: assignment.coachId, isCompleted: false },
+        update: {}
+      });
+      if (kind === "START") {
+        return tx.assignmentBlock.update({
+          where: { id: blockId },
+          data: { startedAt: block.startedAt ?? now, finishedAt: null }
+        });
+      }
+      return tx.assignmentBlock.update({
+        where: { id: blockId },
+        data: {
+          startedAt: block.startedAt ?? now,
+          finishedAt: block.finishedAt ?? now,
+          resultRounds: toOptionalInt(data.resultRounds),
+          resultReps: toOptionalInt(data.resultReps),
+          resultTimeSeconds: toOptionalInt(data.resultTimeSeconds)
+        }
+      });
+    });
+  }
+
+  /**
    * Save coach review feedback on a workout assignment log.
    */
   async saveCoachFeedback(assignmentId: string, coachFeedback: string | null) {
@@ -1773,6 +1842,10 @@ export class WorkoutService {
         rounds?: number | null;
         durationSeconds?: number | null;
         restBetweenRoundsSeconds?: number | null;
+        workSeconds?: number | null;
+        restSeconds?: number | null;
+        intervalSeconds?: number | null;
+        partLabel?: string | null;
         notes?: string | null;
         items: Array<{
           orderIndex?: number;
@@ -1867,6 +1940,10 @@ export class WorkoutService {
                 rounds: toOptionalInt(b.rounds),
                 durationSeconds: toOptionalInt(b.durationSeconds),
                 restBetweenRoundsSeconds: toOptionalInt(b.restBetweenRoundsSeconds),
+                workSeconds: toOptionalInt(b.workSeconds),
+                restSeconds: toOptionalInt(b.restSeconds),
+                intervalSeconds: toOptionalInt(b.intervalSeconds),
+                partLabel: toOptionalText(b.partLabel),
                 notes: toOptionalText(b.notes)
               }
             });
@@ -2081,6 +2158,10 @@ export class WorkoutService {
             rounds: b.rounds,
             durationSeconds: b.durationSeconds,
             restBetweenRoundsSeconds: b.restBetweenRoundsSeconds,
+            workSeconds: b.workSeconds,
+            restSeconds: b.restSeconds,
+            intervalSeconds: b.intervalSeconds,
+            partLabel: b.partLabel,
             notes: b.notes
           }
         });

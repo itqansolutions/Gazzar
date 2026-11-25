@@ -199,7 +199,7 @@ export interface WorkoutTemplateExercise {
   notes?: string | null;
 }
 
-export type BlockType = "SINGLE" | "SUPERSET" | "CIRCUIT" | "SEQUENCE";
+export type BlockType = "SINGLE" | "SUPERSET" | "CIRCUIT" | "SEQUENCE" | "AMRAP" | "FOR_TIME" | "EMOM" | "TABATA";
 export type BlockItemType = "EXERCISE" | "REST" | "NOTE";
 
 export interface BlockItem {
@@ -233,6 +233,10 @@ export interface WorkoutBlock {
   rounds?: number | null;
   durationSeconds?: number | null;
   restBetweenRoundsSeconds?: number | null;
+  workSeconds?: number | null;
+  restSeconds?: number | null;
+  intervalSeconds?: number | null;
+  partLabel?: string | null;
   notes?: string | null;
   items: BlockItem[];
   createdAt?: string;
@@ -551,6 +555,10 @@ export interface AssignmentBlock {
   rounds?: number | null;
   durationSeconds?: number | null;
   restBetweenRoundsSeconds?: number | null;
+  workSeconds?: number | null;
+  restSeconds?: number | null;
+  intervalSeconds?: number | null;
+  partLabel?: string | null;
   notes?: string | null;
   items: AssignmentBlockItem[];
   createdAt?: string;

@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 import AthleteOverviewTab from "@/components/clients/AthleteOverviewTab";
-import WorkoutModalRunner from "@/components/workouts/WorkoutModalRunner";
+import WorkoutModalRunner from "@/components/workouts/WorkoutExecution";
 import MeasurementsTab from "@/components/clients/MeasurementsTab";
 import MedicalTab from "@/components/clients/MedicalTab";
 import GoalsTab from "@/components/clients/GoalsTab";

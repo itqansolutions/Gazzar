@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import WorkoutModalRunner from "@/components/workouts/WorkoutModalRunner";
+import WorkoutModalRunner from "@/components/workouts/WorkoutExecution";
 
 export default function WorkoutExecutionPage() {
   const params = useParams();

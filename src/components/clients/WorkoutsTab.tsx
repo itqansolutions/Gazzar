@@ -1,5 +1,6 @@
 "use client";
 
+import PartTimings from "@/components/workouts/PartTimings";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
@@ -181,6 +182,8 @@ export default function WorkoutsTab({
                 {relDay && relDay !== dateKey ? ` (${relDay})` : ""}
               </span>
             </p>
+
+            <PartTimings blocks={a.assignmentBlocks} />
 
             {effStatus === "SKIPPED" && a.workoutLog?.clientFeedback && (
               <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">

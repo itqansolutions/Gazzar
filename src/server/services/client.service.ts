@@ -156,7 +156,22 @@ export class ClientService {
           include: {
             template: true,
             program: true,
-            workoutLog: true
+            workoutLog: true,
+            assignmentBlocks: {
+              orderBy: { orderIndex: "asc" },
+              select: {
+                id: true,
+                orderIndex: true,
+                type: true,
+                title: true,
+                partLabel: true,
+                startedAt: true,
+                finishedAt: true,
+                resultRounds: true,
+                resultReps: true,
+                resultTimeSeconds: true
+              }
+            }
           },
           orderBy: { scheduledDate: "desc" }
         },
