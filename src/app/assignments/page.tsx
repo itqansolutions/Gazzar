@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, Suspense } from "react";
+import React, { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -195,6 +195,13 @@ function AssignmentsContent() {
   // Conflict & Feedback states
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const formErrorRef = useRef<HTMLDivElement | null>(null);
+  // The error/conflict banner sits at the bottom of a scrolling modal; bring it into view so the click never looks dead.
+  useEffect(() => {
+    if (formError && formErrorRef.current) {
+      formErrorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [formError]);
   const [conflictList, setConflictList] = useState<any[] | null>(null);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -1388,7 +1395,7 @@ function AssignmentsContent() {
               </div>
 
               {formError && (
-                <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 text-xs space-y-2">
+                <div ref={formErrorRef} role="alert" className="p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 text-xs space-y-2">
                   <div className="font-bold flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 shrink-0" />
                     <span>{formError}</span>
