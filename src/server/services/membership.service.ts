@@ -59,7 +59,9 @@ export class MembershipService {
       if (rows.length > 0) {
         return rows.map((r) => {
           const days = r.durationDays;
-          const planType = r.sessionsCount
+          const parsed = /(\d+)\s*session/i.exec(r.nameEn);
+          const sessions = r.sessionsCount ?? (parsed ? parseInt(parsed[1], 10) : null);
+          const planType = sessions
             ? MembershipPlan.GROUP_CLASS
             : days <= 45
             ? MembershipPlan.MONTHLY
@@ -69,7 +71,7 @@ export class MembershipService {
             ? MembershipPlan.SIX_MONTHS
             : MembershipPlan.ANNUAL;
           // Some CMS rows keep "(Unlimited)" in the Arabic-name field; only use nameEn as the display name.
-          const nameEn = r.sessionsCount && !/session/i.test(r.nameEn) ? `${r.nameEn} (${r.sessionsCount} sessions)` : r.nameEn;
+          const nameEn = (sessions && !/session/i.test(r.nameEn) ? `${r.nameEn} (${sessions} sessions)` : r.nameEn).trim();
           return {
             id: r.id,
             nameEn,
@@ -78,7 +80,7 @@ export class MembershipService {
             price: r.price,
             currency: r.currency,
             durationDays: days,
-            sessionsCount: r.sessionsCount ?? undefined,
+            sessionsCount: sessions ?? undefined,
             planType
           };
         });
