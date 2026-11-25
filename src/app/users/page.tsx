@@ -280,6 +280,11 @@ export default function UsersPage() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Create, edit and manage academy users, roles, credentials and access rights
           </p>
+          <p className="text-xs mt-1.5 flex flex-wrap gap-x-3">
+            <a href="/clients" className="font-bold text-brand-crimson hover:underline">Athletes &rarr;</a>
+            <a href="/coaches" className="font-bold text-brand-crimson hover:underline">Coaches &rarr;</a>
+            <a href="/assessments" className="font-bold text-brand-crimson hover:underline">Assessments &rarr;</a>
+          </p>
         </div>
 
         <button

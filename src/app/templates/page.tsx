@@ -1025,8 +1025,8 @@ export default function TemplatesPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <div className="relative">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <div className="relative col-span-2 sm:col-span-1">
             <Search className="w-4 h-4 text-slate-400 absolute start-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"

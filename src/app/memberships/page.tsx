@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function MembershipsPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const isAthlete = user?.role === "CLIENT";
   const [plans, setPlans] = useState<any[]>([]);
   const [memberships, setMemberships] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,9 +44,9 @@ export default function MembershipsPage() {
           Loading membership plans & subscriptions from database...
         </div>
       ) : (
-        <>
-          {/* Plans Packages Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="flex flex-col gap-6">
+          {/* Plans Packages Grid (athletes: shown after their own plan) */}
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-5 ${isAthlete ? "order-2" : ""}`}>
             {plans.map((p) => (
               <div
                 key={p.id}
@@ -76,8 +79,8 @@ export default function MembershipsPage() {
           </div>
 
           {/* Client Subscriptions Table */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Active Client Memberships & Payments</h3>
+          <div className={`p-6 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-4 ${isAthlete ? "order-1" : ""}`}>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">{isAthlete ? "My Plan & Payments" : "Active Client Memberships & Payments"}</h3>
 
             {memberships.length === 0 ? (
               <div className="p-8 text-center text-slate-400 text-xs">
@@ -128,7 +131,7 @@ export default function MembershipsPage() {
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

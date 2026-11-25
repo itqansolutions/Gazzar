@@ -454,8 +454,8 @@ export default function ExercisesPage() {
 
       {/* Search & Multi-Sport Filters */}
       <search className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="sm:col-span-2 relative">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="col-span-2 relative">
             <label htmlFor="exercise-search" className="sr-only">Search exercises</label>
             <Search className="w-4 h-4 text-slate-400 absolute top-3 start-3" />
             <input
