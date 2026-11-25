@@ -303,7 +303,7 @@ function AssignmentsContent() {
   };
 
   const filteredAssignments = useMemo(() => {
-    return assignments.filter((a) => {
+    const list = assignments.filter((a) => {
       const eff = getEffectiveStatus(a);
       if (filterStatus !== "ALL" && eff !== filterStatus) return false;
       if (filterSource !== "ALL" && (a.sourceType || "TEMPLATE") !== filterSource) return false;
@@ -333,7 +333,15 @@ function AssignmentsContent() {
       }
       return true;
     });
+    if (!isClient) return list;
+    // Athlete view: today and upcoming first (soonest on top), then past sessions (latest first).
+    const key = (a: any) => toCalendarDateKey(a.scheduledDate);
+    const upcoming = list.filter((a) => key(a) >= todayKey).sort((a, b) => key(a).localeCompare(key(b)));
+    const past = list.filter((a) => key(a) < todayKey).sort((a, b) => key(b).localeCompare(key(a)));
+    return [...upcoming, ...past];
   }, [
+    isClient,
+    todayKey,
     assignments,
     filterStatus,
     filterSource,
