@@ -37,6 +37,12 @@ import {
   Layers
 } from "lucide-react";
 
+function localKey(d: Date) {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
 export default function CalendarPage() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
@@ -188,7 +194,7 @@ export default function CalendarPage() {
     const map = new Map<string, { events: SessionCalendar[]; workouts: ClientWorkoutAssignment[] }>();
 
     events.forEach((ev) => {
-      const key = new Date(ev.startTime).toISOString().split("T")[0];
+      const key = localKey(new Date(ev.startTime));
       if (!map.has(key)) map.set(key, { events: [], workouts: [] });
       map.get(key)!.events.push(ev);
     });
@@ -486,9 +492,9 @@ export default function CalendarPage() {
           {/* Day Grid Cells */}
           <div className="grid grid-cols-7 divide-x divide-y divide-slate-100 dark:divide-slate-800/80">
             {calendarDays.map((cell, idx) => {
-              const dateKey = cell.date.toISOString().split("T")[0];
+              const dateKey = localKey(cell.date);
               const cellItems = itemsByDate.get(dateKey) || { events: [], workouts: [] };
-              const isToday = new Date().toISOString().split("T")[0] === dateKey;
+              const isToday = localKey(new Date()) === dateKey;
 
               return (
                 <div
