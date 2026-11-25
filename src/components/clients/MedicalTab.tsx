@@ -8,10 +8,11 @@ import { AlertTriangle, PlusCircle } from "lucide-react";
 interface MedicalTabProps {
   restrictions: ClientMedicalRestriction[];
   onOpenModal: () => void;
+  hideAddButton?: boolean;
   isClient?: boolean;
 }
 
-export default function MedicalTab({ restrictions, onOpenModal, isClient }: MedicalTabProps) {
+export default function MedicalTab({ hideAddButton, restrictions, onOpenModal, isClient }: MedicalTabProps) {
   const { t } = useLanguage();
 
   return (
@@ -27,6 +28,7 @@ export default function MedicalTab({ restrictions, onOpenModal, isClient }: Medi
         {!isClient && (
           <button
             onClick={onOpenModal}
+            style={hideAddButton ? { display: "none" } : undefined}
             className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center space-x-1 cursor-pointer shadow-md shadow-amber-600/30"
           >
             <PlusCircle className="w-3.5 h-3.5" />

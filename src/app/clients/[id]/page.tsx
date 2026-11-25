@@ -457,6 +457,7 @@ export default function ClientProfilePage() {
           <MedicalTab
             restrictions={restrictions}
             onOpenModal={() => setMedicalModalOpen(true)}
+            hideAddButton={!isClient}
             isClient={isClient}
           />
               </div>
@@ -478,6 +479,7 @@ export default function ClientProfilePage() {
           <CoachesTab
             assignments={client.coaches || []}
             onOpenModal={() => setCoachAssignModalOpen(true)}
+            hideAddButton={!isClient}
             onUnassign={async (coachId) => {
               if (confirm("Are you sure you want to unassign this coach?")) {
                 try {
@@ -498,6 +500,7 @@ export default function ClientProfilePage() {
           <NotesTab
             notes={client.notes || []}
             onOpenModal={() => setNoteModalOpen(true)}
+            hideAddButton={!isClient}
             isClient={isClient}
           />
               </div>
@@ -540,6 +543,7 @@ export default function ClientProfilePage() {
           <MeasurementsTab
             measurements={measurements}
             onOpenModal={() => setMeasurementModalOpen(true)}
+            hideAddButton
           />
             </section>
             <section className="space-y-3">

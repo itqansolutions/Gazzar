@@ -9,9 +9,10 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 interface MeasurementsTabProps {
   measurements: ClientMeasurementHistory[];
   onOpenModal: () => void;
+  hideAddButton?: boolean;
 }
 
-export default function MeasurementsTab({ measurements, onOpenModal }: MeasurementsTabProps) {
+export default function MeasurementsTab({ hideAddButton, measurements, onOpenModal }: MeasurementsTabProps) {
   const { t } = useLanguage();
 
   const chartData = measurements
@@ -34,6 +35,7 @@ export default function MeasurementsTab({ measurements, onOpenModal }: Measureme
           </div>
           <button
             onClick={onOpenModal}
+            style={hideAddButton ? { display: "none" } : undefined}
             className="px-3 py-1.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs flex items-center space-x-1 cursor-pointer shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
           >
             <PlusCircle className="w-3.5 h-3.5" />

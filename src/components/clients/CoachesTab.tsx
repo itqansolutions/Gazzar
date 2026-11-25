@@ -7,11 +7,12 @@ import { PlusCircle, Trash2 } from "lucide-react";
 interface CoachesTabProps {
   assignments: ClientCoachAssignment[];
   onOpenModal: () => void;
+  hideAddButton?: boolean;
   onUnassign?: (coachId: string) => void;
   isClient?: boolean;
 }
 
-export default function CoachesTab({ assignments, onOpenModal, onUnassign, isClient }: CoachesTabProps) {
+export default function CoachesTab({ hideAddButton, assignments, onOpenModal, onUnassign, isClient }: CoachesTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -29,6 +30,7 @@ export default function CoachesTab({ assignments, onOpenModal, onUnassign, isCli
         {!isClient && (
           <button
             onClick={onOpenModal}
+            style={hideAddButton ? { display: "none" } : undefined}
             className="px-3.5 py-1.5 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white font-bold text-xs flex items-center space-x-1 cursor-pointer shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)]"
           >
             <PlusCircle className="w-3.5 h-3.5" />

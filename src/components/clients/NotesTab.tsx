@@ -7,10 +7,11 @@ import { PlusCircle, Lock, Globe } from "lucide-react";
 interface NotesTabProps {
   notes: ClientNote[];
   onOpenModal: () => void;
+  hideAddButton?: boolean;
   isClient?: boolean;
 }
 
-export default function NotesTab({ notes, onOpenModal, isClient = false }: NotesTabProps) {
+export default function NotesTab({ hideAddButton, notes, onOpenModal, isClient = false }: NotesTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -28,6 +29,7 @@ export default function NotesTab({ notes, onOpenModal, isClient = false }: Notes
         {!isClient && (
           <button
             onClick={onOpenModal}
+            style={hideAddButton ? { display: "none" } : undefined}
             className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center space-x-1 cursor-pointer shadow-md shadow-purple-600/30"
           >
             <PlusCircle className="w-3.5 h-3.5" />

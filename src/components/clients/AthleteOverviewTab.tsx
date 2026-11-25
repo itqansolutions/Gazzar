@@ -301,33 +301,6 @@ export default function AthleteOverviewTab({
 
   return (
     <div className="space-y-6">
-      {/* HEADER GREETING */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            <span>Welcome back, {client.user?.name || "Athlete"}</span>
-            <Sparkles className="w-5 h-5 text-brand-crimson" />
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Your training roadmap, today&apos;s workout focus, and performance progress at a glance.
-          </p>
-        </div>
-
-        {/* Quick Program Navigation Shortcut */}
-        {onNavigateTab && (
-          <div className="flex items-center space-x-2 rtl:space-x-reverse self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => onNavigateTab("program")}
-              className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-brand-crimson dark:hover:text-brand-crimson transition-colors flex items-center space-x-1 rtl:space-x-reverse cursor-pointer"
-            >
-              <span>Full Program View</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-      </div>
-
       {/* CHECK-IN ATTENTION OR ERROR BANNER */}
       {checkInLoadError && !loadingCheckIns && (
         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-3 shadow-sm">
