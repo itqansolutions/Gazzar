@@ -382,7 +382,7 @@ export default function CheckInsTab({
               ? "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400"
               : status.overallStatus === "DUE_SOON"
               ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400"
-              : "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+              : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400"
           }`}
         >
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
@@ -428,7 +428,7 @@ export default function CheckInsTab({
                     ? "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
                     : status.weight.isDueSoon
                     ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-                    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                 }`}
               >
                 {status.weight.isOverdue
@@ -475,7 +475,7 @@ export default function CheckInsTab({
                     ? "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
                     : status.measurement.isDueSoon
                     ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-                    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                 }`}
               >
                 {status.measurement.isOverdue
@@ -522,7 +522,7 @@ export default function CheckInsTab({
                     ? "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
                     : status.photo.isDueSoon
                     ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-                    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                 }`}
               >
                 {status.photo.isOverdue
@@ -586,7 +586,7 @@ export default function CheckInsTab({
                       <span
                         className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
                           sub.reviewStatus === "REVIEWED"
-                            ? "bg-emerald-500/15 text-emerald-600 border border-emerald-500/30"
+                            ? "bg-rose-500/15 text-rose-600 border border-rose-500/30"
                             : sub.reviewStatus === "FLAGGED"
                             ? "bg-red-500/15 text-red-600 border border-red-500/30"
                             : "bg-amber-500/15 text-amber-600 border border-amber-500/30"
@@ -669,7 +669,7 @@ export default function CheckInsTab({
                         <strong
                           className={
                             sub.generatedMeasurement.verificationStatus === "VERIFIED"
-                              ? "text-emerald-500"
+                              ? "text-rose-500"
                               : sub.generatedMeasurement.verificationStatus === "REJECTED"
                               ? "text-red-500"
                               : "text-amber-500"
@@ -683,7 +683,7 @@ export default function CheckInsTab({
                         <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
                           <button
                             onClick={() => handleVerifyMeasurement(sub.generatedMeasurement.id, "VERIFIED")}
-                            className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30 text-[10px] font-bold"
+                            className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-500 hover:bg-rose-500/30 text-[10px] font-bold"
                           >
                             Verify
                           </button>
@@ -959,7 +959,7 @@ export default function CheckInsTab({
                     onClick={() => setReviewStatus("REVIEWED")}
                     className={`py-2 text-xs font-bold rounded-xl border ${
                       reviewStatus === "REVIEWED"
-                        ? "bg-emerald-500 text-white border-emerald-500"
+                        ? "bg-rose-500 text-white border-rose-500"
                         : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300"
                     }`}
                   >

@@ -398,7 +398,7 @@ export default function SportsPage() {
                         <span
                           className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             isActive
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
                               : "bg-slate-500/15 text-slate-500 dark:text-slate-400 border-slate-500/30"
                           }`}
                         >

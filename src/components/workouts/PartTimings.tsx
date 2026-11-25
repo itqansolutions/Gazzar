@@ -26,7 +26,7 @@ export default function PartTimings({ blocks }: { blocks?: any[] | null }) {
             key={b.id}
             title={`${b.startedAt ? "Start " + new Date(b.startedAt).toLocaleTimeString() : ""}${b.finishedAt ? " · Finish " + new Date(b.finishedAt).toLocaleTimeString() : ""}`}
             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-              end ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30" : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+              end ? "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30" : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
             }`}
           >
             <Clock className="w-3 h-3" />

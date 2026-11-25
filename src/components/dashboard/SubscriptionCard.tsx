@@ -86,7 +86,7 @@ export default function SubscriptionCard({ clientId }: { clientId?: string }) {
     switch (status) {
       case "ACTIVE":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-500 border border-rose-500/30">
             <CheckCircle className="w-3.5 h-3.5" />
             <span>Active</span>
           </span>
@@ -211,7 +211,7 @@ export default function SubscriptionCard({ clientId }: { clientId?: string }) {
                     ? "text-sky-400"
                     : status === "EXPIRING_SOON"
                     ? "text-amber-500"
-                    : "text-emerald-500"
+                    : "text-rose-500"
                 }`}
               >
                 {status === "EXPIRED"

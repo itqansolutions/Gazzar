@@ -32,7 +32,7 @@
   --text-muted: #5B6370;
   --ink: #171E24;
 
-  --success: #16A34A;
+  --success: #E20D1B;
   --warning: #D97706;
   --danger: #DC2626;
   --info: #2563EB;
@@ -72,7 +72,7 @@ html.light {
   --text-muted: #5B6370;
   --ink: #171E24;
 
-  --success: #16A34A;
+  --success: #E20D1B;
   --warning: #D97706;
   --danger: #DC2626;
   --info: #2563EB;
@@ -113,7 +113,7 @@ html.dark {
   --text-muted: #9A9AA3;
   --ink: #FFFFFF;
 
-  --success: #22C55E;
+  --success: #F43F5E;
   --warning: #F59E0B;
   --danger: #F87171;
   --info: #3B82F6;

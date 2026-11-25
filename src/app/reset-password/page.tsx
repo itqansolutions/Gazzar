@@ -78,8 +78,8 @@ function ResetPasswordForm() {
       </div>
 
       {success ? (
-        <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-3">
-          <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
+        <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-center space-y-3">
+          <CheckCircle className="w-10 h-10 text-rose-400 mx-auto" />
           <h3 className="text-sm font-bold text-white">Password Updated Successfully!</h3>
           <p className="text-xs text-slate-300">
             Redirecting to athlete login in 3 seconds...

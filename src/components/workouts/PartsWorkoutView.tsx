@@ -267,7 +267,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
               key={blk.id}
               data-testid={`part-${idx + 1}`}
               className={`rounded-2xl border p-4 ${
-                finished ? "border-emerald-600/40 bg-emerald-950/20" : isCurrent ? "border-brand-crimson bg-slate-900" : "border-slate-800 bg-slate-900/40 opacity-60"
+                finished ? "border-rose-600/40 bg-rose-950/20" : isCurrent ? "border-brand-crimson bg-slate-900" : "border-slate-800 bg-slate-900/40 opacity-60"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -281,7 +281,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
                 </div>
                 <div className="text-[11px] font-bold shrink-0">
                   {finished && (
-                    <span className="text-emerald-400 flex items-center gap-1">
+                    <span className="text-rose-400 flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       {secs !== null ? fmtClock(secs) : t("Done", "تم")}
                     </span>
@@ -313,7 +313,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
                 <div className="mt-4 space-y-3">
                   {timed && (running || started) && running && phase && (
                     <div className="text-center py-3" data-testid="big-timer">
-                      <p className={`text-xs font-extrabold uppercase tracking-widest ${phase.label === "work" ? "text-emerald-400" : phase.label === "rest" ? "text-sky-400" : "text-amber-300"}`}>
+                      <p className={`text-xs font-extrabold uppercase tracking-widest ${phase.label === "work" ? "text-rose-400" : phase.label === "rest" ? "text-sky-400" : "text-amber-300"}`}>
                         {blk.type === "TABATA"
                           ? `${phase.label === "work" ? t("WORK", "اشتغل") : t("REST", "راحة")} · ${t("Round", "جولة")} ${phase.round}/${fmt?.rounds}`
                           : blk.type === "EMOM"
@@ -330,7 +330,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
                       ) : (
                         <p className="text-xs text-slate-400 mt-1">{t("Stopwatch", "ستوب ووتش")}</p>
                       )}
-                      {phase.done && <p className="text-sm font-bold text-emerald-400 mt-2">{t("Time is up!", "الوقت خلص!")}</p>}
+                      {phase.done && <p className="text-sm font-bold text-rose-400 mt-2">{t("Time is up!", "الوقت خلص!")}</p>}
                     </div>
                   )}
 
@@ -351,7 +351,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
                       type="button"
                       disabled={busy}
                       onClick={() => (blk.type === "AMRAP" || blk.type === "FOR_TIME" ? setFinishing(true) : finishPart(blk))}
-                      className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-extrabold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+                      className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 font-extrabold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
                     >
                       <CheckCircle className="w-4 h-4" />
                       {t("Done", "خلصت")}
@@ -389,7 +389,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
                           <input type="text" inputMode="numeric" placeholder={fmtClock(elapsed)} value={resTime} onChange={(e) => setResTime(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-base font-bold" />
                         </label>
                       )}
-                      <button type="button" disabled={busy} onClick={() => finishPart(blk)} className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-extrabold text-sm disabled:opacity-60">
+                      <button type="button" disabled={busy} onClick={() => finishPart(blk)} className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 font-extrabold text-sm disabled:opacity-60">
                         {t("Save result", "احفظ النتيجة")}
                       </button>
                     </div>
@@ -398,10 +398,10 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
               )}
 
               {finished && blk.type === "AMRAP" && (blk.resultRounds != null || blk.resultReps != null) && (
-                <p className="mt-2 text-xs text-emerald-300">{blk.resultRounds ?? 0} {t("rounds", "جولة")} + {blk.resultReps ?? 0} {t("reps", "تكرار")}</p>
+                <p className="mt-2 text-xs text-rose-300">{blk.resultRounds ?? 0} {t("rounds", "جولة")} + {blk.resultReps ?? 0} {t("reps", "تكرار")}</p>
               )}
               {finished && blk.type === "FOR_TIME" && blk.resultTimeSeconds != null && (
-                <p className="mt-2 text-xs text-emerald-300">{t("Time", "الوقت")} {fmtClock(blk.resultTimeSeconds)}</p>
+                <p className="mt-2 text-xs text-rose-300">{t("Time", "الوقت")} {fmtClock(blk.resultTimeSeconds)}</p>
               )}
             </section>
           );
@@ -414,7 +414,7 @@ export default function PartsWorkoutView({ assignmentId, onClose, onUpdated, onS
           </button>
         )}
         {(isCompleted || done) && (
-          <p className="text-center text-sm font-bold text-emerald-400 py-2">{t("Workout completed. Great job!", "التمرين خلص. شغل ممتاز!")}</p>
+          <p className="text-center text-sm font-bold text-rose-400 py-2">{t("Workout completed. Great job!", "التمرين خلص. شغل ممتاز!")}</p>
         )}
       </div>
     </div>

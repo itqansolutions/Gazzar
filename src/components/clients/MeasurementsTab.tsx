@@ -48,15 +48,15 @@ export default function MeasurementsTab({ hideAddButton, measurements, onOpenMod
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="weightGradClient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#E20D1B" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#E20D1B" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" opacity={0.3} />
               <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
               <YAxis stroke="#94a3b8" fontSize={11} domain={[70, 110]} />
               <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "12px", fontSize: "12px", color: "#fff" }} />
-              <Area type="monotone" dataKey="weight" name="Weight (KG)" stroke="#10b981" strokeWidth={3} fill="url(#weightGradClient)" />
+              <Area type="monotone" dataKey="weight" name="Weight (KG)" stroke="#E20D1B" strokeWidth={3} fill="url(#weightGradClient)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -101,7 +101,7 @@ export default function MeasurementsTab({ hideAddButton, measurements, onOpenMod
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                           vStatus === "VERIFIED"
-                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                            ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                             : vStatus === "REJECTED"
                             ? "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
                             : vStatus === "PENDING_REVIEW"

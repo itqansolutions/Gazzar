@@ -68,7 +68,7 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
                 <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
                   Welcome, {user?.name || "Athlete"}! 👋
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
                   {clientProfile?.status || "Active Member"}
                 </span>
               </div>
@@ -203,7 +203,7 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
         <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2.5 rtl:space-x-reverse">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
                 <Apple className="w-4 h-4" />
               </div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white">Daily Nutrition Plan</h3>
@@ -215,9 +215,9 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
 
           {nutritionPlan ? (
             <div className="space-y-3">
-              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">Target Calories</span>
-                <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-center">
+                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold block">Target Calories</span>
+                <span className="text-xl font-black text-rose-700 dark:text-rose-300">
                   {nutritionPlan.dailyCalorieTarget || 2400} <span className="text-xs font-normal">kcal</span>
                 </span>
               </div>

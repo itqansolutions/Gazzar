@@ -289,7 +289,7 @@ export default function ClientsPage() {
   const getStatusBadge = (status: ClientStatus) => {
     switch (status) {
       case "ACTIVE":
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400">Active</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400">Active</span>;
       case "LEAD":
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-400">Lead</span>;
       case "FROZEN":

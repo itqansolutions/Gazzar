@@ -570,7 +570,7 @@ export default function NutritionPage() {
       {/* Toast */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 px-4 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-2xl flex items-center space-x-2 rtl:space-x-reverse animate-in fade-in slide-in-from-top-4">
-          <CheckCircle className="w-4 h-4 text-emerald-400 dark:text-emerald-600 flex-shrink-0" />
+          <CheckCircle className="w-4 h-4 text-rose-400 dark:text-rose-600 flex-shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -980,7 +980,7 @@ export default function NutritionPage() {
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
                             prog.isActive
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
                               : "bg-slate-500/10 text-slate-500 border border-slate-500/20"
                           }`}
                         >
@@ -1184,7 +1184,7 @@ export default function NutritionPage() {
                 <div className="text-end">
                   <span className="text-xs font-bold text-slate-400 block">Compliance</span>
                   <span className={`text-lg font-black ${
-                    adherenceData.overallComplianceScore >= 80 ? "text-emerald-500" : "text-amber-500"
+                    adherenceData.overallComplianceScore >= 80 ? "text-rose-500" : "text-amber-500"
                   }`}>
                     {adherenceData.overallComplianceScore}%
                   </span>

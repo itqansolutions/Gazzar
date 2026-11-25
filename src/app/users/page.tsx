@@ -409,7 +409,7 @@ export default function UsersPage() {
                       <button
                         onClick={() => handleGenerateResetLink(u)}
                         title="Send Password Reset Link"
-                        className="p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors"
                       >
                         <Link2 className="w-4 h-4" />
                       </button>
@@ -759,7 +759,7 @@ export default function UsersPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                <Link2 className="w-5 h-5 text-emerald-500" />
+                <Link2 className="w-5 h-5 text-rose-500" />
                 <span>Athlete Activation Link</span>
               </h2>
               <button
@@ -796,7 +796,7 @@ export default function UsersPage() {
                       setCopiedLink(true);
                       setTimeout(() => setCopiedLink(false), 2500);
                     }}
-                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all flex-shrink-0"
+                    className="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all flex-shrink-0"
                   >
                     {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     <span>{copiedLink ? "Copied" : "Copy"}</span>
@@ -812,7 +812,7 @@ export default function UsersPage() {
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+                    className="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
                   >
                     <Share2 className="w-4 h-4" />
                     <span>Send via WhatsApp to Athlete</span>

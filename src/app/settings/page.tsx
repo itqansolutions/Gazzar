@@ -110,15 +110,15 @@ export default function SettingsPage() {
         {/* Data Persistence & PostgreSQL Cloud Status */}
         <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1f2937]">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <Sparkles className="w-4 h-4 text-rose-500" />
             <span>Database & Cloud Persistence</span>
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             System is fully backed by live PostgreSQL on Railway Cloud. All workouts, assessments, clients, and memberships are permanently stored in the database with zero reliance on browser cache or local storage.
           </p>
 
-          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 flex items-center space-x-2 font-mono">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-center space-x-2 font-mono">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
             <span>PostgreSQL: Connected & Synchronized (Railway Cloud)</span>
           </div>
         </div>

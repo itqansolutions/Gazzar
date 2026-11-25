@@ -295,7 +295,7 @@ export default function PhotosTab({ photos: initialPhotos, clientId }: PhotosTab
                     className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-crimson file:text-white hover:file:bg-[#FF2D3B] cursor-pointer"
                   />
                   {selectedFile && (
-                    <p className="text-[11px] text-emerald-500 mt-1 font-semibold">
+                    <p className="text-[11px] text-rose-500 mt-1 font-semibold">
                       Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                     </p>
                   )}

@@ -96,7 +96,7 @@ const BLOCK_TYPE_META: Record<BlockType, { label: string; desc: string; badgeCla
   SEQUENCE: {
     label: "Sequence",
     desc: "Timed intervals, EMOM, or movement sequence",
-    badgeClass: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30",
+    badgeClass: "bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-500/30",
     defaultRounds: 1
   }
 };
@@ -185,7 +185,7 @@ function getMetricBadgeMeta(metric: MetricType): { label: string; className: str
     case "LAPS_TIME":
       return {
         label: "Distance / Time / Pace",
-        className: "bg-teal-500/15 text-teal-600 dark:text-teal-300 border-teal-500/30"
+        className: "bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-500/30"
       };
     case "ROUNDS_REPS_TIME":
       return {
@@ -1975,7 +1975,7 @@ export default function TemplatesPage() {
                       <button
                         type="button"
                         onClick={() => handleAddBlock("SEQUENCE")}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold text-[11px] border border-emerald-500/30 cursor-pointer"
+                        className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 font-bold text-[11px] border border-rose-500/30 cursor-pointer"
                       >
                         + Sequence
                       </button>

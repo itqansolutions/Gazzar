@@ -262,8 +262,8 @@ function AttendanceContent() {
                     <span className="text-sm font-black text-slate-800 dark:text-slate-200">{totalCount}</span>
                   </div>
                   <div className="text-center px-2 border-r border-slate-200 dark:border-slate-800 rtl:border-r-0 rtl:border-l">
-                    <span className="text-[10px] uppercase font-bold text-emerald-500 block">Present</span>
-                    <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{presentCount}</span>
+                    <span className="text-[10px] uppercase font-bold text-rose-500 block">Present</span>
+                    <span className="text-sm font-black text-rose-600 dark:text-rose-400">{presentCount}</span>
                   </div>
                   <div className="text-center px-2">
                     <span className="text-[10px] uppercase font-bold text-brand-crimson block">Adherence</span>
@@ -300,8 +300,8 @@ function AttendanceContent() {
                     onClick={() => setStatusFilter("PRESENT")}
                     className={`px-2.5 py-1.5 rounded-xl font-bold cursor-pointer transition-all ${
                       statusFilter === "PRESENT"
-                        ? "bg-emerald-500 text-white"
-                        : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                        ? "bg-rose-500 text-white"
+                        : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                     }`}
                   >
                     Present ({presentCount})
@@ -380,8 +380,8 @@ function AttendanceContent() {
                             onClick={() => handleUpdateStatus(att.athleteId, "PRESENT")}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 rtl:space-x-reverse ${
                               att.status === "PRESENT"
-                                ? "bg-emerald-500 text-white shadow-sm ring-2 ring-emerald-500/50"
-                                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600"
+                                ? "bg-rose-500 text-white shadow-sm ring-2 ring-rose-500/50"
+                                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600"
                             }`}
                           >
                             <Check className="w-3.5 h-3.5" />

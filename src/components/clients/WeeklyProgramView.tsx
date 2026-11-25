@@ -19,7 +19,7 @@ interface WeeklyProgramViewProps {
 const DAY_LABELS = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
 
 function statusStyle(status: string) {
-  if (status === "COMPLETED") return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400";
+  if (status === "COMPLETED") return "bg-rose-500/15 text-rose-600 dark:text-rose-400";
   if (status === "IN_PROGRESS") return "bg-amber-500/15 text-amber-600 dark:text-amber-400";
   if (status === "SKIPPED" || status === "MISSED") return "bg-rose-500/10 text-rose-600 dark:text-rose-400";
   return "bg-blue-500/10 text-blue-600 dark:text-blue-400";

@@ -328,7 +328,7 @@ export default function HelpPage() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2 rtl:space-x-reverse">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <CheckCircle2 className="w-4 h-4 text-rose-500" />
             <span>Which Screen to Use for What / دليلك لتنفيذ المهام</span>
           </h2>
           <span className="text-xs text-slate-400 font-mono">
@@ -440,7 +440,7 @@ export default function HelpPage() {
             </p>
           </div>
           <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
-            <span className="font-extrabold text-emerald-500 block">3. Check-In Cadences & Photos</span>
+            <span className="font-extrabold text-rose-500 block">3. Check-In Cadences & Photos</span>
             <p className="text-slate-500">
               Automated rules for recurring weigh-ins and private progress photos (front/side/back) saved in the athlete dossier.
             </p>

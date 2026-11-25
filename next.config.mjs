@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
+// One id per build. Baked into the client bundle and served by /api/version so open tabs can detect a new deploy.
+const BUILD_ID = process.env.RAILWAY_GIT_COMMIT_SHA || process.env.SOURCE_COMMIT || String(Date.now());
 const nextConfig = {
+  generateBuildId: async () => BUILD_ID,
+  env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
@@ -12,6 +16,12 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        // Pages and API: always revalidate so a new deploy is picked up on the next load (no hard refresh needed).
+        // Hashed JS/CSS under /_next/static keep their immutable caching (new build = new filenames).
+        source: "/((?!_next/static|_next/image).*)",
+        headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }]
+      },
       {
         source: "/:path*",
         headers: [

@@ -235,7 +235,7 @@ export default function ReportsPage() {
       </div>
 
       {reviewSuccessToast && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold animate-in fade-in">
+        <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold animate-in fade-in">
           {reviewSuccessToast}
         </div>
       )}
@@ -289,10 +289,10 @@ export default function ReportsPage() {
 
             <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-1">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Class Attendance Rate</span>
-              <p className="text-2xl font-black text-emerald-500">
+              <p className="text-2xl font-black text-rose-500">
                 {loadingReports ? "..." : `${kpi.overallAttendanceRate ?? 0}%`}
               </p>
-              <span className="text-[10px] text-emerald-500 font-semibold">
+              <span className="text-[10px] text-rose-500 font-semibold">
                 Recorded session attendances
               </span>
             </div>
@@ -346,7 +346,7 @@ export default function ReportsPage() {
                           color: "#fff"
                         }}
                       />
-                      <Bar dataKey="rate" name="Attendance %" fill="#10b981" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="rate" name="Attendance %" fill="#E20D1B" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -409,12 +409,12 @@ export default function ReportsPage() {
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="text-emerald-500">High Adherence (80% - 100%)</span>
+                    <span className="text-rose-500">High Adherence (80% - 100%)</span>
                     <span className="text-slate-700 dark:text-slate-300">{adherenceBrackets.high} Athletes</span>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-emerald-500 h-full rounded-full"
+                      className="bg-rose-500 h-full rounded-full"
                       style={{
                         width: `${
                           kpi.totalAthletes > 0 ? (adherenceBrackets.high / kpi.totalAthletes) * 100 : 0
@@ -602,7 +602,7 @@ export default function ReportsPage() {
                       : ath.checkInStatus?.overallStatus === "DUE_SOON"
                       ? "bg-amber-500/15 text-amber-500 border-amber-500/30"
                       : ath.checkInStatus?.overallStatus === "UP_TO_DATE"
-                      ? "bg-emerald-500/15 text-emerald-500 border-emerald-500/30"
+                      ? "bg-rose-500/15 text-rose-500 border-rose-500/30"
                       : "bg-slate-500/10 text-slate-400 border-slate-500/20";
 
                   return (
@@ -639,7 +639,7 @@ export default function ReportsPage() {
                           <span
                             className={
                               ath.adherenceRate >= 80
-                                ? "text-emerald-500"
+                                ? "text-rose-500"
                                 : ath.adherenceRate >= 50
                                 ? "text-amber-500"
                                 : "text-rose-500"
@@ -652,7 +652,7 @@ export default function ReportsPage() {
                           <div
                             className={`h-full rounded-full ${
                               ath.adherenceRate >= 80
-                                ? "bg-emerald-500"
+                                ? "bg-rose-500"
                                 : ath.adherenceRate >= 50
                                 ? "bg-amber-500"
                                 : "bg-rose-500"
@@ -768,7 +768,7 @@ export default function ReportsPage() {
             </div>
           ) : pendingReviews.length === 0 ? (
             <div className="p-16 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 text-xs space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+              <CheckCircle2 className="w-8 h-8 text-rose-500 mx-auto" />
               <p className="font-bold text-slate-700 dark:text-slate-300 text-sm">All caught up!</p>
               <p>Every completed workout session has been reviewed by staff coaches.</p>
             </div>
@@ -797,7 +797,7 @@ export default function ReportsPage() {
                             <span className="text-sm font-black text-slate-900 dark:text-white">
                               {item.clientName}
                             </span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-500 border border-rose-500/30">
                               Completed ✓
                             </span>
                           </div>

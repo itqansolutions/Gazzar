@@ -124,7 +124,7 @@ export default function NutritionTab({ clientId, isClient = false }: NutritionTa
                   >
                     {activePlan.mode}
                   </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                     ACTIVE
                   </span>
                 </div>
@@ -193,7 +193,7 @@ export default function NutritionTab({ clientId, isClient = false }: NutritionTa
                 <div className="text-end">
                   <span className="text-xs font-bold text-slate-400 block">Compliance</span>
                   <span className={`text-base font-black ${
-                    adherence.overallComplianceScore >= 80 ? "text-emerald-500" : adherence.overallComplianceScore >= 50 ? "text-amber-500" : "text-brand-crimson"
+                    adherence.overallComplianceScore >= 80 ? "text-rose-500" : adherence.overallComplianceScore >= 50 ? "text-amber-500" : "text-brand-crimson"
                   }`}>
                     {adherence.overallComplianceScore}%
                   </span>
@@ -205,7 +205,7 @@ export default function NutritionTab({ clientId, isClient = false }: NutritionTa
                   <span className="text-[10px] text-slate-400 font-bold block">Avg Calories</span>
                   <span className="text-sm font-black text-slate-900 dark:text-white">{adherence.avgCalories} kcal</span>
                   {adherence.calorieAdherencePercentage !== null && (
-                    <span className="text-[10px] text-emerald-500 block font-bold mt-0.5">
+                    <span className="text-[10px] text-rose-500 block font-bold mt-0.5">
                       {adherence.calorieAdherencePercentage}% Match
                     </span>
                   )}
@@ -214,7 +214,7 @@ export default function NutritionTab({ clientId, isClient = false }: NutritionTa
                   <span className="text-[10px] text-slate-400 font-bold block">Avg Protein</span>
                   <span className="text-sm font-black text-brand-crimson">{adherence.avgProtein}g</span>
                   {adherence.proteinAdherencePercentage !== null && (
-                    <span className="text-[10px] text-emerald-500 block font-bold mt-0.5">
+                    <span className="text-[10px] text-rose-500 block font-bold mt-0.5">
                       {adherence.proteinAdherencePercentage}% Match
                     </span>
                   )}
@@ -223,7 +223,7 @@ export default function NutritionTab({ clientId, isClient = false }: NutritionTa
                   <span className="text-[10px] text-slate-400 font-bold block">Avg Water</span>
                   <span className="text-sm font-black text-blue-500">{adherence.avgWater}L</span>
                   {adherence.waterAdherencePercentage !== null && (
-                    <span className="text-[10px] text-emerald-500 block font-bold mt-0.5">
+                    <span className="text-[10px] text-rose-500 block font-bold mt-0.5">
                       {adherence.waterAdherencePercentage}% Match
                     </span>
                   )}
@@ -231,7 +231,7 @@ export default function NutritionTab({ clientId, isClient = false }: NutritionTa
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                   <span className="text-[10px] text-slate-400 font-bold block">Missing Logs</span>
                   <span className={`text-sm font-black ${
-                    adherence.missingLogDays.length > 0 ? "text-amber-500" : "text-emerald-500"
+                    adherence.missingLogDays.length > 0 ? "text-amber-500" : "text-rose-500"
                   }`}>
                     {adherence.missingLogDays.length} day(s)
                   </span>
@@ -277,7 +277,7 @@ export default function NutritionTab({ clientId, isClient = false }: NutritionTa
                             Manual Entry
                           </span>
                         ) : (
-                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                             Calculated
                           </span>
                         )}

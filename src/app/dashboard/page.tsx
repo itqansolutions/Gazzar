@@ -331,7 +331,7 @@ export default function DashboardPage() {
                 <span className="text-[11px] font-medium text-muted block mb-1">
                   Membership Status
                 </span>
-                <p className="text-sm font-bold text-emerald-500">
+                <p className="text-sm font-bold text-rose-500">
                   {myClient?.status || "ACTIVE"}
                 </p>
               </div>

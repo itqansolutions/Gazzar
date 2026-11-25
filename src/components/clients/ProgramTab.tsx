@@ -74,7 +74,7 @@ export default function ProgramTab({
             <div>
               <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
                 <h4 className="text-base font-extrabold text-slate-900 dark:text-white">{program.name}</h4>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
                   {activeAssignment.status || "ACTIVE"}
                 </span>
               </div>

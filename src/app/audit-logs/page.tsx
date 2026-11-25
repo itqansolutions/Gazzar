@@ -108,7 +108,7 @@ export default function AuditLogsPage() {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                           log.action.includes("CREATE")
-                            ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                            ? "bg-rose-500/20 text-rose-600 dark:text-rose-400"
                             : log.action.includes("DELETE")
                             ? "bg-red-500/20 text-red-600 dark:text-red-400"
                             : "bg-brand-crimson/20 text-brand-crimson"

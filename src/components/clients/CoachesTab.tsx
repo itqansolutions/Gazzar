@@ -66,7 +66,7 @@ export default function CoachesTab({ hideAddButton, assignments, onOpenModal, on
                   ca.role === "PRIMARY"
                     ? "bg-brand-crimson/15 text-brand-crimson border border-brand-crimson/30"
                     : ca.role === "NUTRITIONIST"
-                    ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20"
+                    ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
                     : ca.role === "PHYSIOTHERAPIST"
                     ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
                     : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"

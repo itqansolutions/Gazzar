@@ -114,7 +114,7 @@ export default function MembershipsPage() {
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                               m.paymentStatus === "PAID"
-                                ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                ? "bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30"
                                 : "bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/40"
                             }`}
                           >

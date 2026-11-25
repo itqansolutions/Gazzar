@@ -96,7 +96,7 @@ export default function WorkoutsTab({
 
     const badgeCls =
       effStatus === "COMPLETED"
-        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+        ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
         : effStatus === "IN_PROGRESS"
         ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
         : effStatus === "SKIPPED"
@@ -138,7 +138,7 @@ export default function WorkoutsTab({
           <div
             className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold shrink-0 mt-0.5 ${
               effStatus === "COMPLETED"
-                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
                 : effStatus === "IN_PROGRESS"
                 ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
                 : "bg-brand-crimson/15 text-brand-crimson"
@@ -428,9 +428,9 @@ export default function WorkoutsTab({
 
                   {/* If all workouts today are completed, celebrate and surface nearest upcoming */}
                   {selection.isTodayAllCompleted && (
-                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between gap-2">
+                    <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-2">
                       <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-rose-500 shrink-0" />
                         <span className="font-bold">
                           All workouts completed for today! Excellent work!
                         </span>

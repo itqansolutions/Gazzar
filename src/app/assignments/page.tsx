@@ -71,7 +71,7 @@ function formatStatusBadge(status: EffectiveAssignmentStatus) {
     case "COMPLETED":
       return {
         label: "Completed",
-        cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+        cls: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
       };
     case "IN_PROGRESS":
       return {
@@ -765,7 +765,7 @@ function AssignmentsContent() {
       </div>
 
       {toastMessage && (
-        <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
+        <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{toastMessage}</span>
         </div>

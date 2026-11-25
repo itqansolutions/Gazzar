@@ -748,7 +748,7 @@ export default function WorkoutModalRunner({
       case "SEQUENCE":
         return "bg-amber-500/20 text-amber-300 border-amber-500/40";
       default:
-        return "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+        return "bg-rose-500/20 text-rose-300 border-rose-500/40";
     }
   };
 
@@ -839,7 +839,7 @@ export default function WorkoutModalRunner({
                   </span>
                 )}
                 {isCompletedSession && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
                     {isRtl ? "مكتمل" : "Completed"}
                   </span>
                 )}
@@ -937,7 +937,7 @@ export default function WorkoutModalRunner({
           {/* SUCCESS SCREEN */}
           {isCompletedSuccess && (
             <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-500/10">
+              <div className="w-16 h-16 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shadow-xl shadow-rose-500/10">
                 <Trophy className="w-9 h-9" />
               </div>
               <div>
@@ -958,7 +958,7 @@ export default function WorkoutModalRunner({
                 </div>
                 <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
                   <span className="text-[11px] text-slate-400 block">{isRtl ? "المجموعات" : "Sets Done"}</span>
-                  <span className="text-sm font-bold text-emerald-400">
+                  <span className="text-sm font-bold text-rose-400">
                     {completedSetsCount} / {totalSetsCount}
                   </span>
                 </div>
@@ -1034,7 +1034,7 @@ export default function WorkoutModalRunner({
                             isCurrentInBlock
                               ? "bg-brand-crimson text-white border-brand-crimson shadow-md shadow-[0_0_12px_rgba(240,20,37,0.35)] ring-1 ring-white/20"
                               : isExDone
-                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                              ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
                               : "bg-slate-950/60 border-slate-800 text-slate-400 opacity-60"
                           }`}
                         >
@@ -1045,7 +1045,7 @@ export default function WorkoutModalRunner({
                               {isRtl ? "الحالي" : "Now"}
                             </span>
                           )}
-                          {isExDone && <Check className="w-3 h-3 text-emerald-400" />}
+                          {isExDone && <Check className="w-3 h-3 text-rose-400" />}
                         </div>
                       );
                     })}
@@ -1419,8 +1419,8 @@ export default function WorkoutModalRunner({
 
               {/* SAVE SUCCESS NOTICE */}
               {stepSaveSuccess && (
-                <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs flex items-center space-x-2 rtl:space-x-reverse">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-center space-x-2 rtl:space-x-reverse">
+                  <CheckCircle2 className="w-4 h-4 text-rose-400" />
                   <span>{isRtl ? "تم حفظ تقدم التمرين ذرياً بنجاح." : "Progress saved atomically."}</span>
                 </div>
               )}
@@ -1455,7 +1455,7 @@ export default function WorkoutModalRunner({
                   </div>
                   <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
                     <span className="text-[11px] text-slate-400 block">{isRtl ? "المجموعات المنجزة" : "Sets Done"}</span>
-                    <span className="text-sm font-bold text-emerald-400">
+                    <span className="text-sm font-bold text-rose-400">
                       {completedSetsCount} / {totalSetsCount}
                     </span>
                   </div>
@@ -1609,7 +1609,7 @@ export default function WorkoutModalRunner({
                   type="button"
                   disabled={isFinishing || isCompletedSession}
                   onClick={handleFinishWorkout}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center space-x-1.5 rtl:space-x-reverse transition-all shadow-md shadow-rose-500/20 disabled:opacity-50"
                 >
                   {isFinishing ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />

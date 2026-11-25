@@ -733,7 +733,7 @@ export default function ProgramsPage() {
         );
       default:
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30">
             Active
           </span>
         );
@@ -986,7 +986,7 @@ export default function ProgramsPage() {
                         {prog.nutritionProgram && (
                           <>
                             <span>•</span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold text-[11px]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 font-bold text-[11px]">
                               <Apple className="w-3 h-3" />
                               {prog.nutritionProgram.title}
                               {prog.nutritionProgram.dailyCalories ? ` (${prog.nutritionProgram.dailyCalories} kcal)` : ""}
@@ -1038,7 +1038,7 @@ export default function ProgramsPage() {
                         type="button"
                         onClick={() => handleStatusChange(prog, "ACTIVE")}
                         title="Reactivate program"
-                        className="p-2 rounded-xl text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors cursor-pointer"
+                        className="p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                       >
                         <RotateCcw className="w-4 h-4" />
                       </button>
@@ -1283,7 +1283,7 @@ export default function ProgramsPage() {
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Apple className="w-4 h-4 text-emerald-500" />
+                    <Apple className="w-4 h-4 text-rose-500" />
                     <div>
                       <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                         Nutrition Plan Attachment (Optional)
@@ -1374,7 +1374,7 @@ export default function ProgramsPage() {
                         type="button"
                         disabled={savingNutrition}
                         onClick={handleQuickCreateNutrition}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold cursor-pointer disabled:opacity-50"
                       >
                         {savingNutrition ? "Saving..." : "Save & Attach Nutrition Plan"}
                       </button>
@@ -1771,7 +1771,7 @@ export default function ProgramsPage() {
 
               {/* Nutrition Inheritance / Override Options */}
               {applyProgram.nutritionProgram && (
-                <div className="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/25 space-y-2.5">
+                <div className="p-3.5 rounded-2xl bg-rose-500/5 border border-rose-500/25 space-y-2.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white cursor-pointer">
                       <input
@@ -1783,7 +1783,7 @@ export default function ProgramsPage() {
                       <span>Attach Linked Nutrition Plan ({applyProgram.nutritionProgram.title})</span>
                     </label>
                     {includeNutrition && (
-                      <label className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[11px] font-bold text-rose-700 dark:text-rose-400 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={customizeNutrition}

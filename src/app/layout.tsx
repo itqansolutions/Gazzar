@@ -3,6 +3,7 @@ import "./globals.css";
 import { inter, barlow, montserrat, caveat } from "./fonts";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
+import VersionWatcher from "@/components/layout/VersionWatcher";
 import { ThemeProvider } from "@/context/ThemeContext";
 import AppShell from "@/components/layout/AppShell";
 
@@ -85,6 +86,7 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <AppShell>{children}</AppShell>
+              <VersionWatcher />
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
