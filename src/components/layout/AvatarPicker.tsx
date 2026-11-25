@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { PRESET_AVATARS, resolveAvatar } from "@/lib/avatars";
@@ -32,7 +33,7 @@ export default function AvatarPicker({ onClose, onChanged }: { onClose: () => vo
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[90] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div
         className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-5 space-y-4"
@@ -66,6 +67,7 @@ export default function AvatarPicker({ onClose, onChanged }: { onClose: () => vo
         </div>
         {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
