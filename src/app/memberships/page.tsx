@@ -87,6 +87,7 @@ export default function MembershipsPage() {
                 No active memberships recorded yet.
               </div>
             ) : (
+              <>
               <div className="sm:hidden space-y-3">
                 {memberships.map((m) => (
                   <div key={m.id} className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
@@ -144,6 +145,7 @@ export default function MembershipsPage() {
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </div>
         </div>
