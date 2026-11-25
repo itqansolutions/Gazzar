@@ -53,7 +53,10 @@ const config: Config = {
           hover: "var(--brand-hover)",
           soft: "var(--brand-soft)",
           text: "var(--brand-text)",
-          contrast: "var(--brand-contrast)"
+          contrast: "var(--brand-contrast)",
+          // Used by ~550 class names (bg-brand-crimson, text-brand-crimson/15 ...). It was never defined,
+          // so primary buttons rendered with no background (white text on white).
+          crimson: "#E20D1B"
         },
         app: "var(--bg)",
         card: "var(--surface)",
