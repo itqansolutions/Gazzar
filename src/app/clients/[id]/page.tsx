@@ -504,7 +504,6 @@ export default function ClientProfilePage() {
         {activeTab === "training" && (
           <div className="space-y-8">
             <section className="space-y-3">
-              <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Active training program</h2>
           <ProgramTab
             clientId={client.id}
             isClient={isClient}
