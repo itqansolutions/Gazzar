@@ -87,21 +87,6 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
             </div>
           </div>
 
-          <div className="flex items-center space-x-3 rtl:space-x-reverse self-start md:self-auto">
-            <Link
-              href={profileHref}
-              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors"
-            >
-              My Full Profile
-            </Link>
-            <Link
-              href="/assignments"
-              className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold shadow-md shadow-[0_0_20px_rgba(240,20,37,0.38)] flex items-center space-x-1 rtl:space-x-reverse"
-            >
-              <Dumbbell className="w-3.5 h-3.5" />
-              <span>All Workouts</span>
-            </Link>
-          </div>
         </div>
       </div>
 
@@ -209,12 +194,6 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
             )}
           </div>
 
-          <Link
-            href="/assignments"
-            className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold text-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors block"
-          >
-            View Training Calendar
-          </Link>
         </div>
       </div>
 
