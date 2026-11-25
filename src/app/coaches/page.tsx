@@ -527,15 +527,7 @@ export default function CoachesPage() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => openAssignAthleteModal(co)}
-                        title="Assign athlete to this coach"
-                        className="px-2 py-1 rounded-lg bg-brand-crimson/15 hover:bg-brand-crimson text-brand-crimson hover:text-white text-[10px] font-bold border border-brand-crimson/30 flex items-center gap-1 cursor-pointer transition-colors flex-shrink-0"
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>Assign</span>
-                      </button>
+                      
                     </div>
                   </div>
                 </div>

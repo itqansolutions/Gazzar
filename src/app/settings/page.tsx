@@ -49,59 +49,8 @@ export default function SettingsPage() {
 
       {/* Settings Form */}
       <div className="bg-white dark:bg-[#121620] border border-slate-200 dark:border-[#1f2937] rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 transition-colors duration-200">
-        {/* Theme Mode Selection */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-            {theme === "dark" ? <Moon className="w-4 h-4 text-red-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
-            <span>Theme Mode</span>
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setTheme("dark")}
-              className={`p-3.5 rounded-2xl border text-xs font-bold text-center flex items-center justify-center space-x-2 transition-all ${
-                theme === "dark"
-                  ? "bg-[#090a0f] border-red-500 text-red-400 shadow-md ring-1 ring-red-500/30 font-extrabold"
-                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <Moon className="w-4 h-4 text-red-400" />
-              <span>Dark Mode 🌙</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme("light")}
-              className={`p-3.5 rounded-2xl border text-xs font-bold text-center flex items-center justify-center space-x-2 transition-all ${
-                theme === "light"
-                  ? "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-400 shadow-md ring-1 ring-red-500/30 font-extrabold"
-                  : "bg-slate-100 dark:bg-[#161c28] border-slate-200 dark:border-[#1f2937] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <Sun className="w-4 h-4 text-amber-500" />
-              <span>Light Mode ☀️</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Language Selection */}
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1f2937]">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-            <Globe className="w-4 h-4 text-red-500" />
-            <span>System Language</span>
-          </h3>
-          <div className="grid grid-cols-1 gap-3">
-            <button
-              type="button"
-              onClick={() => setLanguage("en")}
-              className="p-3.5 rounded-2xl border text-xs font-bold text-center transition-all bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-400 shadow-md ring-1 ring-red-500/30"
-            >
-              English (LTR) 🌐
-            </button>
-          </div>
-        </div>
-
         {/* Units Selection */}
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1f2937]">
+        <div className="space-y-3">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
             <Scale className="w-4 h-4 text-red-500" />
             <span>Measurement Units</span>

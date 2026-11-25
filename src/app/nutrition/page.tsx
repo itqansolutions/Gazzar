@@ -960,12 +960,7 @@ export default function NutritionPage() {
             <div className="p-12 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 text-xs space-y-3">
               <Apple className="w-8 h-8 text-slate-400 mx-auto" />
               <p>No nutrition programs found matching filters.</p>
-              <button
-                onClick={() => openProgramModal()}
-                className="px-4 py-2 rounded-xl bg-brand-crimson text-white text-xs font-bold"
-              >
-                + Create First Program
-              </button>
+              
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

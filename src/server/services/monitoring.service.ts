@@ -674,15 +674,23 @@ export class MonitoringService {
       "#06b6d4"  // cyan
     ];
 
-    const sportsDistData = athleteSports.map((as, idx) => {
+    const sportsDistMap = new Map<string, { sportId: string; name: string; value: number; color: string }>();
+    athleteSports.forEach((as) => {
       const sp = sports.find((s) => s.id === as.preferredSportId);
-      return {
-        sportId: as.preferredSportId || "unassigned",
-        name: sp?.nameEn || "General / Unassigned",
-        value: as._count.id,
-        color: sportColorPalette[idx % sportColorPalette.length]
-      };
+      const name = sp?.nameEn || "General / Unassigned";
+      const existing = sportsDistMap.get(name);
+      if (existing) {
+        existing.value += as._count.id;
+      } else {
+        sportsDistMap.set(name, {
+          sportId: as.preferredSportId || "unassigned",
+          name,
+          value: as._count.id,
+          color: sportColorPalette[sportsDistMap.size % sportColorPalette.length]
+        });
+      }
     });
+    const sportsDistData = Array.from(sportsDistMap.values());
 
     return {
       kpi: {

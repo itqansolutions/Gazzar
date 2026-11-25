@@ -477,7 +477,7 @@ export default function ExercisesPage() {
               className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson shadow-sm"
             >
               <option value="ALL">All Sports</option>
-              {sports.map(sp => (
+              {sports.filter(sp => sp.isActive !== false || sp.id === selectedSport).map(sp => (
                 <option key={sp.id} value={sp.id}>
                   {sp.icon ? `${sp.icon} ` : ""}{sp.nameEn || sp.nameAr}{sp.isActive === false ? " (Archived)" : ""}
                 </option>
