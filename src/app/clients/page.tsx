@@ -493,6 +493,14 @@ export default function ClientsPage() {
                             <p className="text-[11px] text-slate-400">
                               {client.user?.email || client.user?.phone || "Active Athlete"}
                             </p>
+                            {/* Phone: the Actions column is off-screen, so repeat the main actions here */}
+                            <div className="flex md:hidden items-center gap-3 pt-1.5 text-[11px] font-bold">
+                              <Link href={`/clients/${client.id}`} className="text-brand-crimson">View</Link>
+                              {(user?.role === "ADMIN" || user?.role === "HEAD_COACH") && (
+                                <button type="button" onClick={() => setMembershipClient(client)} className="text-slate-300">+ Plan</button>
+                              )}
+                              <button type="button" onClick={() => openAssignModal(client)} className="text-slate-300">Coach</button>
+                            </div>
                           </div>
                         </div>
                       </td>
