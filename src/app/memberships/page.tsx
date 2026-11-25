@@ -101,7 +101,7 @@ export default function MembershipsPage() {
                     {memberships.map((m) => (
                       <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="p-3 font-bold text-slate-900 dark:text-white">{m.client?.user?.name || "Client"}</td>
-                        <td className="p-3 font-medium text-slate-700 dark:text-slate-300">{m.planType}</td>
+                        <td className="p-3 font-medium text-slate-700 dark:text-slate-300">{({ MONTHLY: "1 Month", THREE_MONTHS: "3 Months", SIX_MONTHS: "6 Months", ANNUAL: "Annual", PERSONAL_TRAINING: "Personal Training", GROUP_CLASS: "Class Pack" } as Record<string, string>)[m.planType] || m.planType}</td>
                         <td className="p-3 text-center text-slate-500 dark:text-slate-400">
                           {m.startDate ? new Date(m.startDate).toISOString().slice(0, 10) : "N/A"}
                         </td>

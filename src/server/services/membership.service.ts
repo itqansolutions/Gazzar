@@ -49,7 +49,43 @@ export class MembershipService {
   /**
    * Get available membership packages
    */
-  getPackages() {
+  async getPackages() {
+    // Single price list: the website CMS packages (Public Packages) are the source of truth.
+    try {
+      const rows = await prisma.publicPackage.findMany({
+        where: { isActive: true },
+        orderBy: [{ displayOrder: "asc" }, { price: "asc" }]
+      });
+      if (rows.length > 0) {
+        return rows.map((r) => {
+          const days = r.durationDays;
+          const planType = r.sessionsCount
+            ? MembershipPlan.GROUP_CLASS
+            : days <= 45
+            ? MembershipPlan.MONTHLY
+            : days <= 120
+            ? MembershipPlan.THREE_MONTHS
+            : days <= 240
+            ? MembershipPlan.SIX_MONTHS
+            : MembershipPlan.ANNUAL;
+          // Some CMS rows keep "(Unlimited)" in the Arabic-name field; only use nameEn as the display name.
+          const nameEn = r.sessionsCount && !/session/i.test(r.nameEn) ? `${r.nameEn} (${r.sessionsCount} sessions)` : r.nameEn;
+          return {
+            id: r.id,
+            nameEn,
+            nameAr: r.nameAr || nameEn,
+            description: r.descriptionEn || "",
+            price: r.price,
+            currency: r.currency,
+            durationDays: days,
+            sessionsCount: r.sessionsCount ?? undefined,
+            planType
+          };
+        });
+      }
+    } catch (e) {
+      console.error("[membership.getPackages] CMS read failed, using fallback list", e);
+    }
     return MEMBERSHIP_PACKAGES;
   }
 

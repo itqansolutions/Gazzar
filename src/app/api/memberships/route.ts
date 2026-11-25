@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const auth = await requireAuth(req);
     if (!auth.ok) return auth.response;
 
-    const packages = membershipService.getPackages();
+    const packages = await membershipService.getPackages();
     const allMemberships = await membershipService.getMemberships();
     const allowedClientIds = await getAssignedClientIdsForActor(auth.actor);
     const memberships =
