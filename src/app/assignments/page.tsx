@@ -309,6 +309,8 @@ function AssignmentsContent() {
     }
   };
 
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
   const filteredAssignments = useMemo(() => {
     const list = assignments.filter((a) => {
       const eff = getEffectiveStatus(a);
@@ -358,6 +360,28 @@ function AssignmentsContent() {
     filterDateTo,
     searchQuery
   ]);
+
+
+  const displayItems = useMemo(() => {
+    const out: any[] = [];
+    const groups = new Map<string, any>();
+    for (const a of filteredAssignments) {
+      const gid = a.sourceType === "PROGRAM" && a.programId ? `${a.clientId}:${a.programId}` : null;
+      if (!gid) {
+        out.push({ type: "single", a });
+        continue;
+      }
+      let g = groups.get(gid);
+      if (!g) {
+        g = { type: "group", id: gid, items: [] as any[] };
+        groups.set(gid, g);
+        out.push(g);
+      }
+      g.items.push(a);
+    }
+    return out.map((it) => (it.type === "group" && it.items.length === 1 ? { type: "single", a: it.items[0] } : it));
+  }, [filteredAssignments]);
+
 
   const statusCounts = useMemo(() => {
     const counts = { ALL: assignments.length, SCHEDULED: 0, IN_PROGRESS: 0, COMPLETED: 0, SKIPPED: 0 };
@@ -615,6 +639,101 @@ function AssignmentsContent() {
     }
   };
 
+  const renderCard = (a: any) => {
+    const eff = getEffectiveStatus(a);
+    const statusBadge = formatStatusBadge(eff);
+    const sourceBadge = formatSourceBadge(a.sourceType);
+    const dateStr = toCalendarDateKey(a.scheduledDate);
+    const exCount = a.exercises?.length || a.template?.exercises?.length || 0;
+
+    return (
+      <div
+        key={a.id}
+        className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+      >
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${sourceBadge.cls}`}>
+              {sourceBadge.label}
+            </span>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusBadge.cls}`}>
+              {statusBadge.label}
+            </span>
+            {a.programWeekNumber && a.programDayNumber && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                {a.program?.titleEn ? `${a.program.titleEn} · ` : ""}
+                Week {a.programWeekNumber} · Day {a.programDayNumber}
+                {a.programDayTitle ? ` (${a.programDayTitle})` : ""}
+              </span>
+            )}
+          </div>
+
+          <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+            {a.title || a.template?.titleEn || a.template?.titleAr || "Custom Workout"}
+          </h3>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-brand-crimson" />
+              <strong className="text-slate-700 dark:text-slate-200">{dateStr}</strong>
+            </span>
+            {!isClient && (
+              <span className="flex items-center gap-1">
+                <UserCheck className="w-3.5 h-3.5" />
+                Athlete: <strong className="text-slate-700 dark:text-slate-200">{a.client?.user?.name || "Athlete"}</strong>
+              </span>
+            )}
+            <span>
+              Coach: <strong className="text-slate-700 dark:text-slate-200">{a.coach?.user?.name || "Coach"}</strong>
+            </span>
+            <span className="flex items-center gap-1">
+              <Layers className="w-3.5 h-3.5" />
+              {exCount} exercise{exCount === 1 ? "" : "s"}
+            </span>
+            {a.workoutLog?.durationMinutes && eff === "COMPLETED" && (
+              <span className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                {a.workoutLog.durationMinutes} min · RPE {a.workoutLog.overallRpe ?? "-"}
+              </span>
+            )}
+          </div>
+
+          {eff === "SKIPPED" && a.workoutLog?.clientFeedback && (
+            <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1.5 pt-1">
+              <SkipForward className="w-3.5 h-3.5 shrink-0" />
+              <span>Skip reason: {a.workoutLog.clientFeedback}</span>
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            onClick={() => openInspection(a)}
+            className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>{eff === "COMPLETED" ? "Planned vs Actual" : "View Plan"}</span>
+          </button>
+
+          <Link
+            href={`/workout/${a.id}/execute`}
+            className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand-crimson/25"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>
+              {eff === "COMPLETED"
+                ? "View Summary"
+                : eff === "IN_PROGRESS"
+                ? "Resume Workout"
+                : eff === "SKIPPED"
+                ? "View Details"
+                : "Execute Workout"}
+            </span>
+          </Link>
+        </div>
+      </div>
+    );
+  };
   return (
     <div className="space-y-6 pb-16">
       {/* Header */}
@@ -812,98 +931,45 @@ function AssignmentsContent() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredAssignments.map((a) => {
-            const eff = getEffectiveStatus(a);
-            const statusBadge = formatStatusBadge(eff);
-            const sourceBadge = formatSourceBadge(a.sourceType);
-            const dateStr = toCalendarDateKey(a.scheduledDate);
-            const exCount = a.exercises?.length || a.template?.exercises?.length || 0;
-
+          {displayItems.map((it: any) => {
+            if (it.type === "single") return renderCard(it.a);
+            const items: any[] = it.items;
+            const done = items.filter((x) => getEffectiveStatus(x) === "COMPLETED").length;
+            const open = expandedGroups.has(it.id);
+            const first = items[0];
+            const next =
+              items.find((x) => ["SCHEDULED", "IN_PROGRESS"].includes(getEffectiveStatus(x)) && toCalendarDateKey(x.scheduledDate) >= getCairoDateKey()) ||
+              items[0];
             return (
-              <div
-                key={a.id}
-                className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${sourceBadge.cls}`}>
-                      {sourceBadge.label}
-                    </span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusBadge.cls}`}>
-                      {statusBadge.label}
-                    </span>
-                    {a.programWeekNumber && a.programDayNumber && (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                        {a.program?.titleEn ? `${a.program.titleEn} · ` : ""}
-                        Week {a.programWeekNumber} · Day {a.programDayNumber}
-                        {a.programDayTitle ? ` (${a.programDayTitle})` : ""}
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                    {a.title || a.template?.titleEn || a.template?.titleAr || "Custom Workout"}
-                  </h3>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-brand-crimson" />
-                      <strong className="text-slate-700 dark:text-slate-200">{dateStr}</strong>
-                    </span>
-                    {!isClient && (
-                      <span className="flex items-center gap-1">
-                        <UserCheck className="w-3.5 h-3.5" />
-                        Athlete: <strong className="text-slate-700 dark:text-slate-200">{a.client?.user?.name || "Athlete"}</strong>
-                      </span>
-                    )}
-                    <span>
-                      Coach: <strong className="text-slate-700 dark:text-slate-200">{a.coach?.user?.name || "Coach"}</strong>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Layers className="w-3.5 h-3.5" />
-                      {exCount} exercise{exCount === 1 ? "" : "s"}
-                    </span>
-                    {a.workoutLog?.durationMinutes && eff === "COMPLETED" && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {a.workoutLog.durationMinutes} min · RPE {a.workoutLog.overallRpe ?? "-"}
-                      </span>
-                    )}
-                  </div>
-
-                  {eff === "SKIPPED" && a.workoutLog?.clientFeedback && (
-                    <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1.5 pt-1">
-                      <SkipForward className="w-3.5 h-3.5 shrink-0" />
-                      <span>Skip reason: {a.workoutLog.clientFeedback}</span>
+              <div key={it.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedGroups((prev) => {
+                      const n = new Set(prev);
+                      if (n.has(it.id)) n.delete(it.id);
+                      else n.add(it.id);
+                      return n;
+                    })
+                  }
+                  className="w-full p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-start cursor-pointer"
+                >
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold border bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-300 border-red-200 dark:border-red-500/30">Program</span>
+                      <span className="text-[10px] font-bold text-slate-500">{items.length} sessions · {done} done</span>
+                    </div>
+                    <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                      {first.program?.titleEn || first.program?.titleAr || "Training Program"}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {!isClient && (<>Athlete: <strong className="text-slate-700 dark:text-slate-200">{first.client?.user?.name || "Athlete"}</strong> · </>)}
+                      Next: <strong className="text-slate-700 dark:text-slate-200">{toCalendarDateKey(next.scheduledDate)}</strong> {next.title || next.template?.titleEn || ""}
                     </p>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => openInspection(a)}
-                    className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>{eff === "COMPLETED" ? "Planned vs Actual" : "View Plan"}</span>
-                  </button>
-
-                  <Link
-                    href={`/workout/${a.id}/execute`}
-                    className="px-4 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand-crimson/25"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>
-                      {eff === "COMPLETED"
-                        ? "View Summary"
-                        : eff === "IN_PROGRESS"
-                        ? "Resume Workout"
-                        : eff === "SKIPPED"
-                        ? "View Details"
-                        : "Execute Workout"}
-                    </span>
-                  </Link>
-                </div>
+                  </div>
+                  <span className="text-xs font-bold text-brand-crimson shrink-0">{open ? "Hide sessions ▲" : `Show ${items.length} sessions ▼`}</span>
+                </button>
+                {open && <div className="px-3 pb-3 sm:px-4 sm:pb-4 space-y-3">{items.map((x) => renderCard(x))}</div>}
               </div>
             );
           })}
