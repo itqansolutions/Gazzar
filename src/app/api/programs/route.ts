@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { Difficulty, UserRole } from "@prisma/client";
 import {
@@ -65,9 +66,18 @@ export async function POST(req: NextRequest) {
         body.startDate
       );
 
+      const latestMembership = await prisma.membership.findFirst({
+        where: { clientId: access.client.id },
+        orderBy: { endDate: "desc" },
+        select: { endDate: true }
+      });
+
       return NextResponse.json({
         success: true,
         data: {
+          membershipEndDate: latestMembership?.endDate
+            ? latestMembership.endDate.toISOString().slice(0, 10)
+            : null,
           programId: preview.program.id,
           programTitle: preview.program.titleEn || preview.program.titleAr,
           startDate: preview.startDate,

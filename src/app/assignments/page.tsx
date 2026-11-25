@@ -1299,6 +1299,15 @@ function AssignmentsContent() {
                         </span>
                       </div>
 
+                      {programPreview.membershipEndDate &&
+                        programPreview.endDate &&
+                        String(programPreview.membershipEndDate) > String(programPreview.endDate) && (
+                          <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-medium">
+                            Heads up: this program ends on {programPreview.endDate}, but the athlete&apos;s membership runs until{" "}
+                            {programPreview.membershipEndDate}. The program will not repeat automatically. Plan the next program if needed.
+                          </div>
+                        )}
+
                       {programPreview.hasConflicts && (
                         <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs space-y-2">
                           <div className="font-bold flex items-center gap-1.5">
@@ -1322,7 +1331,7 @@ function AssignmentsContent() {
                       <div className="max-h-44 overflow-y-auto space-y-1">
                         {[
                           ...(programPreview.plannedWorkouts || []).map((w: any) => ({
-                            dateKey: w.dateKey,
+                            dateKey: w.dateKey || w.date || "",
                             weekNumber: w.weekNumber,
                             dayNumber: w.dayNumber,
                             dayTitle: w.dayTitle,
@@ -1338,7 +1347,7 @@ function AssignmentsContent() {
                             isRestDay: true
                           }))
                         ]
-                          .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+                          .sort((a, b) => String(a.dateKey || "").localeCompare(String(b.dateKey || "")))
                           .map((d, i) => (
                             <div
                               key={i}
