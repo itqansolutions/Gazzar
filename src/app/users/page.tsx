@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { resolveAvatar, DEFAULT_AVATAR } from "@/lib/avatars";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -375,7 +376,7 @@ export default function UsersPage() {
                   <td className="px-4 py-3.5">
                     <div className="flex items-center space-x-3">
                       <img
-                        src={u.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
+                        src={resolveAvatar(u.avatar)}
                         alt={u.name}
                         onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"; }}
                         className="w-9 h-9 rounded-full object-cover border border-slate-300 dark:border-slate-700"

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { resolveAvatar, DEFAULT_AVATAR } from "@/lib/avatars";
 import Link from "next/link";
 import {
   Dumbbell,
@@ -59,7 +60,7 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center space-x-4 rtl:space-x-reverse">
             <img
-              src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
+              src={resolveAvatar(user?.avatar)}
               alt={user?.name || "Athlete"}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-brand-crimson shadow-lg shadow-[0_0_15px_rgba(240,20,37,0.3)]"
             />

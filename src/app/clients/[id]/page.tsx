@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import AvatarPicker from "@/components/layout/AvatarPicker";
+import { resolveAvatar, DEFAULT_AVATAR } from "@/lib/avatars";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
@@ -50,6 +52,7 @@ export default function ClientProfilePage() {
   const { t, language, dir } = useLanguage();
   const { user } = useAuth();
 
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const [client, setClient] = useState<ClientProfile | null>(null);
   const [activeTab, setActiveTab] = useState<
     "overview" | "training" | "progress" | "nutrition" | "attendance"
@@ -294,12 +297,24 @@ export default function ClientProfilePage() {
       <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm dark:shadow-xl backdrop-blur-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center space-x-4 rtl:space-x-reverse">
+            <div className="relative shrink-0">
             <img
-              src={client.user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
+              src={resolveAvatar(user?.id === client.user?.id ? user?.avatar : client.user?.avatar)}
               alt={client.user?.name || "Athlete"}
-              onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"; }}
+              onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_AVATAR; }}
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-brand-crimson shadow-lg shadow-[0_0_15px_rgba(240,20,37,0.3)]"
             />
+
+              {user?.id === client.user?.id && (
+                <button
+                  onClick={() => setAvatarOpen(true)}
+                  className="absolute -bottom-2 -right-2 px-2 py-1 rounded-full bg-brand-crimson text-white text-[10px] font-bold shadow-md"
+                  aria-label="Change avatar"
+                >
+                  Change
+                </button>
+              )}
+            </div>
             <div>
               <div className="flex items-center space-x-2 rtl:space-x-reverse mb-1">
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{client.user?.name}</h2>
@@ -875,6 +890,7 @@ export default function ClientProfilePage() {
           onUpdated={handleRunnerUpdated}
         />
       )}
+      {avatarOpen && <AvatarPicker onClose={() => setAvatarOpen(false)} />}
     </div>
   );
 }

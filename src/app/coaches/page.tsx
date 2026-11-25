@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { resolveAvatar, DEFAULT_AVATAR } from "@/lib/avatars";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { CoachProfile, UserRole, Sport, ClientProfile } from "@/types";
@@ -389,7 +390,7 @@ export default function CoachesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCoaches.map(co => {
             const isHeadCoach = co.user?.role === "HEAD_COACH";
-            const avatarSrc = co.user?.avatar || (isHeadCoach ? "/coach_dark_hero.jpg" : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200");
+            const avatarSrc = resolveAvatar(co.user?.avatar);
 
             return (
               <div
@@ -984,7 +985,7 @@ export default function CoachesPage() {
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <img
-                              src={cl.user?.avatar || "/coach_dark_hero.jpg"}
+                              src={resolveAvatar(cl.user?.avatar)}
                               alt={cl.user?.name}
                               className="w-7 h-7 rounded-full object-cover border border-[#26262A]"
                               onError={e => { (e.target as HTMLImageElement).src = "/coach_dark_hero.jpg"; }}
