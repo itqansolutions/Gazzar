@@ -52,8 +52,8 @@ type StatusFilter = "ALL" | "ACTIVE" | "ARCHIVED";
 
 const BLOCK_TYPE_META: Record<BlockType, { label: string; desc: string; badgeClass: string; defaultRounds: number }> = {
   SINGLE: {
-    label: "Single Exercise",
-    desc: "Standard straight sets",
+    label: "Strength Sets",
+    desc: "Standard straight sets (one exercise)",
     badgeClass: "bg-blue-500/15 text-blue-600 dark:text-blue-300 border-blue-500/30",
     defaultRounds: 1
   },
@@ -509,7 +509,7 @@ export default function TemplatesPage() {
         const newBlock: BuilderBlock = {
           uid: createUid(),
           type: "SINGLE",
-          title: "Single Exercise Block",
+          title: "Strength Block",
           rounds: 1,
           durationSeconds: null,
           restBetweenRoundsSeconds: 60,
@@ -705,7 +705,7 @@ export default function TemplatesPage() {
     setEditingItemUid(null);
     setEditingTemplate(tpl);
     setTitleAr(tpl.titleAr || "");
-    setTitleEn(tpl.titleEn || "");
+    setTitleEn(tpl.titleEn || tpl.titleAr || "");
     setDescEn(tpl.descriptionEn || tpl.descriptionAr || "");
     setSportId(tpl.sportId);
     setPickerSportFilter("ALL");
@@ -810,7 +810,7 @@ export default function TemplatesPage() {
     setFormError(null);
 
     const cleanEn = (titleEn || titleAr).trim();
-    const cleanAr = (titleAr || cleanEn).trim();
+    const cleanAr = cleanEn; // one name only; stored in both fields
     if (!cleanEn) {
       setFormError("Template title is required.");
       return;
@@ -1506,10 +1506,10 @@ export default function TemplatesPage() {
               </div>
 
               {/* Template Metadata */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Template Title (English) *
+                    Template Name *
                   </label>
                   <input
                     type="text"
@@ -1518,18 +1518,6 @@ export default function TemplatesPage() {
                     value={titleEn}
                     onChange={(e) => setTitleEn(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-brand-crimson"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Template Title (Alt / Internal)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Optional alternate title"
-                    value={titleAr}
-                    onChange={(e) => setTitleAr(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-crimson"
                   />
                 </div>
               </div>
@@ -1946,17 +1934,45 @@ export default function TemplatesPage() {
                         <span>Workout Blocks ({builderBlocks.length})</span>
                       </h4>
                       <p className="text-[10px] text-slate-400">
-                        Group movements into Single Exercises, Supersets, Multi-Round Circuits, or Sequences
+                        Build the session with AMRAP, For Time, EMOM or Tabata blocks, or Strength sets, Supersets and Circuits
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("AMRAP")}
+                        className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 font-bold text-[11px] border border-rose-500/30 cursor-pointer"
+                      >
+                        + AMRAP
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("FOR_TIME")}
+                        className="px-2.5 py-1 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-300 font-bold text-[11px] border border-orange-500/30 cursor-pointer"
+                      >
+                        + For Time
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("EMOM")}
+                        className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-bold text-[11px] border border-cyan-500/30 cursor-pointer"
+                      >
+                        + EMOM
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddBlock("TABATA")}
+                        className="px-2.5 py-1 rounded-lg bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-300 font-bold text-[11px] border border-fuchsia-500/30 cursor-pointer"
+                      >
+                        + Tabata
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleAddBlock("SINGLE")}
                         className="px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-300 font-bold text-[11px] border border-blue-500/30 cursor-pointer"
                       >
-                        + Single
+                        + Strength
                       </button>
                       <button
                         type="button"
@@ -1971,13 +1987,6 @@ export default function TemplatesPage() {
                         className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-300 font-bold text-[11px] border border-amber-500/30 cursor-pointer"
                       >
                         + Circuit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddBlock("SEQUENCE")}
-                        className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 font-bold text-[11px] border border-rose-500/30 cursor-pointer"
-                      >
-                        + Sequence
                       </button>
                     </div>
                   </div>
@@ -2011,14 +2020,14 @@ export default function TemplatesPage() {
                                 }
                                 className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100"
                               >
-                                <option value="SINGLE">Single Exercise</option>
+                                <option value="AMRAP">AMRAP (as many rounds as possible)</option>
+                                <option value="FOR_TIME">For Time</option>
+                                <option value="EMOM">EMOM (every minute on the minute)</option>
+                                <option value="TABATA">Tabata (work / rest)</option>
+                                <option value="SINGLE">Strength Sets (straight sets)</option>
                                 <option value="SUPERSET">Superset (2+ Movements)</option>
                                 <option value="CIRCUIT">Circuit (Rounds Loop)</option>
                                 <option value="SEQUENCE">Sequence / Interval</option>
-                                <option value="AMRAP">AMRAP (time cap)</option>
-                                <option value="FOR_TIME">For Time</option>
-                                <option value="EMOM">EMOM (every minute)</option>
-                                <option value="TABATA">Tabata (work / rest)</option>
                               </select>
 
                               <input

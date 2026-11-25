@@ -661,9 +661,9 @@ function AssignmentsContent() {
             </span>
             {a.programWeekNumber && a.programDayNumber && (
               <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                {a.program?.titleEn ? `${a.program.titleEn} · ` : ""}
+                {a.program?.titleEn && !(a.title || "").includes(a.program.titleEn) && !isClient ? `${a.program.titleEn} · ` : ""}
                 Week {a.programWeekNumber} · Day {a.programDayNumber}
-                {a.programDayTitle ? ` (${a.programDayTitle})` : ""}
+                {a.programDayTitle && a.programDayTitle !== a.title && !(a.title || "").includes(a.programDayTitle) ? ` (${a.programDayTitle})` : ""}
               </span>
             )}
           </div>

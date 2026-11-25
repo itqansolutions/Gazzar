@@ -372,12 +372,19 @@ export default function AthleteOverviewTab({
               <h3 className="text-lg font-black text-slate-900 dark:text-white truncate">
                 {activeProgram?.titleEn || activeProgram?.titleAr || (activeProgram as any)?.name || "No Active Program"}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                {activeProgram?.descriptionEn ||
+              {(() => {
+                const title = (activeProgram?.titleEn || activeProgram?.titleAr || (activeProgram as any)?.name || "").trim();
+                const desc = (
+                  activeProgram?.descriptionEn ||
                   activeProgram?.descriptionAr ||
                   (activeProgram as any)?.description ||
-                  "Structured training roadmap tailored to your athletic development."}
-              </p>
+                  ""
+                ).trim();
+                // Hide a description that only repeats the program name (one clear name).
+                const onlyRepeatsTitle = !!title && desc.replace(new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "").trim() === "";
+                if (!desc || onlyRepeatsTitle) return null;
+                return <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{desc}</p>;
+              })()}
             </div>
 
             <div className="flex items-center space-x-3 rtl:space-x-reverse text-xs text-slate-600 dark:text-slate-300 pt-1">
