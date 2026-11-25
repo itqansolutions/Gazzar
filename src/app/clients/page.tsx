@@ -327,7 +327,7 @@ export default function ClientsPage() {
       {/* Header bar matching members-dark_rendered.html */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
             <span>Members</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
@@ -459,9 +459,16 @@ export default function ClientsPage() {
                 filteredClients.map((client, idx) => {
                   const primaryCoach = client.coaches?.find(ca => ca.role === "PRIMARY" && ca.active)?.coach?.user?.name
                     || client.coaches?.find(ca => ca.active)?.coach?.user?.name;
-                  const sportName = client.sport?.nameEn || client.sport?.nameAr || "CrossFit Foundations";
-                  const planType = idx % 3 === 0 ? "Annual" : idx % 3 === 1 ? "Quarterly" : "Monthly";
-                  const progressPct = 45 + ((idx * 17) % 50);
+                  const sportName = client.sport?.nameEn || client.sport?.nameAr || "No sport set";
+                  const anyClient = client as any;
+                  const membership = anyClient.memberships?.[0];
+                  const planType = membership?.planType
+                    ? String(membership.planType).charAt(0) + String(membership.planType).slice(1).toLowerCase()
+                    : "No plan";
+                  const assigned: Array<{ status: string }> = anyClient.workoutAssignments || [];
+                  const progressPct = assigned.length
+                    ? Math.round((assigned.filter((w) => w.status === "COMPLETED").length / assigned.length) * 100)
+                    : 0;
 
                   return (
                     <tr

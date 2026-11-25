@@ -80,6 +80,9 @@ export class ClientService {
           }
         },
         sport: true,
+        // Real plan + progress for the Members list (additive, read-only).
+        memberships: { select: { planType: true, endDate: true }, orderBy: { endDate: "desc" }, take: 1 },
+        workoutAssignments: { select: { status: true } },
         coachAssignments: {
           where: { active: true },
           include: {
