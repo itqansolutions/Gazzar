@@ -162,7 +162,7 @@ export default function ClientProfilePage() {
   const restrictions = client.medicalRestrictions || [];
 
   const heightM = (client.heightCm || 178) / 100;
-  const currentBmi = ((client.weightKg || 80) / (heightM * heightM)).toFixed(1);
+  const currentBmi = client.weightKg && client.heightCm ? (client.weightKg / (heightM * heightM)).toFixed(1) : "—";
 
   // Submit Handlers
   const handleAddMeasurement = async (e: React.FormEvent) => {
@@ -316,11 +316,11 @@ export default function ClientProfilePage() {
           <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div className="px-2">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{t("weight")}</span>
-              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.weightKg} <span className="text-[10px] text-slate-400">KG</span></span>
+              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.weightKg || "—"} <span className="text-[10px] text-slate-400">KG</span></span>
             </div>
             <div className="px-2 border-s border-slate-200 dark:border-slate-800">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{t("height")}</span>
-              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.heightCm} <span className="text-[10px] text-slate-400">CM</span></span>
+              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{client.heightCm || "—"} <span className="text-[10px] text-slate-400">CM</span></span>
             </div>
             <div className="px-2 border-s border-slate-200 dark:border-slate-800">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">BMI</span>
@@ -328,7 +328,7 @@ export default function ClientProfilePage() {
             </div>
             <div className="px-2 border-s border-slate-200 dark:border-slate-800">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Expiry</span>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate block">{client.membershipExpiry?.slice(0, 7) || "2026-12"}</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate block">{client.membershipExpiry?.slice(0, 7) || "—"}</span>
             </div>
           </div>
         </div>
