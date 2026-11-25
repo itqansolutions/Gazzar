@@ -71,7 +71,7 @@ export function KPICard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-muted tracking-wide truncate">
+          <p className="text-xs font-medium text-muted tracking-wide leading-tight">
             {label}
           </p>
           <p className="text-2xl sm:text-[28px] font-bold font-sans tracking-tight tabular-nums text-fg leading-tight mt-0.5">
