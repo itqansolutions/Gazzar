@@ -87,7 +87,22 @@ export default function MembershipsPage() {
                 No active memberships recorded yet.
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="sm:hidden space-y-3">
+                {memberships.map((m) => (
+                  <div key={m.id} className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-slate-900 dark:text-white">{m.client?.user?.name || "Client"}</span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-crimson/20 text-brand-crimson">{m.paymentStatus}</span>
+                    </div>
+                    <div className="font-medium text-slate-700 dark:text-slate-300">{({ MONTHLY: "1 Month", THREE_MONTHS: "3 Months", SIX_MONTHS: "6 Months", ANNUAL: "Annual", PERSONAL_TRAINING: "Personal Training", GROUP_CLASS: "Class Pack" } as Record<string, string>)[m.planType] || m.planType}</div>
+                    <div className="flex justify-between text-slate-500 dark:text-slate-400"><span>Start</span><span>{m.startDate ? new Date(m.startDate).toISOString().slice(0, 10) : "N/A"}</span></div>
+                    <div className="flex justify-between text-slate-500 dark:text-slate-400"><span>End</span><span className="font-semibold text-brand-crimson">{m.endDate ? new Date(m.endDate).toISOString().slice(0, 10) : "N/A"}</span></div>
+                    <div className="flex justify-between text-slate-500 dark:text-slate-400"><span>Paid</span><span className="font-bold text-slate-900 dark:text-white">{m.paidAmount} EGP</span></div>
+                    <div className="flex justify-between text-slate-500 dark:text-slate-400"><span>Remaining</span><span className="font-bold text-amber-500">{m.remainingAmount || 0} EGP</span></div>
+                  </div>
+                ))}
+              </div>
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-start text-xs">
                   <thead className="bg-slate-50 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                     <tr>
