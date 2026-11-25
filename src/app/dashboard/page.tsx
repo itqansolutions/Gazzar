@@ -132,9 +132,6 @@ export default function DashboardPage() {
             <h1 className="text-2xl sm:text-3xl font-bold font-sans text-fg tracking-tight">
               Dashboard
             </h1>
-            <p className="text-xs sm:text-sm text-muted mt-1 font-medium">
-              Welcome back, {displayName} 👋
-            </p>
           </div>
 
           <div className="flex items-center space-x-3">
@@ -156,7 +153,6 @@ export default function DashboardPage() {
             displayName={displayName}
             theme={theme as "dark" | "light"}
             classesCount={todayClasses.length}
-            checkinsCount={12}
           />
         </div>
 
@@ -234,28 +230,24 @@ export default function DashboardPage() {
           <KPICard
             label="Members"
             value={membersCount}
-            delta="+12%"
             accent="brand"
             icon={<Users className="w-5 h-5" />}
           />
           <KPICard
             label="Active Programs"
             value={programsCount}
-            delta="+20%"
             accent="purple"
             icon={<Layers className="w-5 h-5" />}
           />
           <KPICard
             label="Sessions"
             value={sessionsCount}
-            delta="+18%"
             accent="blue"
             icon={<Calendar className="w-5 h-5" />}
           />
           <KPICard
             label="Coaches"
             value={coachesCount}
-            delta="Active"
             accent="neutral"
             icon={<UserCheck className="w-5 h-5" />}
           />
@@ -266,12 +258,9 @@ export default function DashboardPage() {
             ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
           {/* Left: Members Activity Area Wave Chart (Span 2) */}
-          <div className="lg:col-span-2">
-            <ActivityChart data={activityData} />
-          </div>
 
           {/* Right: Today's Classes List (Span 1) */}
-          <div className="bg-card border border-line rounded-card p-5 sm:p-6 shadow-card flex flex-col justify-between">
+          <div className="lg:col-span-3 bg-card border border-line rounded-card p-5 sm:p-6 shadow-card flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base sm:text-lg font-bold text-fg tracking-tight">
@@ -306,36 +295,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Quick Action Button */}
-            <div className="pt-4 mt-4 border-t border-line">
-              <Link
-                href="/assignments"
-                className="w-full py-3 rounded-control bg-brand hover:bg-brand-hover text-brand-contrast font-bold text-xs shadow-glow transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-app"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Create Workout Assignment</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* =========================================================================
-            6. LOWER SECTION: PROGRESS OVERVIEW + MEMBERSHIPS + TOP PROGRAMS
-            ========================================================================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Progress Overview Bar Chart (Span 5) */}
-          <div className="lg:col-span-5">
-            <ProgressChart data={progressData} />
-          </div>
-
-          {/* Memberships Donut Chart (Span 3) */}
-          <div className="lg:col-span-3">
-            <MembershipsDonut percentage={76} delta="+12%" />
-          </div>
-
-          {/* Top Programs Progress Bars (Span 4) */}
-          <div className="lg:col-span-4 md:col-span-2">
-            <TopPrograms />
           </div>
         </div>
 

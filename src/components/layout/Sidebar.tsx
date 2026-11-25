@@ -275,17 +275,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <span>{t("navLogout") || "Log out"}</span>
           </button>
 
-          <div className="text-center text-[10px] text-muted select-none pt-0.5">
-            Powered & Designed by{" "}
-            <a
-              href="https://itqansolutions.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-fg hover:text-brand transition-colors"
-            >
-              Itqan Solutions
-            </a>
-          </div>
         </div>
       </aside>
     </>

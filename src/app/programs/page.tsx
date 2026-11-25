@@ -1014,15 +1014,6 @@ export default function ProgramsPage() {
                       <span>Assign to Athlete</span>
                     </Link>
 
-                    <button
-                      type="button"
-                      disabled={effectiveStatus !== "ACTIVE"}
-                      onClick={() => openApplyModal(prog)}
-                      title="Quick inline program apply modal"
-                      className="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-brand-crimson hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-[10px] font-bold disabled:opacity-40"
-                    >
-                      Quick Modal
-                    </button>
 
                     <button
                       type="button"

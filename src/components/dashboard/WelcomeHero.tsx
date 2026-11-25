@@ -56,7 +56,7 @@ export function WelcomeHero({
           Good morning, {displayName}
         </h2>
         <p className="text-xs sm:text-sm text-muted mb-4 font-medium">
-          {classesCount} classes today · {checkinsCount} check-ins waiting
+          {classesCount} {classesCount === 1 ? "class" : "classes"} today
         </p>
 
         <div className="flex items-center gap-3 flex-wrap">
