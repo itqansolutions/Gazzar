@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { getCairoDateKey, getCalendarDayBounds } from "@/lib/date-utils";
 import { getAssignedClientIdsForActor, requireAuth } from "@/lib/auth/route-guard";
 
 export const dynamic = "force-dynamic";
@@ -83,18 +84,35 @@ export async function GET(request: Request) {
       if (clientProfile) {
         const [todayWorkout, activeProgramAssignment, activeNutrition, checkInSched, recentAssessment] =
           await Promise.all([
-            prisma.clientWorkoutAssignment.findFirst({
-              where: {
-                clientId: clientProfile.id,
-                status: { in: ["SCHEDULED", "COMPLETED"] }
-              },
-              orderBy: { scheduledDate: "desc" },
-              include: {
-                template: true,
-                workoutLog: true,
-                exercises: true
-              }
-            }),
+            (async () => {
+              // Pick the right "today" card: today's first unfinished session, else a finished one from today,
+              // else the next upcoming one, else the latest past one. (Used to pick the farthest future session.)
+              const include = { template: true, workoutLog: true, exercises: true } as const;
+              const { start, end } = getCalendarDayBounds(getCairoDateKey());
+              const todays = await prisma.clientWorkoutAssignment.findMany({
+                where: {
+                  clientId: clientProfile.id,
+                  scheduledDate: { gte: start, lte: end },
+                  status: { in: ["SCHEDULED", "COMPLETED"] }
+                },
+                orderBy: [{ programWorkoutOrder: "asc" }, { scheduledDate: "asc" }],
+                include
+              });
+              const open = todays.find((a) => a.status === "SCHEDULED" && !a.workoutLog?.isCompleted);
+              if (open) return open;
+              if (todays.length > 0) return todays[todays.length - 1];
+              const upcoming = await prisma.clientWorkoutAssignment.findFirst({
+                where: { clientId: clientProfile.id, status: "SCHEDULED", scheduledDate: { gt: end } },
+                orderBy: [{ scheduledDate: "asc" }, { programWorkoutOrder: "asc" }],
+                include
+              });
+              if (upcoming) return upcoming;
+              return prisma.clientWorkoutAssignment.findFirst({
+                where: { clientId: clientProfile.id, status: { in: ["SCHEDULED", "COMPLETED"] } },
+                orderBy: { scheduledDate: "desc" },
+                include
+              });
+            })(),
             prisma.programAssignment.findFirst({
               where: {
                 clientId: clientProfile.id,

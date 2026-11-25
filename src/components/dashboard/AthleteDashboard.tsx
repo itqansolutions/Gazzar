@@ -19,7 +19,7 @@ import {
   ChevronRight,
   UserCheck
 } from "lucide-react";
-import { toCalendarDateKey } from "@/lib/date-utils";
+import { toCalendarDateKey, getCairoDateKey } from "@/lib/date-utils";
 import SubscriptionCard from "./SubscriptionCard";
 
 interface AthleteDashboardProps {
@@ -115,6 +115,8 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
                   ? "Workout Completed ✓"
                   : effStatus === "IN_PROGRESS"
                   ? "Workout In Progress ⚡"
+                  : todayWorkout?.scheduledDate && toCalendarDateKey(todayWorkout.scheduledDate) > getCairoDateKey()
+                  ? "Next Scheduled Training"
                   : "Scheduled Training Today"}
               </span>
 
@@ -191,7 +193,7 @@ export default function AthleteDashboard({ athleteData, user }: AthleteDashboard
 
             {activeProgram ? (
               <div>
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{activeProgram.name}</h3>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{activeProgram.name || activeProgram.titleEn || activeProgram.titleAr}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                   {activeProgram.description || "Structured training roadmap tailored for performance development."}
                 </p>
