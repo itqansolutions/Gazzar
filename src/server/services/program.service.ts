@@ -1801,11 +1801,15 @@ export class ProgramService {
 
     if (
       strategy === "SKIP_CONFLICTS" &&
-      preview.duplicateProgramAssignments.length > 0 &&
+      preview.plannedWorkouts.length > 0 &&
       preview.dateConflicts.length >= preview.plannedWorkouts.length
     ) {
+      // Every planned date is taken: skipping would create an empty program
+      // assignment shell with zero sessions (and block retries as a duplicate).
       throw new ProgramServiceError(
-        `All ${preview.plannedWorkouts.length} workout dates already exist for this overlapping program assignment. Pick a new start date instead.`,
+        preview.duplicateProgramAssignments.length > 0
+          ? `All ${preview.plannedWorkouts.length} workout dates already exist for this overlapping program assignment. Pick a new start date instead.`
+          : `All ${preview.plannedWorkouts.length} workout dates already have assigned workouts, so nothing would be created. Pick a different start date instead.`,
         409,
         {
           duplicateProgramAssignments: preview.duplicateProgramAssignments,
