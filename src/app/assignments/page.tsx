@@ -202,6 +202,13 @@ function AssignmentsContent() {
       formErrorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [formError]);
+  // Same for the Mode C preview: it renders below the fold on phones, so scroll to it when it appears.
+  const programPreviewRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (programPreview && programPreviewRef.current) {
+      programPreviewRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [programPreview]);
   const [conflictList, setConflictList] = useState<any[] | null>(null);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -538,10 +545,10 @@ function AssignmentsContent() {
     }
   };
 
-  const handlePreviewProgram = async () => {
+  const handlePreviewProgram = async (): Promise<boolean> => {
     if (!formProgramId || !formClientId) {
       setFormError("Please select both an athlete and a training program.");
-      return;
+      return false;
     }
     setFormError("");
     setPreviewLoading(true);
@@ -559,19 +566,30 @@ function AssignmentsContent() {
       const json = await res.json();
       if (!res.ok || !json.success) {
         setFormError(json.error || "Failed to preview program schedule");
-        return;
+        return false;
       }
       setProgramPreview(json.data);
+      return true;
     } catch (err: any) {
       setFormError(err?.message || "Error previewing program");
+      return false;
     } finally {
       setPreviewLoading(false);
     }
   };
 
   const handleApplyProgram = async () => {
-    if (!formProgramId || !formClientId) return;
+    if (!formProgramId || !formClientId) {
+      setFormError("Please select both an athlete and a training program.");
+      return;
+    }
     setFormError("");
+    // Confirm used to stay disabled until a manual Preview succeeded, which read
+    // as a dead button ("Mode C not working") — auto-preview on first tap instead.
+    if (!programPreview) {
+      const ok = await handlePreviewProgram();
+      if (!ok) return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/programs", {
@@ -1385,7 +1403,7 @@ function AssignmentsContent() {
                   </div>
 
                   {programPreview && (
-                    <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                    <div ref={programPreviewRef} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2.5">
                       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                         <span className="font-black text-slate-900 dark:text-white">
                           {programPreview.startDate} → {programPreview.endDate}
@@ -1513,7 +1531,7 @@ function AssignmentsContent() {
               {assignMode === "PROGRAM" ? (
                 <button
                   type="button"
-                  disabled={submitting || !programPreview}
+                  disabled={submitting || previewLoading || !formProgramId || !formClientId}
                   onClick={handleApplyProgram}
                   className="px-5 py-2 rounded-xl bg-brand-crimson hover:bg-[#FF2D3B] text-white text-xs font-bold disabled:opacity-50"
                 >
